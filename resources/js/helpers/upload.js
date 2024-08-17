@@ -6,6 +6,7 @@ export default class UploadAdapter {
 
     // Starts the upload process.
     upload() {
+        console.log('fdg')
         return this.loader.file
             .then( file => new Promise( ( resolve, reject ) => {
                 this._initRequest();

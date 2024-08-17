@@ -1,4 +1,4 @@
-import axios from "../plugins/axios"
+import axios from "@/plugins/axios"
 import type {AxiosInstance} from "axios";
 
 export default abstract class BaseService {

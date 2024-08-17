@@ -1,6 +1,6 @@
 import axios from "axios";
-import BaseService from "./BaseService";
-import {useGlobalStateStore} from "../stores/global"
+import BaseService from "@/services/BaseService";
+import {useGlobalStateStore} from "@/stores/global"
 
 export default class AuthService extends BaseService {
 

@@ -1,26 +1,18 @@
 
-
 /**
  * Custom alert message
  * @param type
  * @param message
  * @param title
- * @admin
+ * @private
  */
 const _message = function (type, message, title = '') {
     if (!title) {
-        switch (type) {
-            case 'success':
-                title = 'Thành công!';
+        for (var i in ['success', 'warning', 'danger']) {
+            if (type === i) {
+                title = 'Thông báo.' + i;
                 break;
-            case 'warning':
-                title = 'Cảnh báo!';
-                break;
-            case 'danger':
-                title = 'Lỗi!';
-                break;
-            default:
-                title = 'Xác nhận!';
+            }
         }
     }
     window.alert(title + ' ' + message);
@@ -34,7 +26,7 @@ const _message = function (type, message, title = '') {
  * @param msg
  * @param title
  * @param type
- * @admin
+ * @private
  */
 const _confirm = function (func_if_yes, func_if_cancel, msg, title, type) {
 
@@ -43,7 +35,7 @@ const _confirm = function (func_if_yes, func_if_cancel, msg, title, type) {
         type = 'success';
     }
     if (!msg) {
-        msg = 'Bạn có chắc chắn muốn thực hiện hành động này?';
+        msg = "Bạn có chắc chắn muốn thực hiện hành động này?";
     }
     if (!title) {
         title = 'Xác nhận!';

@@ -4,7 +4,6 @@ import {getResponseError} from "@/helpers/api";
 import {useAlertStore} from "@/stores/alert";
 import AuthService from "@/services/AuthService";
 import UserService from "@/services/UserService";
-import {trans} from "@/helpers/i18n";
 
 export const useAuthStore = defineStore("auth", {
     state: () => {
@@ -61,7 +60,7 @@ export const useAuthStore = defineStore("auth", {
                     .updateAvatar(id, payload)
                     .then((response) => {
                         this.getCurrentUser().then(() => {
-                            alertStore.success(trans('global.phrases.file_uploaded'));
+                            alertStore.success("Tải lên tệp thành công");
                             resolve(response)
                         });
                     })
