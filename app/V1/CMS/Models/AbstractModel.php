@@ -19,13 +19,9 @@ abstract class AbstractModel
     protected static $_userInfo;
     protected $modelName;
 
-    public function __construct($model = null)
+    public function __construct($model)
     {
-        $modelName = substr(get_called_class(), strrpos(get_called_class(), '\\') + 1);
-        $this->modelName = str_replace('Model', '', $modelName);
-        $modelName = "\\App" . "\\Models\\" . $this->modelName;
-
-        $this->model = ($model) ?: new $modelName();
+        $this->model = $model;
 
     }
 

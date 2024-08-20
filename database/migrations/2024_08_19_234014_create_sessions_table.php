@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('customer_histories', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('customer_id')->nullable()->index();
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->foreignId('user_id')->nullable()->index();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
-            $table->timestamps();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
         });
     }
 
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('customer_histories');
+        Schema::dropIfExists('sessions');
     }
 };

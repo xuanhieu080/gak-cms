@@ -11,13 +11,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\HasApiTokens;
-use Silber\Bouncer\Database\HasRolesAndAbilities;
 
 class Customer extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
-
-    use HasRolesAndAbilities;
 
     use Searchable, Filterable;
 

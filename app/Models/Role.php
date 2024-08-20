@@ -5,9 +5,9 @@ namespace App\Models;
 use App\Traits\Filterable;
 use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Silber\Bouncer\Database\Role as BaseRole;
+use Illuminate\Database\Eloquent\Model;
 
-class Role extends BaseRole
+class Role extends Model
 {
     use HasFactory;
     use Searchable, Filterable;

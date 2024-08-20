@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\Config;
-use Illuminate\Support\Facades\Config as AppConfig;
 use Illuminate\Support\ServiceProvider;
 
 class MailServiceProvider extends ServiceProvider
@@ -13,12 +11,7 @@ class MailServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $configs = Config::whereNotNull('config')
-            ->whereNotNull('value')->get();
 
-        foreach ($configs as $config) {
-            AppConfig::set($config->config,$config->value);
-        }
     }
 
     /**
