@@ -10,13 +10,7 @@
     </Page>
 </template>
 
-<script>
-import {defineComponent} from 'vue';
+<script setup>
 import Page from "@/views/layouts/Page";
 
-export default defineComponent({
-    components: {
-        Page
-    }
-});
 </script>
