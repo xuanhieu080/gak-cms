@@ -59,7 +59,7 @@ export default {
           to: '/',
         },
         {
-          name: "Tài khảon",
+          name: "Tài khoản",
           icon: 'users',
           showDesktop: true,
           showMobile: true,
