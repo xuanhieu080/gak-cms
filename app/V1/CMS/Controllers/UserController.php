@@ -10,6 +10,7 @@ use App\Services\User\UserService;
 
 class UserController extends Controller
 {
+
     /**
      * The service instance
      * @var UserService
