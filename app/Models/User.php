@@ -124,13 +124,4 @@ class User extends Authenticatable implements MustVerifyEmail
         }
         return implode(' ', $names);
     }
-
-    /**
-     * Returns the is_admin attribute
-     * @return bool
-     */
-    public function getIsAdminAttribute()
-    {
-        return $this->isAn('admin');
-    }
 }
