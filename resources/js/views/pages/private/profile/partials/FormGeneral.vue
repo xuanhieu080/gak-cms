@@ -9,9 +9,9 @@
     </Panel>
 </template>
 
-<script>
+<script setup>
 import AuthService from "@/services/AuthService";
-import {defineComponent, reactive, onMounted} from "vue";
+import {reactive, onMounted} from "vue";
 import {getResponseError} from "@/helpers/api";
 import {useAuthStore} from "@/stores/auth";
 import {useAlertStore} from "@/stores";
@@ -19,44 +19,28 @@ import Button from "@/views/components/input/Button";
 import TextInput from "@/views/components/input/TextInput";
 import Panel from "@/views/components/Panel";
 
-export default defineComponent({
-    components: {
-        Panel,
-        Button,
-        TextInput,
-    },
+const authService = new AuthService();
+const alertStore = useAlertStore();
+const authStore = useAuthStore();
+const form = reactive({
+  first_name: null,
+  last_name: null,
+  email: null,
+})
 
-    setup: function () {
+onMounted(() => {
+  if (!authStore.user) {
+    return;
+  }
+  form.first_name = authStore.user.first_name;
+  form.last_name = authStore.user.last_name;
+  form.email = authStore.user.email;
+})
 
-        const authService = new AuthService();
-        const alertStore = useAlertStore();
-        const authStore = useAuthStore();
-        const form = reactive({
-            first_name: null,
-            last_name: null,
-            email: null,
-        })
-
-        onMounted(() => {
-            if (!authStore.user) {
-                return;
-            }
-            form.first_name = authStore.user.first_name;
-            form.last_name = authStore.user.last_name;
-            form.email = authStore.user.email;
-        })
-
-        function onFormSubmit() {
-            authService.updateUser(form)
-                .then(() => authStore.getCurrentUser())
-                .then((response) => (alertStore.success("Cập nhật hồ sơ thành công")))
-                .catch((error) => (alertStore.error(getResponseError(error), error.response.status)));
-        }
-
-        return {
-            onFormSubmit,
-            form
-        }
-    },
-});
+function onFormSubmit() {
+  authService.updateUser(form)
+      .then(() => authStore.getCurrentUser())
+      .then((response) => (alertStore.success("Cập nhật hồ sơ thành công")))
+      .catch((error) => (alertStore.error(getResponseError(error), error.response.status)));
+}
 </script>

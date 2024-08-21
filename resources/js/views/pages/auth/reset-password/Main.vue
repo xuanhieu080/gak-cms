@@ -14,15 +14,7 @@
     </Auth>
 </template>
 
-<script>
+<script setup>
 import {default as ResetPasswordForm} from "@/views/pages/auth/reset-password/Form";
 import Auth from "@/views/layouts/Auth";
-
-export default {
-    name: "ResetPassword",
-    components: {
-        Auth,
-        ResetPasswordForm
-    },
-};
 </script>

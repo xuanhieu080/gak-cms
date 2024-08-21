@@ -12,48 +12,31 @@
     </Panel>
 </template>
 
-<script>
+<script setup>
 import {reactive, defineComponent} from "vue";
 import {useAlertStore, useAuthStore} from "@/stores";
 import Button from "@/views/components/input/Button";
 import FileInput from "@/views/components/input/FileInput";
 import Panel from "@/views/components/Panel";
 import Form from "@/views/components/Form.vue";
+const emit = defineEmits( ['done', 'error'])
 
-export default defineComponent({
-    emits: ['done', 'error'],
-    components: {
-        Form,
-        Panel,
-        FileInput,
-        Button
-    },
-    setup(props, {emit}) {
+const alertStore = useAlertStore();
+const authStore = useAuthStore();
+const form = reactive({
+  file: null,
+})
 
-        const alertStore = useAlertStore();
-        const authStore = useAuthStore();
-        const form = reactive({
-            file: null,
-        })
+function onChange(event) {
+  alertStore.clear();
+  form.file = event.target.files[0];
+}
 
-        function onChange(event) {
-            alertStore.clear();
-            form.file = event.target.files[0];
-        }
-
-        function onSubmit() {
-            authStore.updateAvatar(authStore.user.id, {'avatar': form.file}).then(() => {
-                emit('done');
-            }).catch((error) => {
-                emit('error');
-            });
-        }
-
-        return {
-            onSubmit,
-            onChange,
-            form
-        }
-    }
-});
+function onSubmit() {
+  authStore.updateAvatar(authStore.user.id, {'avatar': form.file}).then(() => {
+    emit('done');
+  }).catch((error) => {
+    emit('error');
+  });
+}
 </script>

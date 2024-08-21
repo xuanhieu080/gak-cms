@@ -11,43 +11,28 @@
     </Form>
 </template>
 
-<script>
+<script setup>
 
-import {reactive, defineComponent} from "vue";
+import {reactive} from "vue";
 import {useAuthStore} from "@/stores/auth";
 import Button from "@/views/components/input/Button";
 import TextInput from "@/views/components/input/TextInput";
 import Alert from "@/views/components/Alert";
 import Form from "@/views/components/Form";
 
-export default defineComponent({
-    name: "LoginForm",
-    components: {
-        Form,
-        Alert,
-        Button,
-        TextInput,
-    },
-    emits: ['error'],
-    setup(props, {emit}) {
-        const authStore = useAuthStore();
-        const form = reactive({
-            email: null,
-            password: null,
-        })
+const emits = defineEmits(['error'])
 
-        function onFormSubmit() {
-            const payload = {
-                email: form.email,
-                password: form.password,
-            };
-            authStore.login(payload)
-        }
+const authStore = useAuthStore();
+const form = reactive({
+  email: null,
+  password: null,
+})
 
-        return {
-            onFormSubmit,
-            form,
-        }
-    }
-});
+function onFormSubmit() {
+  const payload = {
+    email: form.email,
+    password: form.password,
+  };
+  authStore.login(payload)
+}
 </script>

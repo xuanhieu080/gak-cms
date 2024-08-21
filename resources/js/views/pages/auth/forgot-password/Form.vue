@@ -10,9 +10,9 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import AuthService from "@/services/AuthService";
-import {reactive, defineComponent} from "vue";
+import {reactive} from "vue";
 import {useAlertStore} from "@/stores";
 import {getResponseError} from "@/helpers/api";
 import Button from "@/views/components/input/Button";
@@ -20,32 +20,15 @@ import TextInput from "@/views/components/input/TextInput";
 import Alert from "@/views/components/Alert";
 import Form from "@/views/components/Form";
 
-export default defineComponent({
-    name: "ForgotPasswordForm",
-    components: {
-        Form,
-        Alert,
-        Button,
-        TextInput,
-    },
-    setup() {
+const authService = new AuthService();
+const alertStore = useAlertStore();
+const form = reactive({
+  email: null,
+})
 
-        const authService = new AuthService();
-        const alertStore = useAlertStore();
-        const form = reactive({
-            email: null,
-        })
-
-        function onFormSubmit() {
-            authService.forgotPassword({email: form.email})
-                .then((response) => (alertStore.success(response.data.message)))
-                .catch((error) => (alertStore.error(getResponseError(error), error.response.status)));
-        }
-
-        return {
-            onFormSubmit,
-            form
-        }
-    },
-});
+function onFormSubmit() {
+  authService.forgotPassword({email: form.email})
+      .then((response) => (alertStore.success(response.data.message)))
+      .catch((error) => (alertStore.error(getResponseError(error), error.response.status)));
+}
 </script>

@@ -20,15 +20,7 @@
     </Auth>
 </template>
 
-<script>
+<script setup>
 import {default as ForgotPasswordForm} from "@/views/pages/auth/forgot-password/Form";
 import Auth from "@/views/layouts/Auth";
-
-export default {
-    name: "ForgotPassword",
-    components: {
-        Auth,
-        ForgotPasswordForm
-    },
-};
 </script>

@@ -15,7 +15,7 @@
     </Panel>
 </template>
 
-<script>
+<script setup>
 
 import AuthService from "@/services/AuthService";
 import {reactive, defineComponent} from "vue";
@@ -25,37 +25,22 @@ import Button from "@/views/components/input/Button";
 import Panel from "@/views/components/Panel";
 import TextInput from "@/views/components/input/TextInput.vue";
 
-export default defineComponent({
-    components: {
-        TextInput,
-        Panel,
-        Button,
-    },
-    setup() {
+const authService = new AuthService();
+const alertStore = useAlertStore();
+const form = reactive({
+  currentPassword: null,
+  password: null,
+  passwordConfirm: null,
+})
 
-        const authService = new AuthService();
-        const alertStore = useAlertStore();
-        const form = reactive({
-            currentPassword: null,
-            password: null,
-            passwordConfirm: null,
-        })
-
-        function onFormSubmit() {
-            const payload = {
-                current_password: form.currentPassword,
-                password: form.password,
-                password_confirmation: form.passwordConfirm,
-            };
-            authService.updatePassword(payload)
-                .then((response) => (alertStore.success("Cập nhật mật khẩu thành công")))
-                .catch((error) => (alertStore.error(getResponseError(error), error.response.status)));
-        }
-
-        return {
-            onFormSubmit,
-            form
-        }
-    }
-});
+function onFormSubmit() {
+  const payload = {
+    current_password: form.currentPassword,
+    password: form.password,
+    password_confirmation: form.passwordConfirm,
+  };
+  authService.updatePassword(payload)
+      .then((response) => (alertStore.success("Cập nhật mật khẩu thành công")))
+      .catch((error) => (alertStore.error(getResponseError(error), error.response.status)));
+}
 </script>

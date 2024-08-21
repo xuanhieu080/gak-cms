@@ -13,7 +13,7 @@
 
 </template>
 
-<script>
+<script setup>
 import {defineComponent, ref} from "vue";
 import {useAuthStore} from "@/stores/auth";
 import FormPassword from "@/views/pages/private/profile/partials/FormPassword";
@@ -25,28 +25,10 @@ import Modal from "@/views/components/Modal";
 import Panel from "@/views/components/Panel";
 import Avatar from "@/views/components/icons/Avatar";
 
-export default defineComponent({
-    components: {
-        Avatar,
-        Panel,
-        Modal,
-        Page,
-        Overview,
-        FormGeneral,
-        FormPassword,
-        FormAvatar,
-    },
-    setup() {
-        const store = useAuthStore()
-        const isAvatarModalShowing = ref(false);
+const store = useAuthStore()
+const isAvatarModalShowing = ref(false);
 
-        function reloadAvatar() {
-            store.getCurrentUser();
-        }
-        return {
-            isAvatarModalShowing,
-            reloadAvatar
-        }
-    }
-});
+function reloadAvatar() {
+  store.getCurrentUser();
+}
 </script>

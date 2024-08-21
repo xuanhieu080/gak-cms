@@ -33,11 +33,11 @@
     </Panel>
 </template>
 
-<script>
+<script setup>
 import AuthService from "@/services/AuthService";
 import {getResponseError} from "@/helpers/api";
 
-import {computed, defineComponent} from 'vue'
+import {computed} from 'vue'
 import {useAuthStore} from "@/stores/auth";
 import {useAlertStore} from "@/stores";
 import Avatar from "@/views/components/icons/Avatar";
@@ -45,41 +45,24 @@ import Button from "@/views/components/input/Button";
 import Panel from "@/views/components/Panel";
 import Badge from "@/views/components/Badge";
 
-export default defineComponent({
-    components: {
-        Panel,
-        Badge,
-        Avatar,
-        Button
-    },
-    emits: ['changeAvatar'],
-    setup(props, {emit}) {
-        const authService = new AuthService();
-        const alertStore = useAlertStore();
-        const authStore = useAuthStore()
-        const {user} = useAuthStore()
+const emit = defineEmits(['changeAvatar'])
 
-        const avatarUrl = computed(() => {
-            return user && user.hasOwnProperty('avatar_url') && user.avatar_url;
-        });
+const authService = new AuthService();
+const alertStore = useAlertStore();
+const authStore = useAuthStore()
+const {user} = useAuthStore()
 
-        function onVerificationSend() {
-            authService.sendVerification({user: user.id})
-                .then((response) => (alertStore.success("Đã gửi liên kết xác minh email.")))
-                .catch((error) => (alertStore.error(getResponseError(error), error.response.status)));
-        }
-
-        function onChangeAvatar() {
-            emit('changeAvatar');
-        }
-
-        return {
-            user,
-            onVerificationSend,
-            onChangeAvatar,
-            avatarUrl,
-            authStore
-        }
-    }
+const avatarUrl = computed(() => {
+  return user && user.hasOwnProperty('avatar_url') && user.avatar_url;
 });
+
+function onVerificationSend() {
+  authService.sendVerification({user: user.id})
+      .then((response) => (alertStore.success("Đã gửi liên kết xác minh email.")))
+      .catch((error) => (alertStore.error(getResponseError(error), error.response.status)));
+}
+
+function onChangeAvatar() {
+  emit('changeAvatar');
+}
 </script>

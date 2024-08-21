@@ -19,16 +19,8 @@
     </Auth>
 </template>
 
-<script>
+<script setup>
 import {default as LoginForm} from "@/views/pages/auth/login/Form";
 
 import Auth from "@/views/layouts/Auth";
-
-export default {
-    name: "LoginView",
-    components: {
-        Auth,
-        LoginForm,
-    },
-};
 </script>
