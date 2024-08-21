@@ -5,7 +5,7 @@
             <h4 class="text-gray-500 text-2xl">{{ new Date() }}</h4>
         </div>
         <footer class="py-5 text-center">
-            <p class="text-gray-400">Hãy xây dựng một cái gì đó thú vị!</p>
+            <p class="text-gray-400">Hãy dây dựng một cái gì đó thú vị!</p>
         </footer>
     </Page>
 </template>

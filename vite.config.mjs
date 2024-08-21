@@ -12,10 +12,10 @@ export default defineConfig({
         __INTLIFY_PROD_DEVTOOLS__: false,
     },
     plugins: [
-        laravel([
-            'resources/scss/main.scss',
-            'resources/js/main.js',
-        ]),
+        laravel({
+            input: ["resources/css/app.scss",'resources/js/app.js'],
+            refresh: true
+        }),
         vue({
             template: {
                 transformAssetUrls: {
