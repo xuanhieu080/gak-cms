@@ -1,6 +1,6 @@
 import {createApp} from 'vue'
 import { createPinia } from 'pinia'
-import CKEditor from '@ckeditor/ckeditor5-vue';
+import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
 
 import router from "@/router";
 import App from "@/App";
@@ -10,7 +10,7 @@ import 'ant-design-vue/dist/reset.css';
 const app = createApp(App)
 
 app.use(createPinia());
-app.use(CKEditor);
+app.use(CkeditorPlugin);
 
 app.use(router);
 app.use(Notifications);
