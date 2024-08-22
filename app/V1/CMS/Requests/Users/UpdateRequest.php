@@ -2,6 +2,7 @@
 
 namespace App\V1\CMS\Requests\Users;
 
+use App\Supports\Support;
 use App\V1\CMS\Requests\ValidatorBase;
 use Illuminate\Validation\Rule;
 
@@ -15,16 +16,19 @@ class UpdateRequest extends ValidatorBase
     public function rules()
     {
         return [
-            'first_name' => 'required|string|max:100',
-            'last_name'  => 'required|string|max:100',
+            'name' => 'required|string|max:255',
             'email'      => [
                 'required',
                 'email',
                 'max:255',
-                Rule::unique('users', 'email')->ignore($this->route('user')->id)
+                Rule::unique('users', 'email')->ignore($this->route('id'))
             ],
-            //            'roles' => 'required|array|exists:roles,name',
-            'avatar'     => 'nullable|image',
+            'image'     => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,bmp,gif,svg,webp,mp4,ogx,oga,ogv,ogg,webm',
+                'max:10000',
+                'mimetypes:' . Support::allImageMimeTypeString()],
             'password'   => 'nullable|min:6'
         ];
     }

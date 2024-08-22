@@ -28,95 +28,119 @@ class Controller extends BaseController
      * @param array $data
      * @return JsonResponse
      */
-    protected function responseDataSuccess(array $data)
+    protected function responseDataSuccess($message, array $data): JsonResponse
     {
-        return $this->responseSuccess('', $data);
+        return $this->responseSuccess($message, $data);
     }
 
     /**
      * Send a successful response
      *
-     * @param $data
-     * @param $code
-     * @return \Illuminate\Http\JsonResponse
-     */
-    protected function responseDeleteSuccess($data = [], $code = 200)
-    {
-        return $this->responseSuccess('Xoá thông tin thành công', $data, $code);
-    }
-
-
-    /**
-     * Send a failed response
-     *
-     * @param  array  $data
-     * @param $code
-     * @return \Illuminate\Http\JsonResponse
-     */
-    protected function responseDeleteFail(array $data = [], int $code = 422)
-    {
-        return $this->responseFail("Xoá thông tin không thành công", $data, $code);
-    }
-
-    /**
-     * Send a successful response
-     *
-     * @param $data
-     * @param $code
-     * @return \Illuminate\Http\JsonResponse
-     */
-    protected function responseUpdateSuccess($data = [], $code = 200)
-    {
-        return $this->responseSuccess('Cập nhật thông tin thành công', $data, $code);
-    }
-
-
-    /**
-     * Send a failed response
-     *
-     * @param  array  $data
-     * @param $code
-     * @return \Illuminate\Http\JsonResponse
-     */
-    protected function responseUpdateFail(array $data = [], int $code = 422)
-    {
-        return $this->responseFail('Cập nhật thông tin bị lỗi', $data, $code);
-    }
-
-    /**
-     * Send a successful response
-     *
-     * @param $data
-     * @param $code
-     * @return \Illuminate\Http\JsonResponse
-     */
-    protected function responseStoreSuccess($data = [], $code = 200)
-    {
-        return $this->responseSuccess("Thêm thông tin thành công", $data, $code);
-    }
-
-
-    /**
-     * Send a failed response
-     *
-     * @param  array  $data
-     * @param $code
-     * @return \Illuminate\Http\JsonResponse
-     */
-    protected function responseStoreFail(array $data = [], int $code = 422)
-    {
-        return $this->responseFail("Thêm thông tin thất bại", $data, $code);
-    }
-
-    /**
-     * Send a successful response
-     *
-     * @param  string  $message
-     * @param  array  $data
-     * @param  int  $code
+     * @param string $message
+     * @param array $data
+     * @param int $code
      * @return JsonResponse
      */
-    protected function responseSuccess(string $message, array $data = [], int $code = 200)
+    protected function responseDeleteSuccess($message = 'Xoá dữ liệu thành công', array $data = [], int $code = 200): JsonResponse
+    {
+        if (empty($message)) {
+            $message = 'Xoá dữ liệu thành công';
+        }
+        return $this->responseSuccess($message, $data, $code);
+    }
+
+
+    /**
+     * Send a failed response
+     *
+     * @param string $message
+     * @param array $data
+     * @param int $code
+     * @return JsonResponse
+     */
+    protected function responseDeleteFail(string $message = 'Xoá dữ liệu thất bại', array $data = [], int $code = 400): JsonResponse
+    {
+        if (empty($message)) {
+            $message = 'Xoá dữ liệu thất bại';
+        }
+        return $this->responseFail($message, $data, $code);
+    }
+
+    /**
+     * Send a successful response
+     *
+     * @param string $message
+     * @param array $data
+     * @param int $code
+     * @return JsonResponse
+     */
+    protected function responseUpdateSuccess(string $message = 'Cập nhật dữ liệu thành công', array $data = [], int $code = 200): JsonResponse
+    {
+        if (empty($message)) {
+            $message = 'Cập nhật dữ liệu thành công';
+        }
+        return $this->responseSuccess($message, $data, $code);
+    }
+
+
+    /**
+     * Send a failed response
+     *
+     * @param string $message
+     * @param array $data
+     * @param int $code
+     * @return JsonResponse
+     */
+    protected function responseUpdateFail(string $message = 'Cập nhật dữ liệu thất bại', array $data = [], int $code = 400): JsonResponse
+    {
+        if (empty($message)) {
+            $message = 'Cập nhật dữ liệu thất bại';
+        }
+        return $this->responseFail($message, $data, $code);
+    }
+
+    /**
+     * Send a successful response
+     *
+     * @param string $message
+     * @param array $data
+     * @param int $code
+     * @return JsonResponse
+     */
+    protected function responseStoreSuccess(string $message = 'Thêm dữ liệu thành công', array $data = [], int $code = 200): JsonResponse
+    {
+        if (empty($message)) {
+            $message = 'Thêm dữ liệu thành công';
+        }
+        return $this->responseSuccess($message, $data, $code);
+    }
+
+
+    /**
+     * Send a failed response
+     *
+     * @param string $message
+     * @param array $data
+     * @param int $code
+     * @return JsonResponse
+     */
+    protected function responseStoreFail(string $message = 'Thêm dữ liệu thất bại', array $data = [], int $code = 400): JsonResponse
+    {
+        if (empty($message)) {
+            $message = 'Thêm dữ liệu thất bại';
+        }
+        return $this->responseFail($message, $data, $code);
+    }
+
+    /**
+     * Send a successful response
+     *
+     * @param string $message
+     * @param array $data
+     * @param int $code
+     * @return JsonResponse
+     */
+    protected function responseSuccess(string $message, array $data = [], int $code = 200): JsonResponse
     {
         return $this->response($code, $message, $data);
     }
@@ -124,25 +148,26 @@ class Controller extends BaseController
     /**
      * Send a failed response
      *
-     * @param  string  $message
-     * @param  array  $data
-     * @param  int  $code
-     * @return \Illuminate\Http\JsonResponse
+     * @param string $message
+     * @param array $data
+     * @param int $code
+     * @return JsonResponse
      */
-    protected function responseFail(string $message, array $data = [], int $code = 400)
+    protected function responseFail(string $message, array $data = [], int $code = 400): JsonResponse
     {
         return $this->response($code, $message, $data);
     }
 
     /**
      * Returns a response
-     * @param  int  $code
-     * @param  string  $message
-     * @param  array  $data
+     * @param int $code
+     * @param string $message
+     * @param array $data
      * @return JsonResponse
      */
-    protected function response(int $code, string $message = '', array $data = [])
+    protected function response(int $code, string $message = '', array $data = []): JsonResponse
     {
-        return response()->json(array_merge(['message' => $message], $data), $code);
+        $isError = 200 <= $code && $code < 400;
+        return response()->json(array_merge(['message' => $message, 'code' => $code, 'status' => $isError], $data), $code);
     }
 }

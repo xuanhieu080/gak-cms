@@ -27,5 +27,9 @@ class AuthServiceProvider extends ServiceProvider
         ResetPassword::createUrlUsing(function ($user, string $token) {
           return env('SPA_URL') . '/reset-password?token=' . $token;
         });
+
+        Gate::before(function ($user, $ability) {
+            return $user->is_super == 1 ? true : null;
+        });
     }
 }

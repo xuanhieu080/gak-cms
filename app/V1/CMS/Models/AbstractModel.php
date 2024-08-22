@@ -1,10 +1,12 @@
 <?php
 
-namespace App\V1\Models;
+namespace App\V1\CMS\Models;
 
 use Closure;
 use Exception;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -290,16 +292,29 @@ abstract class AbstractModel
         return false;
     }
 
+    public function store(array $data)
+    {
+        $item = $this->create($data);
+        if (!empty($item)) {
+            throw new \Exception('Thêm dữ liệu thất bại');
+        }
+        return $item;
+    }
+
     /**
      * Update an existing model.
      *
      * @param array $data
-     *
+     * @param array $with
      * @return mixed Model or false on error during save
+     * @throws Exception
      */
-    public function update(array $data)
+    public function update(array $data, array $with = []): mixed
     {
-        $model = $this->model->findOrFail($data[$this->model->getKeyName()]);
+        $model = $this->model->with($with)->find($data[$this->model->getKeyName()]);
+        if (empty($model)) {
+            throw new Exception('Dữ liệu không tồn tại',404);
+        }
         $model->fill($data);
 
         if ($model->save()) {
@@ -307,6 +322,41 @@ abstract class AbstractModel
         }
 
         return false;
+    }
+
+    /**
+     * Update an existing model.
+     *
+     * @param Model $model
+     * @param array $data
+     * @return mixed Model or false on error during save
+     * @throws Exception
+     */
+    public function updateItem(Model $model, array $data): mixed
+    {
+        $model->fill($data);
+
+        if ($model->save()) {
+            return $model;
+        }
+
+        return false;
+    }
+
+    public function detail(int $id)
+    {
+        $model = $this->getById($id);
+
+        if (empty($model)) {
+            throw new \Exception('Dữ liệu không tồn tại');
+        }
+
+        return $model;
+    }
+
+    public function getById($id, array $with = []): Model|Collection|Builder|array|null
+    {
+        return $this->model->with($with)->find($id);
     }
 
     public function updateWhere($dataUpdated, $where)

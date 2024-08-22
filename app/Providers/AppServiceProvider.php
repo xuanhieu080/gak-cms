@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Http\Responses\LoginResponse;
 use App\Supports\CustomFilesystem;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 
@@ -26,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        JsonResource::withoutWrapping();
         $this->app->bind(
             \Spatie\MediaLibrary\MediaCollections\Filesystem::class,
             CustomFilesystem::class

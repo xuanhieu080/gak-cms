@@ -145,7 +145,6 @@ export default defineComponent({
 
     function onChange(e) {
       emitEvent(Array.from(e.target.files));
-      emit('change');
     }
 
     function onDrop(e) {

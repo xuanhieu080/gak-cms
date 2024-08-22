@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-require __DIR__ . '/v1/api.php';
 
 Route::post('/sanctum/token', TokenController::class);
 
@@ -28,9 +27,6 @@ Route::middleware(['auth:sanctum', 'apply_locale'])->group(function () {
      */
     Route::get('/users/auth', AuthController::class);
 
-    /**
-     * Users
-     */
-    Route::put('/users/{user}/avatar', [UserController::class, 'updateAvatar']);
-    Route::resource('users', UserController::class);
+
+    require __DIR__ . '/v1/user.php';
 });

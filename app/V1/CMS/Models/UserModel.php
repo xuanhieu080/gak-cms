@@ -3,7 +3,9 @@
 namespace App\V1\CMS\Models;
 
 use App\Models\User;
-use App\V1\Models\AbstractModel;
+use Exception;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserModel extends AbstractModel
 {
@@ -15,20 +17,82 @@ class UserModel extends AbstractModel
 
     public function store(array $data)
     {
-        return $this->create($data);
-    }
-
-    public function updateModel(array $data)
-    {
-        return $this->update($data);
-    }
-
-    public function deleteModel($id)
-    {
-        $item = $this->model->find($id);
-        if (empty($item)) {
-            throw new \Exception("Không tìm thấy dữ liệu");
+        $model = $this->create($data);
+        if (!empty($model)) {
+            throw new \Exception('Thêm dữ liệu thất bại');
         }
-        return $item->delete();
+        if (!empty($data['image'])) {
+            $image = $data['image'];
+            $mediaItem = $model->getMedia('default')->first();
+            if (!empty($mediaItem)) {
+                $mediaItem->delete();
+            }
+            $model->addMedia($image)
+                ->usingName($model->name)
+                ->usingFileName(Str::slug($model->name) . time() . Str::random(8) . '.' . $image->getClientOriginalExtension())
+                ->toMediaCollection();
+        }
+        return $model;
+    }
+
+    public function update(array $data, array $with = []): mixed
+    {
+        $model = $this->model->with($with)->find($data[$this->model->getKeyName()]);
+        if (empty($model)) {
+            throw new Exception('Dữ liệu không tồn tại', 404);
+        }
+
+        if (!empty($data['password'])) {
+            $model->password = Hash::make($data['password']);
+        }
+        $model->fill($data);
+
+        if ($model->save()) {
+            if (!empty($data['image'])) {
+                $image = $data['image'];
+                $mediaItem = $model->getMedia('default')->first();
+                if (!empty($mediaItem)) {
+                    $mediaItem->delete();
+                }
+                $model->addMedia($image)
+                    ->usingName($model->name)
+                    ->usingFileName(Str::slug($model->name) . time() . Str::random(8) . '.' . $image->getClientOriginalExtension());
+            }
+            return $model;
+        }
+
+        return false;
+    }
+
+    public function updateAvatar(array $data, array $with = []): mixed
+    {
+        $model = $this->model->with($with)->find($data[$this->model->getKeyName()]);
+        if (empty($model)) {
+            throw new Exception('Dữ liệu không tồn tại', 404);
+        }
+
+        if (!empty($data['image'])) {
+            $image = $data['image'];
+            $mediaItem = $model->getMedia('default')->first();
+            if (!empty($mediaItem)) {
+                $mediaItem->delete();
+            }
+            $model->addMedia($image)
+                ->usingName($model->name)
+                ->usingFileName(Str::slug($model->name) . time() . Str::random(8) . '.' . $image->getClientOriginalExtension())
+                ->toMediaCollection();
+        }
+
+        return $model;
+    }
+
+    public function deleteModel(int $id): bool
+    {
+        $model = $this->getById($id);
+        if (empty($model)) {
+            throw new \Exception('Dữ liệu không tồn tại');
+        }
+
+        return $model->delete();
     }
 }

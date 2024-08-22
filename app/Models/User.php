@@ -2,26 +2,23 @@
 
 namespace App\Models;
 
-use App\Traits\Filterable;
-use App\Traits\Searchable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Image\Enums\Fit;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, HasMedia
 {
     use HasApiTokens, HasFactory, Notifiable;
-
-    use Searchable, Filterable;
-
-    /**
-     * ALlowed search fields
-     * @var string[]
-     */
-    protected $searchFields = ['first_name', 'last_name', 'email'];
+    use HasRoles, InteractsWithMedia;
 
     /**
      * The attributes that aren't mass assignable.
@@ -29,6 +26,15 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array<string>|bool
      */
     protected $guarded = ['id'];
+
+
+    const path = 'users';
+
+    protected $fillable = [
+      'name',
+      'email',
+      'is_super',
+    ];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -56,7 +62,6 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $appends = [
         'avatar_url',
-        'full_name',
     ];
 
     /**
@@ -77,7 +82,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * Returns the user avatar
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne|MediaFile
+     * @return HasOne|MediaFile
      */
     public function avatar()
     {
@@ -86,7 +91,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * Returns the user files
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function mediaFiles()
     {
@@ -97,7 +102,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * Returns the avatar url attribute
      * @return string|null
      */
-    public function getAvatarUrlAttribute()
+    public function getAvatarUrlAttribute(): ?string
     {
         $src = $this->getAttribute('avatar_id');
         if (is_null($src)) {
@@ -109,19 +114,16 @@ class User extends Authenticatable implements MustVerifyEmail
         return null;
     }
 
-    /**
-     * Returns the full_name attribute
-     * @return string
-     */
-    public function getFullNameAttribute()
+    public function registerMediaConversions(Media $media = null): void
     {
-        $names = [];
-        foreach (['first_name', 'last_name'] as $key) {
-            $value = $this->getAttribute($key);
-            if (!empty($value)) {
-                $names[] = $value;
-            }
-        }
-        return implode(' ', $names);
+        $this
+            ->addMediaConversion('preview')
+            ->fit(Fit::Contain, 300, 300)
+            ->nonQueued();
+    }
+
+    public function getMediaFolderName()
+    {
+        return 'users';
     }
 }

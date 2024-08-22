@@ -1,10 +1,10 @@
 <template>
     <Panel title="Cài đặt Hình đại diện">
         <Form @submit.prevent="onSubmit">
-            <FileInput name="file" label="Ảnh đại diện" v-model="form.file"
+            <FileInput name="imag" label="Ảnh đại diện" v-model="form.image"
                        :required="false"
                        error-input="avatar"
-                       @clear="form.file = ''"
+                       @clear="form.image = ''"
                        accept="image/*"
                        class="mb-4"></FileInput>
             <Button type="submit" label="Tải tệp lên"/>
@@ -24,16 +24,16 @@ const emit = defineEmits( ['done', 'error'])
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
 const form = reactive({
-  file: null,
+  image: null,
 })
 
 function onChange(event) {
   alertStore.clear();
-  form.file = event.target.files[0];
+  form.image = event.target.files[0];
 }
 
 function onSubmit() {
-  authStore.updateAvatar(authStore.user.id, {'avatar': form.file}).then(() => {
+  authStore.updateAvatar(authStore.user.id, {'image': form.image}).then(() => {
     emit('done');
   }).catch((error) => {
     emit('error');

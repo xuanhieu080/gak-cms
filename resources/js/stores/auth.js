@@ -43,7 +43,7 @@ export const useAuthStore = defineStore("auth", {
             const authService = new AuthService();
             try {
                 const response = await authService.getCurrentUser();
-                this.user = response.data.data;
+                this.user = response.data;
                 this.loading = false
             } catch (error) {
                 this.loading = false
@@ -133,7 +133,7 @@ export const useAuthStore = defineStore("auth", {
     },
     getters: {
         isAdmin: (state) => {
-            return state.user ? state.user.is_admin : false;
+            return state.user ? state.user.is_super : false;
         },
         loggedIn: (state) => {
             return !!state.user;
