@@ -10,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Class UserResource
  * @package App\Http\Resources
  */
-class UserResource extends JsonResource
+class ProfileResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -27,6 +27,7 @@ class UserResource extends JsonResource
             'name'       => $this->name,
             'avatar'     => $this->getFirstMediaUrl(),
             'is_super'   => $this->is_super,
+            'permissions' => PermissionResource::collection($this->getAllPermissions()),
             'created_at' => Support::formatTime($this->created_at),
             'updated_at' => Support::formatTime($this->updated_at),
         ];

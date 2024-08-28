@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Auth;
 
@@ -169,5 +170,19 @@ class Controller extends BaseController
     {
         $isError = 200 <= $code && $code < 400;
         return response()->json(array_merge(['message' => $message, 'code' => $code, 'status' => $isError], $data), $code);
+    }
+
+    /**
+     * Returns a response
+     * @param ResourceCollection $data
+     * @return ResourceCollection
+     */
+    protected function responseIndex(ResourceCollection $data): ResourceCollection
+    {
+        return $data->additional([
+            "message" => "",
+            "code"    => 200,
+            "status"  => true,
+        ]);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\V1\CMS\Controllers;
 
 use App\Supports\GAK_ERROR;
+use App\V1\CMS\Models\AttributeModel;
 use App\V1\CMS\Models\UserModel;
 use App\V1\CMS\Requests\Users\CreateRequest;
 use App\V1\CMS\Requests\Users\SyncPermissionRequest;
@@ -22,12 +23,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
-class UserController extends Controller
+class AttributeController extends Controller
 {
 
     /**
      * The service instance
-     * @var UserModel
+     * @var AttributeModel
      */
     private UserModel $model;
 

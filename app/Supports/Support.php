@@ -2,6 +2,7 @@
 
 namespace App\Supports;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -144,5 +145,27 @@ class Support
     public static final function allImageMimeTypeString(): string
     {
         return implode(',', self::allImageMimeTypes());
+    }
+
+    /**
+     * @return string
+     */
+    public static final function now(): string
+    {
+        Carbon::setLocale(config('app.locale'));
+        return Carbon::now('Asia/Ho_Chi_Minh');
+    }
+
+    /**
+     * @param null $time
+     * @return string|null
+     */
+    public static final function formatTime($time = null): ?string
+    {
+        if (empty($time)) {
+            return null;
+        }
+        Carbon::setLocale(config('app.locale'));
+        return Carbon::parse($time,'Asia/Ho_Chi_Minh')->format('Y-m-d H:i:s');
     }
 }

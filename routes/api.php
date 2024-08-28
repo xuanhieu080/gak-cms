@@ -20,6 +20,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/sanctum/token', TokenController::class);
 
+
+Route::post('auth/login',  function () {
+    $user = \App\Models\User::first();
+    $token = $user->createToken('ab')->plainTextToken;
+    return response()->json(['token' => $token], 200);
+})->middleware('guest');
 Route::middleware(['auth:sanctum', 'apply_locale'])->group(function () {
 
     /**

@@ -34,6 +34,8 @@ class User extends Authenticatable implements MustVerifyEmail, HasMedia
       'name',
       'email',
       'is_super',
+      'password',
+      'remember_token',
     ];
 
     /**
@@ -60,59 +62,17 @@ class User extends Authenticatable implements MustVerifyEmail, HasMedia
      *
      * @var array
      */
-    protected $appends = [
-        'avatar_url',
-    ];
+//    /**
+//     * Returns the user avatar
+//     * @return HasOne|MediaFile
+//     */
+//    public function avatar()
+//    {
+//        return $this->hasOne(MediaFile::class, 'id', 'avatar_id');
+//    }
 
-    /**
-     * Bootstrap the model and its traits.
-     *
-     * @return void
-     */
-    public static function boot()
-    {
-        parent::boot();
 
-        static::deleting(function (self $record) {
-            foreach ($record->mediaFiles()->get() as $entry) {
-                $entry->delete();
-            }
-        });
-    }
 
-    /**
-     * Returns the user avatar
-     * @return HasOne|MediaFile
-     */
-    public function avatar()
-    {
-        return $this->hasOne(MediaFile::class, 'id', 'avatar_id');
-    }
-
-    /**
-     * Returns the user files
-     * @return HasMany
-     */
-    public function mediaFiles()
-    {
-        return $this->hasMany(MediaFile::class, 'user_id', 'id');
-    }
-
-    /**
-     * Returns the avatar url attribute
-     * @return string|null
-     */
-    public function getAvatarUrlAttribute(): ?string
-    {
-        $src = $this->getAttribute('avatar_id');
-        if (is_null($src)) {
-            return asset('assets/images/user-default.png');
-        }
-        if (!empty($this->avatar)) {
-            return asset('storage/'.$this->avatar->path);
-        }
-        return null;
-    }
 
     public function registerMediaConversions(Media $media = null): void
     {

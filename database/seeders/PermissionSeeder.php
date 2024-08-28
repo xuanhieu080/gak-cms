@@ -18,10 +18,6 @@ class PermissionSeeder extends Seeder
                 'id'   => 1,
                 'name' => 'Nhân viên',
             ],
-            [
-                'id'   => 2,
-                'name' => 'Vai trò',
-            ],
         ], ['id'], ['name']);
 
         Permission::query()->upsert([
@@ -29,28 +25,35 @@ class PermissionSeeder extends Seeder
                 'id'          => 1,
                 'name'        => 'view_admin',
                 'title'       => 'Xem nhân viên',
-                'guard_name'  => 'api',
+                'guard_name'  => 'web',
                 'description' => 'view',
                 'group_id'    => 1
             ], [
                 'id'          => 2,
                 'name'        => 'add_admin',
                 'title'       => 'Thêm nhân viên',
-                'guard_name'  => 'api',
+                'guard_name'  => 'web',
                 'description' => 'add',
                 'group_id'    => 1
             ], [
                 'id'          => 3,
                 'name'        => 'edit_admin',
                 'title'       => 'Cập nhật nhân viên',
-                'guard_name'  => 'api',
+                'guard_name'  => 'web',
                 'description' => 'edit',
                 'group_id'    => 1
             ], [
                 'id'          => 4,
                 'name'        => 'delete_admin',
                 'title'       => 'Xoá nhân viên',
-                'guard_name'  => 'api',
+                'guard_name'  => 'web',
+                'description' => 'delete',
+                'group_id'    => 1
+            ], [
+                'id'          => 5,
+                'name'        => 'sync_permission',
+                'title'       => 'Phân quyền',
+                'guard_name'  => 'web',
                 'description' => 'delete',
                 'group_id'    => 1
             ]

@@ -613,6 +613,16 @@ abstract class AbstractModel
         return $model->delete();
     }
 
+    public function deleteModel(int $id): bool
+    {
+        $model = $this->getById($id);
+        if (empty($model)) {
+            throw new \Exception('Dữ liệu không tồn tại');
+        }
+
+        return $model->delete();
+    }
+
     /**
      * Delete model By Ids
      *

@@ -12,6 +12,7 @@
     },
     "dependencies": {
         "@ckeditor/ckeditor5-vue": "^7.0.0",
+        "@nuxtjs/tailwindcss": "^6.12.1",
         "@vitejs/plugin-vue": "^5.1.2",
         "@vuepic/vue-datepicker": "^9.0.2",
         "@webspellchecker/wproofreader-ckeditor5": "^3.1.2",
@@ -57,5 +58,6 @@
         "tailwindcss": "^3.4.10",
         "typescript": "^5.5.4",
         "vite": "^5.4.2"
-    }
+    },
+    "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
 }
