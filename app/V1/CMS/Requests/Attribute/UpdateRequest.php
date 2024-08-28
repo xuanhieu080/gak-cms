@@ -1,6 +1,6 @@
 <?php
 
-namespace App\V1\CMS\Requests\Users;
+namespace App\V1\CMS\Requests\Attribute;
 
 use App\Supports\Support;
 use App\V1\CMS\Requests\ValidatorBase;

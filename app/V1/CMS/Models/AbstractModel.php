@@ -343,7 +343,10 @@ abstract class AbstractModel
         return false;
     }
 
-    public function detail(int $id)
+    /**
+     * @throws Exception
+     */
+    public function detail(int $id): Model|Collection|Builder|array
     {
         $model = $this->getById($id);
 

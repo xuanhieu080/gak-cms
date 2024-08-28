@@ -3,7 +3,7 @@
 namespace App\V1\CMS\Resources;
 
 use App\Models\AttributeGroup;
-use App\Utilities\Data;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
@@ -15,11 +15,11 @@ class AttributeResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
      * @return array
      */
-    public function toArray($request)
+    public function toArray($request): array
     {
         return [
             "id"       => $this->id,

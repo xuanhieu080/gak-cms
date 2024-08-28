@@ -3,10 +3,10 @@
 namespace App\V1\CMS\Controllers;
 
 use App\Supports\GAK_ERROR;
-use App\V1\CMS\Models\AttributeModel;
-use App\V1\CMS\Requests\Attribute\CreateRequest;
-use App\V1\CMS\Requests\Attribute\UpdateRequest;
-use App\V1\CMS\Resources\AttributeResource;
+use App\V1\CMS\Models\AttributeGroupModel;
+use App\V1\CMS\Requests\AttributeGroup\CreateRequest;
+use App\V1\CMS\Requests\AttributeGroup\UpdateRequest;
+use App\V1\CMS\Resources\AttributeGroupResource;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
@@ -16,19 +16,19 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
-class AttributeController extends Controller
+class AttributeGroupController extends Controller
 {
 
     /**
      * The service instance
-     * @var AttributeModel
+     * @var AttributeGroupModel
      */
-    private AttributeModel $model;
+    private AttributeGroupModel $model;
 
     /**
      * Constructor
      */
-    public function __construct(AttributeModel $model)
+    public function __construct(AttributeGroupModel $model)
     {
         $this->model = $model;
     }
@@ -46,7 +46,7 @@ class AttributeController extends Controller
 
         $data = $this->model->search($input, [], $limit);
 
-        return $this->responseIndex(AttributeResource::collection($data));
+        return $this->responseIndex(AttributeGroupResource::collection($data));
     }
 
     /**
@@ -68,7 +68,7 @@ class AttributeController extends Controller
 
             return $this->responseStoreFail($response['message']);
         }
-        return $this->responseStoreSuccess('', ['item' => new AttributeResource($data)]);
+        return $this->responseStoreSuccess('', ['item' => new AttributeGroupResource($data)]);
     }
 
     /**
@@ -84,7 +84,7 @@ class AttributeController extends Controller
 
             return $this->responseFail($response['message']);
         }
-        return $this->responseSuccess('', ['item' => new AttributeResource($item)]);
+        return $this->responseSuccess('', ['item' => new AttributeGroupResource($item)]);
     }
 
     /**
@@ -110,7 +110,7 @@ class AttributeController extends Controller
             return $this->responseUpdateFail($response['message']);
         }
 
-        return $this->responseUpdateSuccess('', ['item' => new AttributeResource($data)]);
+        return $this->responseUpdateSuccess('', ['item' => new AttributeGroupResource($data)]);
     }
 
     /**
