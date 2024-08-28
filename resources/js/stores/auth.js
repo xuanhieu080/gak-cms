@@ -24,7 +24,8 @@ export const useAuthStore = defineStore("auth", {
                 await router.push({name:"home"});
                 await this.getCurrentUser();
             } catch (error) {
-                alertStore.error(getResponseError(error,error.response.status));
+                console.log(error);
+                alertStore.error(getResponseError(error),error.response.status);
             }
         },
         async register(payload) {
