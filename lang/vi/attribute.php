@@ -166,6 +166,7 @@ $attributes = [
     'details.9'                      => 'Chi tiết',
     'details.10'                      => 'Chi tiết',
     'details.11'                      => 'Chi tiết',
+    'manager_id'                      => 'quản lý',
 ];
 
 

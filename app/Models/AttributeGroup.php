@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class AttributeGroup extends Model
+class AttributeGroup extends BaseModel
 {
     use HasFactory;
 
@@ -13,7 +13,7 @@ class AttributeGroup extends Model
         'name',
     ];
 
-    public function attributes()
+    public function attributes(): HasMany
     {
         return $this->hasMany(Attribute::class, 'group_id', 'id');
     }

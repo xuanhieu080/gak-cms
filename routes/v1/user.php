@@ -2,8 +2,6 @@
 
 use App\V1\CMS\Controllers\UserController;
 
-Route::pattern('id', '[0-9]+');
-
 Route::group(['prefix' => 'users'], function () {
     Route::get('/',  [UserController::class, 'index'])->middleware('permission:view_user');
     Route::get('{id}',  [UserController::class, 'detail'])->middleware('permission:view_user');

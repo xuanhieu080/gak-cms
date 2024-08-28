@@ -304,5 +304,7 @@ return [
         '*.tags'                    => 'tags',
         '*.status'                  => 'trạng thái',
         'details.*'                 => 'chi tiết',
+        'manager_id'                => 'quản lý',
+        'code'                      => 'mã',
     ],
 ];

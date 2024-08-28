@@ -2,6 +2,7 @@
 
 namespace App\V1\CMS\Resources;
 
+use App\Supports\Support;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Class UserResource
  * @package App\Http\Resources
  */
-class AttributeGroupResource extends JsonResource
+class UserShortResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -21,11 +22,10 @@ class AttributeGroupResource extends JsonResource
     public function toArray($request)
     {
         return [
-            "id"              => $this->id,
-            "name"            => $this->name,
-            "attributes"      => AttributeResource::collection($this->attributes),
-            'created_by_name' => object_get($this, 'createBy.name'),
-            'updated_by_name' => object_get($this, 'updateBy.name'),
+            'id'         => $this->id,
+            'email'      => $this->email,
+            'name'       => $this->name,
+            'avatar'     => $this->getFirstMediaUrl()
         ];
     }
 }

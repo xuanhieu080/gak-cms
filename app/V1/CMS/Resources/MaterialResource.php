@@ -10,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Class UserResource
  * @package App\Http\Resources
  */
-class AttributeResource extends JsonResource
+class MaterialResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -22,12 +22,11 @@ class AttributeResource extends JsonResource
     public function toArray($request): array
     {
         return [
-            "id"              => $this->id,
-            "name"            => $this->name,
-            "group"           => new AttributeGroupShortResource($this->group),
-            "group_id"        => $this->group_id,
-            'created_by_name' => object_get($this, 'createBy.name'),
-            'updated_by_name' => object_get($this, 'updateBy.name'),
+            "id"           => $this->id,
+            "code"         => $this->code,
+            "name"         => $this->name,
+            "warehouse"    => new WarehouseShortResource($this->warehouse),
+            "warehouse_id" => $this->warehouse_id
         ];
     }
 }

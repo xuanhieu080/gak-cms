@@ -3,6 +3,7 @@
 namespace App\V1\CMS\Resources;
 
 use App\Models\AttributeGroup;
+use App\Supports\Support;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -10,7 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Class UserResource
  * @package App\Http\Resources
  */
-class AttributeResource extends JsonResource
+class WarehouseShortResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -24,10 +25,11 @@ class AttributeResource extends JsonResource
         return [
             "id"              => $this->id,
             "name"            => $this->name,
-            "group"           => new AttributeGroupShortResource($this->group),
-            "group_id"        => $this->group_id,
-            'created_by_name' => object_get($this, 'createBy.name'),
-            'updated_by_name' => object_get($this, 'updateBy.name'),
+            "code"            => $this->code,
+            "address"         => $this->address,
+            "phone"           => $this->phone,
+            "email"           => $this->email,
+            "manager_id"      => $this->manager_id,
         ];
     }
 }

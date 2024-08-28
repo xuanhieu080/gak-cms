@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class Attribute extends Model
+class Attribute extends BaseModel
 {
     use HasFactory;
 
@@ -14,7 +14,7 @@ class Attribute extends Model
         'group_id'
     ];
 
-    public function group()
+    public function group(): HasOne
     {
         return $this->hasOne(AttributeGroup::class, 'id', 'group_id');
     }

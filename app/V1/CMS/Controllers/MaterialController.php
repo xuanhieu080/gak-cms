@@ -3,11 +3,11 @@
 namespace App\V1\CMS\Controllers;
 
 use App\Supports\GAK_ERROR;
-use App\V1\CMS\Models\AttributeGroupModel;
-use App\V1\CMS\Requests\AttributeGroup\CreateRequest;
-use App\V1\CMS\Requests\AttributeGroup\UpdateRequest;
-use App\V1\CMS\Resources\AttributeGroupResource;
-use App\V1\CMS\Resources\AttributeGroupShortResource;
+use App\V1\CMS\Models\MaterialModel;
+use App\V1\CMS\Requests\Material\CreateRequest;
+use App\V1\CMS\Requests\Material\UpdateRequest;
+use App\V1\CMS\Resources\MaterialResource;
+use App\V1\CMS\Resources\MaterialShortResource;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
@@ -17,19 +17,19 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
-class AttributeGroupController extends Controller
+class MaterialController extends Controller
 {
 
     /**
      * The service instance
-     * @var AttributeGroupModel
+     * @var MaterialModel
      */
-    private AttributeGroupModel $model;
+    private MaterialModel $model;
 
     /**
      * Constructor
      */
-    public function __construct(AttributeGroupModel $model)
+    public function __construct(MaterialModel $model)
     {
         $this->model = $model;
     }
@@ -47,10 +47,10 @@ class AttributeGroupController extends Controller
 
         $data = $this->model->search($input, [], $limit);
         if (isset($input['short'])) {
-            return $this->responseIndex(AttributeGroupShortResource::collection($data));
+            return $this->responseIndex(MaterialShortResource::collection($data));
         }
 
-        return $this->responseIndex(AttributeGroupResource::collection($data));
+        return $this->responseIndex(MaterialResource::collection($data));
     }
 
     /**
@@ -72,7 +72,7 @@ class AttributeGroupController extends Controller
 
             return $this->responseStoreFail($response['message']);
         }
-        return $this->responseStoreSuccess('', ['item' => new AttributeGroupResource($data)]);
+        return $this->responseStoreSuccess('', ['item' => new MaterialResource($data)]);
     }
 
     /**
@@ -88,7 +88,7 @@ class AttributeGroupController extends Controller
 
             return $this->responseFail($response['message']);
         }
-        return $this->responseSuccess('', ['item' => new AttributeGroupResource($item)]);
+        return $this->responseSuccess('', ['item' => new MaterialResource($item)]);
     }
 
     /**
@@ -114,7 +114,7 @@ class AttributeGroupController extends Controller
             return $this->responseUpdateFail($response['message']);
         }
 
-        return $this->responseUpdateSuccess('', ['item' => new AttributeGroupResource($data)]);
+        return $this->responseUpdateSuccess('', ['item' => new MaterialResource($data)]);
     }
 
     /**
@@ -126,7 +126,7 @@ class AttributeGroupController extends Controller
      * @throws AuthorizationException
      * @throws Exception
      */
-    public function delete($id): JsonResponse
+    public function delete(int $id): JsonResponse
     {
         if ($this->model->deleteModel($id)) {
             return $this->responseDeleteSuccess();

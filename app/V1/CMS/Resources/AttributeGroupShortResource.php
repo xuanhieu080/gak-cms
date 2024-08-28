@@ -9,7 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Class UserResource
  * @package App\Http\Resources
  */
-class AttributeGroupResource extends JsonResource
+class AttributeGroupShortResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -21,11 +21,8 @@ class AttributeGroupResource extends JsonResource
     public function toArray($request)
     {
         return [
-            "id"              => $this->id,
-            "name"            => $this->name,
-            "attributes"      => AttributeResource::collection($this->attributes),
-            'created_by_name' => object_get($this, 'createBy.name'),
-            'updated_by_name' => object_get($this, 'updateBy.name'),
+            "id"         => $this->id,
+            "name"       => $this->name,
         ];
     }
 }

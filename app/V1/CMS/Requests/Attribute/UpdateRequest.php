@@ -22,7 +22,7 @@ class UpdateRequest extends ValidatorBase
                 'max:255',
                 Rule::unique('attributes', 'name')->ignore($this->route('id'))
             ],
-            'group_id' => 'required|email|exists:attribute_groups,id',
+            'group_id' => 'required|exists:attribute_groups,id',
         ];
     }
 

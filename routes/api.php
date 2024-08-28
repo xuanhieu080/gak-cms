@@ -17,13 +17,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-
+Route::pattern('id', '[0-9]+');
 Route::post('/sanctum/token', TokenController::class);
 
 
 Route::post('auth/login',  function () {
     $user = \App\Models\User::first();
-    $token = $user->createToken('ab')->plainTextToken;
+    $token = $user->createToken('user')->plainTextToken;
     return response()->json(['token' => $token], 200);
 })->middleware('guest');
 Route::middleware(['auth:sanctum', 'apply_locale'])->group(function () {
@@ -35,4 +35,8 @@ Route::middleware(['auth:sanctum', 'apply_locale'])->group(function () {
 
 
     require __DIR__ . '/v1/user.php';
+    require __DIR__ . '/v1/attribute.php';
+    require __DIR__ . '/v1/attribute_group.php';
+    require __DIR__ . '/v1/warehouse.php';
+    require __DIR__ . '/v1/material.php';
 });

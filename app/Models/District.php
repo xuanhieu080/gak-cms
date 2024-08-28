@@ -3,9 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class District extends Model
+class District extends BaseModel
 {
     use HasFactory;
 
@@ -20,12 +21,12 @@ class District extends Model
         'province_id',
     ];
 
-    public function ward()
+    public function ward(): HasMany
     {
         return $this->hasMany(Ward::class, 'district_id', 'id');
     }
 
-    public function province()
+    public function province(): HasOne
     {
         return $this->hasOne(Province::class, 'id', 'province_id');
     }

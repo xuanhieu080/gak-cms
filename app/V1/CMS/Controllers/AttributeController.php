@@ -7,6 +7,7 @@ use App\V1\CMS\Models\AttributeModel;
 use App\V1\CMS\Requests\Attribute\CreateRequest;
 use App\V1\CMS\Requests\Attribute\UpdateRequest;
 use App\V1\CMS\Resources\AttributeResource;
+use App\V1\CMS\Resources\AttributeShortResource;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
@@ -45,6 +46,9 @@ class AttributeController extends Controller
         $input['sort'] = ['name' => 'asc'];
 
         $data = $this->model->search($input, [], $limit);
+        if (isset($input['short'])) {
+            return $this->responseIndex(AttributeShortResource::collection($data));
+        }
 
         return $this->responseIndex(AttributeResource::collection($data));
     }
