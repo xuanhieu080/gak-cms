@@ -4,7 +4,9 @@ import {default as PageForgotPassword} from "@/views/pages/auth/forgot-password/
 import {default as PageNotFound} from "@/views/pages/shared/404/Main";
 
 import {default as PageDashboard} from "@/views/pages/private/dashboard/Main";
-import {default as PageProfile} from "@/views/pages/private/profile/Main";
+import PageProfile from "@/views/pages/private/profile/Main";
+import Roles from '@/views/pages/private/roles/index';
+import RolesCreate from '@/views/pages/private/roles/create';
 
 import abilities from "@/stub/abilities";
 
@@ -42,11 +44,12 @@ const routes = [
     {
         name: "profile",
         path: "/profile",
-        meta: {requiresAuth: true, isOwner: true},
+        meta: {requiresAuth: true},
         component: PageProfile,
     },
     {
         path: "/users",
+        name: 'users',
         children: [
             {
                 name: "users.list",
@@ -65,6 +68,19 @@ const routes = [
                 path: ":id/edit",
                 meta: {requiresAuth: true, requiresAbility: abilities.EDIT_USER},
                 component: PageDashboard
+            },
+        ]
+    },
+    {
+        path: '/roles',
+        name: 'roles',
+        component: Roles,
+        meta: {requiresAuth: true},
+        children: [
+            {
+                name: "roles-create",
+                path: "create/:id",
+                component: RolesCreate
             },
         ]
     },

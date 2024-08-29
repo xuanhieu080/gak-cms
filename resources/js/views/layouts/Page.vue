@@ -1,5 +1,5 @@
 <template>
-    <a-layout id="gak-cms-dashboard">
+    <a-layout id="gak-cms-dashboard" hasSider="true">
         <a-layout-header :style="headerStyle">
             <menu-unfold-outlined
                 v-if="collapsed"
@@ -16,10 +16,12 @@
             <div class="user-logo ml-auto flex items-center justify-center">
                 <a-dropdown>
                     <template #overlay>
-                        <a-menu @click="handleMenuClick">
-                            <a-menu-item key="1">
-                                <UserOutlined />
-                                Đến trang cá nhân
+                        <a-menu>
+                            <a-menu-item key="profile">
+                                <router-link :to="{ name: 'profile' }" class="flex items-center gap-1">
+                                    <UserOutlined />
+                                    Đến trang cá nhân
+                                </router-link>
                             </a-menu-item>
                             <a-menu-item key="2">
                                 <UserOutlined />
@@ -58,36 +60,126 @@
                     theme="dark"
                     mode="inline"
                 >
-                    <a-menu-item key="1" :class="collapsed ? 'hide-title' : ''">
-                        <div class="flex items-center">
-                            <HomeOutlined />
-                        </div>
-                        <span>Trang chủ</span>
+                    <a-menu-item
+                        key="home"
+                        :class="collapsed ? 'hide-title' : ''"
+                    >
+                        <router-link
+                            :to="{ name: 'home' }"
+                            class="flex items-center gap-2"
+                        >
+                            <div class="flex items-center">
+                                <HomeOutlined />
+                            </div>
+                            <span>Trang chủ</span>
+                        </router-link>
                     </a-menu-item>
+
                     <a-menu-item key="2" :class="collapsed ? 'hide-title' : ''">
                         <div class="flex items-center">
                             <ShopOutlined />
                         </div>
                         <span>Quản lý sản phẩm</span>
                     </a-menu-item>
-                    <a-menu-item key="3" :class="collapsed ? 'hide-title' : ''">
-                        <div class="flex items-center">
-                            <BankOutlined />
-                        </div>
-                        <span>Quản lý kho hàng</span>
-                    </a-menu-item>
-                    <a-menu-item key="4" :class="collapsed ? 'hide-title' : ''">
-                        <div class="flex items-center">
-                            <DeliveredProcedureOutlined />
-                        </div>
-                        <span>Đơn chuyển kho - Giao khách</span>
-                    </a-menu-item>
-                    <a-menu-item key="5" :class="collapsed ? 'hide-title' : ''">
-                        <div class="flex items-center">
-                            <CloudDownloadOutlined />
-                        </div>
-                        <span>Nhập kho - Điều chuyển kho</span>
-                    </a-menu-item>
+                    <a-sub-menu
+                        key="sub1"
+                        :class="collapsed ? 'hide-title' : ''"
+                    >
+                        <template #title>
+                            <div
+                                class="flex items-center w-full"
+                                :class="collapsed ? 'justify-center' : ''"
+                            >
+                                <BankOutlined />
+                                <span :class="collapsed ? '!hidden' : ''">
+                                    Kho
+                                </span>
+                            </div>
+                        </template>
+                        <a-menu-item
+                            key="3"
+                            :class="collapsed ? 'hide-title' : ''"
+                        >
+                            <span>Quản lý kho hàng</span>
+                        </a-menu-item>
+                        <a-menu-item
+                            key="4"
+                            :class="collapsed ? 'hide-title' : ''"
+                        >
+                            <span>Đơn chuyển kho - Giao khách</span>
+                        </a-menu-item>
+                        <a-menu-item
+                            key="5"
+                            :class="collapsed ? 'hide-title' : ''"
+                        >
+                            <span>Nhập kho - Điều chuyển kho</span>
+                        </a-menu-item>
+                    </a-sub-menu>
+                    <a-sub-menu
+                        key="sub-2"
+                        :class="collapsed ? 'hide-title' : ''"
+                    >
+                        <template #title>
+                            <div
+                                class="flex items-center w-full"
+                                :class="collapsed ? 'justify-center' : ''"
+                            >
+                                <GoldOutlined />
+                                <span :class="collapsed ? '!hidden' : ''">
+                                    Quản lý Nguyên liệu
+                                </span>
+                            </div>
+                        </template>
+                        <a-menu-item
+                            key="9"
+                            :class="collapsed ? 'hide-title' : ''"
+                        >
+                            <span>Nguyên liệu</span>
+                        </a-menu-item>
+                        <a-menu-item
+                            key="10"
+                            :class="collapsed ? 'hide-title' : ''"
+                        >
+                            <span>Đơn vị tính</span>
+                        </a-menu-item>
+                        <a-menu-item
+                            key="11"
+                            :class="collapsed ? 'hide-title' : ''"
+                        >
+                            <span>Nhóm thuộc tính</span>
+                        </a-menu-item>
+                    </a-sub-menu>
+                    <a-sub-menu
+                        key="sub-3"
+                        :class="collapsed ? 'hide-title' : ''"
+                    >
+                        <template #title>
+                            <div
+                                class="flex items-center w-full"
+                                :class="collapsed ? 'justify-center' : ''"
+                            >
+                                <ExceptionOutlined />
+                                <span :class="collapsed ? '!hidden' : ''">
+                                    Công nợ - Hóa Đơn
+                                </span>
+                            </div>
+                        </template>
+                        <a-menu-item
+                            key="12"
+                            :class="collapsed ? 'hide-title' : ''"
+                        >
+                            <span>Công nợ</span>
+                        </a-menu-item>
+                        <a-menu-item
+                            key="13"
+                            :class="collapsed ? 'hide-title' : ''"
+                        >
+                            <span>
+                                Hóa đơn - Thống kê doanh thu - Báo giá
+                            </span>
+                        </a-menu-item>
+                    </a-sub-menu>
+
                     <a-menu-item key="6" :class="collapsed ? 'hide-title' : ''">
                         <div class="flex items-center">
                             <TeamOutlined />
@@ -100,56 +192,20 @@
                         </div>
                         <span>Cấu hình</span>
                     </a-menu-item>
-                    <a-menu-item key="8" :class="collapsed ? 'hide-title' : ''">
-                        <div class="flex items-center">
-                            <AppstoreOutlined />
-                        </div>
-                        <span>Phân quyền</span>
-                    </a-menu-item>
-                    <a-menu-item key="9" :class="collapsed ? 'hide-title' : ''">
-                        <div class="flex items-center">
-                            <GoldOutlined />
-                        </div>
-                        <span>Quản lý nguyên liệu</span>
-                    </a-menu-item>
+
                     <a-menu-item
-                        key="10"
+                        key="roles"
                         :class="collapsed ? 'hide-title' : ''"
                     >
-                        <div class="flex items-center">
-                            <CalculatorOutlined />
-                        </div>
-                        <span>Quản lý đơn vị</span>
-                    </a-menu-item>
-                    <a-menu-item
-                        key="11"
-                        :class="collapsed ? 'hide-title' : ''"
-                    >
-                        <div class="flex items-center">
-                            <FieldNumberOutlined />
-                        </div>
-                        <span>Quản lý nhóm thuộc tính</span>
-                    </a-menu-item>
-                    <a-menu-item
-                        key="12"
-                        :class="collapsed ? 'hide-title' : ''"
-                    >
-                        <div class="flex items-center">
-                            <ExceptionOutlined />
-                        </div>
-                        <span>Quản lý công nợ</span>
-                    </a-menu-item>
-                    <a-menu-item
-                        key="13"
-                        :class="collapsed ? 'hide-title' : ''"
-                    >
-                        <div class="flex items-center">
-                            <ProjectOutlined />
-                        </div>
-                        <span
-                            >Quản lý hóa đơn - Thống kê doanh thu - Báo
-                            giá</span
+                        <router-link
+                            :to="{ name: 'roles' }"
+                            class="flex items-center gap-2"
                         >
+                            <div class="flex items-center">
+                                <AppstoreOutlined />
+                            </div>
+                            <span>Phân quyền</span>
+                        </router-link>
                     </a-menu-item>
                     <a-menu-item
                         key="14"
@@ -164,9 +220,8 @@
             </a-layout-sider>
             <a-layout-content
                 :style="{
-                    margin: '24px 16px',
-                    padding: '24px',
-                    minHeight: '100vh',
+                    padding: '16px 24px',
+                    overflow: 'auto'
                 }"
             >
                 <slot></slot>
@@ -197,10 +252,10 @@ import {
     LogoutOutlined,
 } from "@ant-design/icons-vue";
 import { useAuthStore } from "@/stores/auth";
-
+import { useRouter } from "vue-router";
 const authStore = useAuthStore();
-
-const selectedKeys = ref(["1"]);
+const router = useRouter();
+const selectedKeys = ref([router.currentRoute.value.name]);
 const collapsed = ref(false);
 const headerStyle = {
     display: "flex",
@@ -217,7 +272,7 @@ function handleLogout() {
 
 <style lang="scss" scoped>
 #gak-cms-dashboard {
-    min-height: 100vh;
+    height: 100vh;
 
     .trigger {
         flex-shrink: 0;
@@ -247,14 +302,27 @@ function handleLogout() {
 <style lang="scss">
 #gak-cms-dashboard {
     .ant-layout-sider {
-        .ant-menu-item {
+        width: 250px !important;
+        min-width: 250px !important;
+        max-width: 250px !important;
+        &.ant-layout-sider-collapsed {
+            width: 60px !important;
+            min-width: 60px !important;
+            max-width: 60px !important;
+        }
+        .ant-menu-item,
+        .ant-menu-submenu {
             height: auto;
             .ant-menu-title-content {
                 @apply flex gap-2;
                 overflow: visible;
                 white-space: pre-line;
                 line-height: 1.4;
-                padding: 16px 0;
+                padding: 6px 0;
+            }
+            .ant-menu-submenu-title {
+                padding: 0;
+                height: auto;
             }
 
             &.hide-title {
@@ -262,8 +330,12 @@ function handleLogout() {
                     @apply flex gap-2;
                     overflow: hidden;
                     white-space: nowrap;
-
                     padding: 0;
+                }
+                .ant-menu-submenu-title {
+                    .ant-menu-title-content {
+                        width: 100%;
+                    }
                 }
             }
         }
