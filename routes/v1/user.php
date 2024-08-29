@@ -1,6 +1,7 @@
 <?php
 
 use App\V1\CMS\Controllers\UserController;
+Route::get('/permissions',  [UserController::class, 'getPermission'])->middleware('permission:update_user');
 
 Route::group(['prefix' => 'users'], function () {
     Route::get('/',  [UserController::class, 'index'])->middleware('permission:view_user');

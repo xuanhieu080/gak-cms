@@ -2,6 +2,7 @@
 
 namespace App\V1\CMS\Models;
 
+use App\Models\PermissionGroup;
 use App\Models\User;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -115,5 +116,11 @@ class UserModel extends AbstractModel
         $permissions = Arr::get($data, 'permissions', []);
         $model->syncPermissions($permissions);
         return $model;
+    }
+
+    public function getPermission(): Collection|array
+    {
+        return PermissionGroup::with(['permissions'])
+            ->get();
     }
 }

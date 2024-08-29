@@ -8,6 +8,7 @@ use App\V1\CMS\Requests\Users\CreateRequest;
 use App\V1\CMS\Requests\Users\SyncPermissionRequest;
 use App\V1\CMS\Requests\Users\UpdateAvatarRequest;
 use App\V1\CMS\Requests\Users\UpdateRequest;
+use App\V1\CMS\Resources\PermissionGroupResource;
 use App\V1\CMS\Resources\ProfileResource;
 use App\V1\CMS\Resources\UserResource;
 use Exception;
@@ -194,5 +195,12 @@ class UserController extends Controller
 
         return $this->responseDeleteFail();
 
+    }
+
+    public function getPermission(Request $request): ResourceCollection
+    {
+        $data = $this->model->getPermission();
+
+        return $this->responseIndex(PermissionGroupResource::collection($data));
     }
 }

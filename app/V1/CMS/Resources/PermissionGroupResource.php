@@ -12,6 +12,7 @@ class PermissionGroupResource extends JsonResource
         return [
             'id'          => $this->id,
             'name'        => $this->name,
+            'title'       => $this->name,
             'permissions' => PermissionResource::collection($this->permissions),
             'description' => $this->description,
         ];
