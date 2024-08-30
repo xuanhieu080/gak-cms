@@ -10,6 +10,7 @@ export const useAuthStore = defineStore("auth", {
         return {
             user: null,
             error: null,
+            token: null
         };
     },
     actions: {
@@ -19,6 +20,7 @@ export const useAuthStore = defineStore("auth", {
             try {
                 const response = await authService.login(payload);
                 this.user = response.data.user;
+                this.token = response.data.token;
                 this.setBrowserData();
                 alertStore.clear();
                 await router.push({name:"home"});
@@ -94,13 +96,19 @@ export const useAuthStore = defineStore("auth", {
         },
         hasBrowserData() {
             let data = window.localStorage.getItem('currentUser');
+            let token_user = window.localStorage.getItem('tokenUser');
+            if(!!token_user) {
+                this.token = token_user;
+            }
             return !!data;
         },
         setBrowserData() {
             window.localStorage.setItem('currentUser', JSON.stringify(this.user))
+            window.localStorage.setItem('tokenUser', JSON.stringify(this.token))
         },
         clearBrowserData() {
             window.localStorage.removeItem('currentUser');
+            window.localStorage.removeItem('tokenUser');
         },
         hasAbilities(abilities) {
             return this.user.hasOwnProperty('abilities') && !!this.user.abilities.find((ab) => {

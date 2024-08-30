@@ -18,7 +18,10 @@
                     <template #overlay>
                         <a-menu>
                             <a-menu-item key="profile">
-                                <router-link :to="{ name: 'profile' }" class="flex items-center gap-1">
+                                <router-link
+                                    :to="{ name: 'profile' }"
+                                    class="flex items-center gap-1"
+                                >
                                     <UserOutlined />
                                     Đến trang cá nhân
                                 </router-link>
@@ -181,10 +184,15 @@
                     </a-sub-menu>
 
                     <a-menu-item key="6" :class="collapsed ? 'hide-title' : ''">
-                        <div class="flex items-center">
-                            <TeamOutlined />
-                        </div>
-                        <span>Quản lý danh sách nhân viên</span>
+                        <router-link
+                            :to="{ name: 'users-management' }"
+                            class="flex items-center gap-2"
+                        >
+                            <div class="flex items-center">
+                                <TeamOutlined />
+                            </div>
+                            <span>Quản lý danh sách nhân viên</span>
+                        </router-link>
                     </a-menu-item>
                     <a-menu-item key="7" :class="collapsed ? 'hide-title' : ''">
                         <div class="flex items-center">
@@ -221,7 +229,7 @@
             <a-layout-content
                 :style="{
                     padding: '16px 24px',
-                    overflow: 'auto'
+                    overflow: 'auto',
                 }"
             >
                 <slot></slot>
@@ -240,13 +248,8 @@ import {
     ToolOutlined,
     AppstoreOutlined,
     GoldOutlined,
-    FieldNumberOutlined,
-    CalculatorOutlined,
     ExceptionOutlined,
-    DeliveredProcedureOutlined,
-    ProjectOutlined,
     SisternodeOutlined,
-    CloudDownloadOutlined,
     MenuUnfoldOutlined,
     MenuFoldOutlined,
     LogoutOutlined,

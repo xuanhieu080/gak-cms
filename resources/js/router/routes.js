@@ -7,6 +7,7 @@ import {default as PageDashboard} from "@/views/pages/private/dashboard/Main";
 import PageProfile from "@/views/pages/private/profile/Main";
 import Roles from '@/views/pages/private/roles/index';
 import RolesCreate from '@/views/pages/private/roles/create';
+import UsersManagement from '@/views/pages/private/permission-user';
 
 import abilities from "@/stub/abilities";
 
@@ -72,17 +73,29 @@ const routes = [
         ]
     },
     {
+        path: "/users-management",
+        name: 'users-management',
+        component: UsersManagement,
+        children: [
+            {
+                name: "users-management-create",
+                path: "create",
+                meta: {requiresAuth: true, requiresAbility: abilities.CREATE_USER},
+                component: PageDashboard
+            },
+            {
+                name: "users.edit",
+                path: ":id/edit",
+                meta: {requiresAuth: true, requiresAbility: abilities.EDIT_USER},
+                component: PageDashboard
+            },
+        ]
+    },
+    {
         path: '/roles',
         name: 'roles',
         component: Roles,
-        meta: {requiresAuth: true},
-        children: [
-            {
-                name: "roles-create",
-                path: "create/:id",
-                component: RolesCreate
-            },
-        ]
+        meta: {requiresAuth: true}
     },
     {
         path: "/:catchAll(.*)",

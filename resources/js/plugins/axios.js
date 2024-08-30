@@ -1,5 +1,10 @@
-import axios from 'axios'
+import axios from 'axios';
 
+// const token = localStorage.getItem('tokenUser') ?? null;
+
+// if(token) {
+//     axios.defaults.headers.common['Authorization'] = 'Bearer ' + JSON.parse(token);
+// }
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.headers.common['X-Locale'] = localStorage.hasOwnProperty('locale') ? localStorage.locale : window.AppConfig.defaultLocale;
