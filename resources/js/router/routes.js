@@ -1,3 +1,4 @@
+import abilities from "@/stub/abilities";
 import {default as PageLogin} from "@/views/pages/auth/login/Main";
 import {default as PageResetPassword} from "@/views/pages/auth/reset-password/Main";
 import {default as PageForgotPassword} from "@/views/pages/auth/forgot-password/Main";
@@ -6,11 +7,10 @@ import {default as PageNotFound} from "@/views/pages/shared/404/Main";
 import {default as PageDashboard} from "@/views/pages/private/dashboard/Main";
 import PageProfile from "@/views/pages/private/profile/Main";
 import Roles from '@/views/pages/private/roles/index';
-import RolesCreate from '@/views/pages/private/roles/create';
 import UsersManagement from '@/views/pages/private/permission-user';
-
-import abilities from "@/stub/abilities";
-
+import WereHouse from '@/views/pages/private/warehouse/index';
+import Materials from '@/views/pages/private/management/materials';
+import Units from '@/views/pages/private/management/units';
 const routes = [
     {
         name: "home",
@@ -47,6 +47,31 @@ const routes = [
         path: "/profile",
         meta: {requiresAuth: true},
         component: PageProfile,
+    },
+    {
+        name: "warehouse",
+        path: "/warehouse",
+        meta: {requiresAuth: true},
+        component: WereHouse,
+    },
+    {
+        name: "management",
+        path: "/management",
+        meta: {requiresAuth: true},
+        children: [
+            {
+                name: "management-materials",
+                path: "materials",
+                meta: {requiresAuth: true},
+                component: Materials
+            },
+            {
+                name: "management-units",
+                path: "units",
+                meta: {requiresAuth: true},
+                component: Units
+            },
+        ]
     },
     {
         path: "/users",

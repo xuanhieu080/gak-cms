@@ -355,7 +355,11 @@ const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
 };
 const disabled = computed(() => {
-    return !(formState.value.name && formState.value.email && formState.value.password);
+    return !(
+        formState.value.name &&
+        formState.value.email &&
+        formState.value.password
+    );
 });
 
 const columns = [
@@ -419,7 +423,7 @@ const confirmDelete = async (id) => {
         message.success(response.data.message);
         refreshData();
     } catch (err) {
-        console.log(err)
+        console.log(err);
     }
 };
 

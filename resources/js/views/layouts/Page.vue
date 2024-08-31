@@ -103,7 +103,12 @@
                             key="3"
                             :class="collapsed ? 'hide-title' : ''"
                         >
-                            <span>Quản lý kho hàng</span>
+                            <router-link
+                                :to="{ name: 'warehouse' }"
+                                class="flex items-center gap-2"
+                            >
+                                <span>Quản lý kho hàng</span>
+                            </router-link>
                         </a-menu-item>
                         <a-menu-item
                             key="4"
@@ -137,13 +142,23 @@
                             key="9"
                             :class="collapsed ? 'hide-title' : ''"
                         >
-                            <span>Nguyên liệu</span>
+                            <router-link
+                                :to="{ name: 'management-materials' }"
+                                class="flex items-center gap-2"
+                            >
+                                <span>Nguyên liệu</span>
+                            </router-link>
                         </a-menu-item>
                         <a-menu-item
                             key="10"
                             :class="collapsed ? 'hide-title' : ''"
                         >
-                            <span>Đơn vị tính</span>
+                            <router-link
+                                :to="{ name: 'management-units' }"
+                                class="flex items-center gap-2"
+                            >
+                                <span>Đơn vị tính</span>
+                            </router-link>
                         </a-menu-item>
                         <a-menu-item
                             key="11"
