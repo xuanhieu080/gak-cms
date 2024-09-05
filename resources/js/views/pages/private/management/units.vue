@@ -877,10 +877,9 @@ const handleChange = (value) => {
 };
 
 const queryData = (params) => {
-    // return axios.get('https://6699d5999ba098ed61fd7bc5.mockapi.io/api/v1/pyc', {
-    //     params,
-    // });
-    return exampleData;
+    return axios.get('/api/materials', {
+        params,
+    });
 };
 
 const {
@@ -904,7 +903,7 @@ const {
 });
 
 const pagination = computed(() => ({
-    total: 100,
+    total: totalPage,
     current: current.value,
     pageSize: pageSize.value,
 }));

@@ -150,8 +150,7 @@ function fetchUserDropdown(value, callback) {
         timeout = null;
     }
     currentValue = value;
-    searchUser(value, callback);
-    timeout = setTimeout(searchUser, 300);
+    timeout = setTimeout(searchUser(value, callback), 300);
 }
 
 const handleSearch = async (val) => {

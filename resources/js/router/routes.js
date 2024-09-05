@@ -10,6 +10,7 @@ import Roles from '@/views/pages/private/roles/index';
 import UsersManagement from '@/views/pages/private/permission-user';
 import WereHouse from '@/views/pages/private/warehouse/index';
 import Materials from '@/views/pages/private/management/materials';
+import CreateMaterial from '@/views/pages/private/management/create-material';
 import Units from '@/views/pages/private/management/units';
 const routes = [
     {
@@ -63,13 +64,19 @@ const routes = [
                 name: "management-materials",
                 path: "materials",
                 meta: {requiresAuth: true},
-                component: Materials
+                component: Materials,
             },
             {
                 name: "management-units",
                 path: "units",
                 meta: {requiresAuth: true},
                 component: Units
+            },
+            {
+                name: "management-materials-create",
+                path: "materials/create",
+                meta: {requiresAuth: true},
+                component: CreateMaterial
             },
         ]
     },
