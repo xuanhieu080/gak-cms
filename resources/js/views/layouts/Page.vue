@@ -104,7 +104,7 @@
                             :class="collapsed ? 'hide-title' : ''"
                         >
                             <router-link
-                                :to="{ name: 'warehouse' }"
+                                :to="{ name: 'warehouse-index' }"
                                 class="flex items-center gap-2"
                             >
                                 <span>Quản lý kho hàng</span>

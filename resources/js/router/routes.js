@@ -9,6 +9,8 @@ import PageProfile from "@/views/pages/private/profile/Main";
 import Roles from '@/views/pages/private/roles/index';
 import UsersManagement from '@/views/pages/private/permission-user';
 import WereHouse from '@/views/pages/private/warehouse/index';
+import CreateWereHouse from '@/views/pages/private/warehouse/create';
+import DetailsWereHouse from '@/views/pages/private/warehouse/details';
 import Materials from '@/views/pages/private/management/materials';
 import CreateMaterial from '@/views/pages/private/management/create-material';
 import Units from '@/views/pages/private/management/units';
@@ -53,7 +55,26 @@ const routes = [
         name: "warehouse",
         path: "/warehouse",
         meta: {requiresAuth: true},
-        component: WereHouse,
+        children: [
+            {
+                path: "",
+                name: "warehouse-index",
+                meta: {requiresAuth: true},
+                component: WereHouse,
+            },
+            {
+                name: "warehouse-create",
+                path: "create",
+                meta: {requiresAuth: true},
+                component: CreateWereHouse,
+            },
+            {
+                name: "warehouse-details",
+                path: "details/:id",
+                meta: {requiresAuth: true},
+                component: DetailsWereHouse,
+            },
+        ]
     },
     {
         name: "management",

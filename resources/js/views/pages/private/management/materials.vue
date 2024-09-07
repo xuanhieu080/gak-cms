@@ -16,57 +16,7 @@
                     >
                 </template>
             </a-breadcrumb>
-            <a-collapse
-                v-model:activeKey="openSearchTicket"
-                :bordered="false"
-                ghost
-            >
-                <a-collapse-panel
-                    key="1"
-                    class="bg-blue-500 !text-white"
-                    :show-arrow="false"
-                >
-                    <template #header>
-                        <div class="text-white">Tìm kiếm</div>
-                    </template>
-                    <div class="grid grid-cols-6 gap-6 w-full">
-                        <div class="search-item">
-                            <div class="title">Mã kho</div>
-                            <a-input v-model:value="warehouse_id" />
-                        </div>
-                        <div class="search-item">
-                            <div class="title">Tên sản phẩm</div>
-                            <a-input v-model:value="customer_name" />
-                        </div>
-                        <div class="search-item">
-                            <div class="title">Địa chỉ</div>
-                            <a-input v-model:value="customer_address" />
-                        </div>
-                        <div class="search-item">
-                            <div class="title">Trạng thái</div>
-                            <a-select
-                                v-model:value="selected_status"
-                                show-search
-                                placeholder="Chọn"
-                                :options="options"
-                                :filter-option="filterOption"
-                                @change="handleChange"
-                                class="w-full"
-                            ></a-select>
-                        </div>
-                        <div class="search-item col-span-2">
-                            <div class="title">Ngày yêu cầu</div>
-                            <a-range-picker
-                                v-model:value="selected_date_request"
-                            />
-                        </div>
-                    </div>
-                    <div class="filter-buttons mt-6 flex items-center gap-4">
-                        <a-button type="primary">Tìm kiếm</a-button>
-                        <a-button @click="resetSearchBox">Làm mới</a-button>
-                    </div>
-                </a-collapse-panel>
-            </a-collapse>
+
             <div class="pyc-table border border-blue-500 flex flex-col">
                 <div class="title-box bg-blue-500 text-white p-4">
                     Quản lý nguyên liệu
@@ -87,37 +37,13 @@
                             @change="handleChange"
                             class="w-[150px]"
                         ></a-select>
-                        <a-select
-                            v-model:value="selected_product"
-                            show-search
-                            placeholder="Chọn sản phẩm"
-                            :options="options"
-                            :filter-option="filterOption"
-                            @change="handleChange"
-                            class="w-[200px]"
-                        ></a-select>
+                        <div class="search-item">
+                            <a-input
+                                v-model:value="material_name"
+                                placeholder="Tên nguyên liệu"
+                            />
+                        </div>
                         <a-button type="primary">Tìm kiếm</a-button>
-                    </div>
-                    <div
-                        v-if="false"
-                        class="statistic-ticket flex items-center gap-4 flex-wrap"
-                    >
-                        <div class="statistic-ticket-item">
-                            <div class="title">Chờ xử lý:</div>
-                            <div class="counting-box pending">57/57</div>
-                        </div>
-                        <div class="statistic-ticket-item">
-                            <div class="title">Đang xử lý:</div>
-                            <div class="counting-box progress">88/88</div>
-                        </div>
-                        <div class="statistic-ticket-item">
-                            <div class="title">Đã xử lý:</div>
-                            <div class="counting-box finish">5/559303</div>
-                        </div>
-                        <div class="statistic-ticket-item">
-                            <div class="title">Đang theo dõi:</div>
-                            <div class="counting-box following">234/234</div>
-                        </div>
                     </div>
                 </div>
                 <div class="table-container p-3">
@@ -140,7 +66,9 @@
                             </template>
                         </template>
                         <template #bodyCell="{ column, text }">
-                            <template v-if="column.dataIndex === 'warehouse_id'">
+                            <template
+                                v-if="column.dataIndex === 'warehouse_id'"
+                            >
                                 <div class="text-blue-500">{{ text }}</div>
                             </template>
                         </template>
@@ -163,16 +91,6 @@
                                     <a-button
                                         type="primary"
                                         class="flex items-center"
-                                        @click="handleToggleSearchBox"
-                                    >
-                                        <template #icon>
-                                            <SearchOutlined />
-                                        </template>
-                                        Tìm kiếm
-                                    </a-button>
-                                    <a-button
-                                        type="primary"
-                                        class="flex items-center"
                                         @click="handleCreateMaterial"
                                     >
                                         <template #icon>
@@ -184,6 +102,7 @@
                                         type="primary"
                                         danger
                                         class="flex items-center"
+                                        @click="handleDeleteMaterials"
                                     >
                                         <template #icon>
                                             <DeleteOutlined />
@@ -193,6 +112,7 @@
                                     <a-button
                                         type="primary"
                                         class="flex items-center"
+                                        @click="handleReloadData"
                                     >
                                         <template #icon>
                                             <SyncOutlined />
@@ -211,37 +131,20 @@
 
 <script setup>
 import {
-    SearchOutlined,
     PlusOutlined,
     DeleteOutlined,
     SyncOutlined,
-    ReloadOutlined,
-    UserOutlined,
-    PhoneTwoTone,
 } from "@ant-design/icons-vue";
 import { ref, computed } from "vue";
 import { usePagination } from "vue-request";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import Page from "@/views/layouts/Page";
+import { message } from "ant-design-vue";
 
 const openSearchTicket = ref([]);
-const keyword_search = ref(null);
-const warehouse_id = ref(null);
-const selected_shift_information = ref(null);
-const customer_name = ref(null);
-const customer_address = ref(null);
-const type_of_device = ref(null);
-const selected_engineer = ref(null);
-const selected_produce = ref(null);
-const selected_status = ref(null);
-const selected_result = ref(null);
-const selected_result_ticket = ref(null);
-const selected_agency_code = ref(null);
-const selected_date_request = ref(null);
+const material_name = ref(null);
 const selected_storage = ref(null);
-const selected_product = ref(null);
-const selected_ticket_engineer = ref(null);
 
 const routes = ref([
     {
@@ -272,6 +175,7 @@ const columns = [
     },
 ];
 
+const selectedRow = ref([]);
 
 const options = ref([
     {
@@ -309,7 +213,7 @@ const handleChange = (value) => {
 };
 
 const queryData = (params) => {
-    return axios.get('/api/materials', {
+    return axios.get("/api/materials", {
         params,
     });
 };
@@ -358,11 +262,30 @@ const handleTableChange = (pag, filters, sorter) => {
 };
 
 const rowSelection = {
-    onChange: (selectedRowKeys, selectedRows) => {},
+    onChange: (selectedRowKeys, selectedRows) => {
+        selectedRow.value = selectedRowKeys;
+    },
     getCheckboxProps: (record) => ({
         // Column configuration not to be checked
         warehouse_id: record.warehouse_id,
     }),
+};
+
+const handleDeleteMaterials = async () => {
+    if (selectedRow.value.length > 0) {
+        selectedRow.value.forEach(async (id) => {
+            try {
+                loading.value = true;
+                const response = await axios.delete(`/api/materials/${id}`);
+                message.success(response.data.message);
+                handleReloadData();
+            } catch (e) {
+                loading.value = false;
+                message.error("Vui lòng thử lại sau");
+                console.log("err: ", e);
+            }
+        });
+    }
 };
 </script>
 
