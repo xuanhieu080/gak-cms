@@ -65,10 +65,9 @@
                                 v-if="typeof text == 'object'"
                                 v-for="(value, key) in text"
                             >
-                                <div v-if="key == 'name'">{{ value }}</div>
-                                <div v-if="typeof value == 'object'">
-                                    {{ value }}
-                                </div>
+                                <div v-if="key == 'name'">Tên quản lý: {{ value }}</div>
+                                <div v-if="key == 'email'">Email: {{ value }}</div>
+                                <div v-if="key == 'phone'">Sđt: {{ value }}</div>
                             </div>
                         </template>
                     </template>
@@ -428,7 +427,7 @@ async function searchStorage(value, callback) {
         name: value,
     });
     if (value) {
-        await axios.get(`/api/warehouses?${params}`).then((response) => {
+        await axios.get(`/api/users?${params}`).then((response) => {
             if (currentValue === value) {
                 const result = response.data.data?.map((storage) => ({
                     label: storage.name,
@@ -440,7 +439,7 @@ async function searchStorage(value, callback) {
             }
         });
     } else {
-        await axios.get(`/api/warehouses`).then((response) => {
+        await axios.get(`/api/users`).then((response) => {
             if (currentValue === value) {
                 const result = response.data.data?.map((storage) => ({
                     label: storage.name,

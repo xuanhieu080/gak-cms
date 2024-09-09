@@ -167,7 +167,7 @@
                                 </div>
                             </div>
                             <div
-                                class="divide-x divide-gray-300 grid grid-cols-4 w-full bg-gray-100"
+                                class="divide-x divide-gray-300 grid grid-cols-4 w-full"
                             >
                                 <div class="title p-2 font-bold">Ngày Tạo</div>
                                 <div class="information col-span-3 p-2">
@@ -175,7 +175,7 @@
                                 </div>
                             </div>
                             <div
-                                class="divide-x divide-gray-300 grid grid-cols-4 w-full"
+                                class="divide-x divide-gray-300 grid grid-cols-4 w-full bg-gray-100"
                             >
                                 <div class="title p-2 font-bold">
                                     Cập nhật lúc
@@ -263,6 +263,7 @@
                                 @remove="handleRemove"
                                 list-type="picture-card"
                                 :previewIcon="false"
+                                :max-count="1"
                                 v-model:file-list="formState.image"
                             >
                                 <div>
@@ -336,21 +337,7 @@ const clearFormData = () => {
         image: null,
     };
 };
-const handleSubmitUser = async (values) => {
-    try {
-        const response = await axios.post("/api/users", {
-            ...formState.value,
-        });
-        message.success(response.data.message);
-        openAddNewUser.value = false;
-        clearFormData();
-        refreshData();
-    } catch (err) {
-        console.log(err);
-    }
-    // const authStore = useAuthStore();
-    // await authStore.login({email: formState.email, password: formState.password});
-};
+
 const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
 };
@@ -429,7 +416,7 @@ const confirmDelete = async (id) => {
 
 const refreshData = () => {
     run({
-        limit: pageSize.value,
+        limit: 10,
         page: 1,
     });
 };
@@ -441,7 +428,6 @@ const queryData = (params) => {
 };
 
 const handleSearchTable = (e) => {
-    console.log();
     if (e.target.value) {
         run({
             limit: pageSize.value,
@@ -457,30 +443,37 @@ const handleSearchTable = (e) => {
 };
 
 const beforeUpload = (file) => {
-    fileList.value = [...(fileList.value || []), file];
+    console.log(file);
+    formState.value.image = [file];
     return false;
 };
-const handleUpload = () => {
-    //   const formData = new FormData();
-    //   fileList.value.forEach(file => {
-    //     formData.append('files[]', file);
-    //   });
-    //   uploading.value = true;
-    //   // You can use any AJAX library you like
-    //   request('https://www.mocky.io/v2/5cc8019d300000980a055e76', {
-    //     method: 'post',
-    //     data: formData,
-    //   })
-    //     .then(() => {
-    //       fileList.value = [];
-    //       uploading.value = false;
-    //       message.success('upload successfully.');
-    //     })
-    //     .catch(() => {
-    //       uploading.value = false;
-    //       message.error('upload failed.');
-    //     });
+
+const handleSubmitUser = async (values) => {
+    try {
+        let formData = new FormData();
+        formData.append('name', formState.value.name);
+        formData.append('password', formState.value.password);
+        formData.append('email', formState.value.email);
+        if(formState.value.image.length > 0) {
+            formData.append('image', formState.value.image[0].originFileObj);
+        }
+        const response = await axios.post("/api/users", formData, {
+              headers: {
+                'Content-Type': 'multipart/form-data'
+              }
+            }
+        );
+        message.success(response.data.message);
+        openAddNewUser.value = false;
+        clearFormData();
+        refreshData();
+    } catch (err) {
+        console.log(err);
+    }
+    // const authStore = useAuthStore();
+    // await authStore.login({email: formState.email, password: formState.password});
 };
+
 
 const handleTableChange = (pag, filters, sorter) => {
     run({
@@ -514,7 +507,7 @@ const {
 });
 
 const pagination = computed(() => ({
-    total: totalPage.value,
+    total: dataSource.value?.data.meta.total,
     current: current.value,
     pageSize: pageSize.value,
 }));

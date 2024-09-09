@@ -48,6 +48,7 @@ declare module 'vue' {
     ATableSummaryCell: typeof import('ant-design-vue/es')['TableSummaryCell']
     ATableSummaryRow: typeof import('ant-design-vue/es')['TableSummaryRow']
     ATextarea: typeof import('ant-design-vue/es')['Textarea']
+    ATooltip: typeof import('ant-design-vue/es')['Tooltip']
     AUpload: typeof import('ant-design-vue/es')['Upload']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

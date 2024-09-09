@@ -65,15 +65,25 @@
                         :columns="columns"
                         :pagination="pagination"
                         :loading="loading"
-                        :row-key="(record) => record.manager_id"
+                        :row-key="(record) => record.id"
                         :data-source="dataSource?.data?.data"
                         @change="handleTableChange"
                         bordered
                         :scroll="{ x: 'max-content' }"
                     >
                         <template #bodyCell="{ column, text }">
-                            <template v-if="column.dataIndex === 'manager_id'">
-                                <router-link :to="{name: 'warehouse-details', params: {id: text}}" class="text-blue-500">{{ text }}</router-link>
+                            <template v-if="column.dataIndex === 'id'">
+                                <a-tooltip>
+                                    <template #title>Xem chi tiết</template>
+                                    <router-link
+                                        :to="{
+                                            name: 'warehouse-details',
+                                            params: { id: text },
+                                        }"
+                                        class="text-blue-500"
+                                        >{{ text }}</router-link
+                                    >
+                                </a-tooltip>
                             </template>
                             <template
                                 v-if="column.dataIndex === 'customer_request'"
@@ -86,16 +96,18 @@
                                     {{ text ? text : "(Không có)" }}
                                 </div>
                             </template>
-                            <template
-                                v-if="column.dataIndex === 'manager'"
-                            >
-                                {{ text ? text.name : '(Không có)' }}
+                            <template v-if="column.dataIndex === 'manager'">
+                                {{ text ? text.name : "(Không có)" }}
                             </template>
-                            <template
-                                v-if="column.dataIndex === 'materials'"
-                            >
-                                <div class="inline" v-for="(item, index) in text">
-                                    {{ item.name + (index < text.length - 1 ? ', ' : '')}}
+                            <template v-if="column.dataIndex === 'materials'">
+                                <div
+                                    class="inline"
+                                    v-for="(item, index) in text"
+                                >
+                                    {{
+                                        item.name +
+                                        (index < text.length - 1 ? ", " : "")
+                                    }}
                                 </div>
                             </template>
                             <template
@@ -126,7 +138,7 @@
                                         "-" +
                                         pageSize * current
                                     }}</b>
-                                    trong số <b>{{ "100" }}</b> mục.
+                                    trong số <b>{{ pagination.total }}</b> mục.
                                 </div>
                                 <div class="flex items-center flex-wrap gap-2">
                                     <a-button
@@ -149,17 +161,26 @@
                                         </template>
                                         Tạo kho
                                     </a-button>
-                                    <a-button
-                                        type="primary"
-                                        danger
-                                        class="flex items-center"
-                                        @click="handleDeleteWareHouse"
+                                    <a-popconfirm
+                                        :disabled="selectedRow.length == 0"
+                                        title="Bạn chắc chắn xóa chứ?"
+                                        ok-text="Đúng"
+                                        cancel-text="Hủy bỏ"
+                                        @confirm="handleDeleteWareHouse"
+                                        @cancel="cancel"
                                     >
-                                        <template #icon>
-                                            <DeleteOutlined />
-                                        </template>
-                                        Xóa
-                                    </a-button>
+                                        <a-button
+                                            type="primary"
+                                            danger
+                                            class="flex items-center"
+                                            :disabled="selectedRow.length == 0"
+                                        >
+                                            <template #icon>
+                                                <DeleteOutlined />
+                                            </template>
+                                            Xóa
+                                        </a-button>
+                                    </a-popconfirm>
                                     <a-button
                                         type="primary"
                                         class="flex items-center"
@@ -202,7 +223,7 @@ const storage_id = ref(null);
 const storage_name = ref(null);
 const storage_address = ref(null);
 const selected_date_request = ref(null);
-const  selectedRow = ref([]);
+const selectedRow = ref([]);
 const routes = ref([
     {
         name: "home",
@@ -217,7 +238,7 @@ const routes = ref([
 const columns = [
     {
         title: "ID",
-        dataIndex: "manager_id",
+        dataIndex: "id",
         sorter: true,
         width: "70px",
     },
@@ -319,7 +340,7 @@ const filterOption = (input, option) => {
 
 const handleDeleteWareHouse = async () => {
     console.log(selectedRow.value);
-    if(selectedRow.value.length > 0) {
+    if (selectedRow.value.length > 0) {
         selectedRow.value.forEach(async (id) => {
             try {
                 loading.value = true;
@@ -329,9 +350,9 @@ const handleDeleteWareHouse = async () => {
             } catch (e) {
                 loading.value = false;
                 message.error("Vui lòng thử lại sau");
-                console.log('err: ', e)
+                console.log("err: ", e);
             }
-        })
+        });
     }
 };
 
@@ -357,12 +378,11 @@ const {
     pagination: {
         currentKey: "page",
         pageSizeKey: "limit",
-        totalKey: "dataSource.total",
     },
 });
 
 const pagination = computed(() => ({
-    total: totalPage.value,
+    total: dataSource.value?.data.meta.total,
     current: current.value,
     pageSize: pageSize.value,
 }));
@@ -390,7 +410,7 @@ const rowSelection = {
     },
     getCheckboxProps: (record) => ({
         // Column configuration not to be checked
-        manager_id: record.manager_id,
+        id: record.id,
     }),
 };
 </script>
