@@ -272,6 +272,16 @@
                                 </div>
                             </a-upload>
                         </a-form-item>
+                        <a-form-item v-if="errorInfo.length > 0">
+                            <ul class="list-disc pl-6">
+                                <li
+                                    class="text-red-500 capitalize"
+                                    v-for="error in errorInfo"
+                                >
+                                    {{ error[0] }}
+                                </li>
+                            </ul>
+                        </a-form-item>
                         <a-form-item>
                             <div
                                 class="flex items-center gap-4 justify-end w-full"
@@ -329,6 +339,7 @@ let formState = ref({
     name: "",
     image: null,
 });
+const errorInfo = ref([]);
 const clearFormData = () => {
     formState.value = {
         email: "",
@@ -451,29 +462,32 @@ const beforeUpload = (file) => {
 const handleSubmitUser = async (values) => {
     try {
         let formData = new FormData();
-        formData.append('name', formState.value.name);
-        formData.append('password', formState.value.password);
-        formData.append('email', formState.value.email);
-        if(formState.value.image.length > 0) {
-            formData.append('image', formState.value.image[0].originFileObj);
+        formData.append("name", formState.value.name);
+        formData.append("password", formState.value.password);
+        formData.append("email", formState.value.email);
+        if (formState.value.image && formState.value.image.length > 0) {
+            formData.append("image", formState.value.image[0].originFileObj);
         }
         const response = await axios.post("/api/users", formData, {
-              headers: {
-                'Content-Type': 'multipart/form-data'
-              }
-            }
-        );
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
         message.success(response.data.message);
         openAddNewUser.value = false;
         clearFormData();
         refreshData();
     } catch (err) {
-        console.log(err);
+        if (err.response.status == 422) {
+            errorInfo.value = Object.values(err.response.data.errors);
+            message.error("Vui lòng kiểm tra lại thông tin");
+        } else {
+            console.log("error", err);
+        }
     }
     // const authStore = useAuthStore();
     // await authStore.login({email: formState.email, password: formState.password});
 };
-
 
 const handleTableChange = (pag, filters, sorter) => {
     run({

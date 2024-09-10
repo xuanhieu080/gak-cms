@@ -164,7 +164,12 @@
                             key="11"
                             :class="collapsed ? 'hide-title' : ''"
                         >
-                            <span>Nhóm thuộc tính</span>
+                            <router-link
+                                :to="{ name: 'management-attribute-group' }"
+                                class="flex items-center gap-2"
+                            >
+                                <span>Nhóm thuộc tính</span>
+                            </router-link>
                         </a-menu-item>
                     </a-sub-menu>
                     <a-sub-menu

@@ -12,7 +12,9 @@ import WereHouse from '@/views/pages/private/warehouse/index';
 import CreateWereHouse from '@/views/pages/private/warehouse/create';
 import DetailsWereHouse from '@/views/pages/private/warehouse/details';
 import Materials from '@/views/pages/private/management/materials';
+import AttributeGroup from '@/views/pages/private/management/attribute-group';
 import CreateMaterial from '@/views/pages/private/management/create-material';
+import CreateAttributeGroup from '@/views/pages/private/management/create-attribute-group';
 import Units from '@/views/pages/private/management/units';
 const routes = [
     {
@@ -98,6 +100,18 @@ const routes = [
                 path: "materials/create",
                 meta: {requiresAuth: true},
                 component: CreateMaterial
+            },
+            {
+                name: "management-attribute-group",
+                path: "attribute-group",
+                meta: {requiresAuth: true},
+                component: AttributeGroup
+            },
+            {
+                name: "attribute-group-create",
+                path: "attribute-group/create",
+                meta: {requiresAuth: true},
+                component: CreateAttributeGroup
             },
         ]
     },
