@@ -42,19 +42,19 @@
                 <div
                     class="title-box bg-blue-500 text-white p-3 flex items-center gap-1"
                 >
-                    Phiếu tạo nguyên liệu
+                    Phiếu tạo thuộc tính
                 </div>
                 <div class="p-6 material-form grid grid-cols-2 gap-6">
                     <a-form :model="formState" layout="vertical">
-                        <a-form-item v-bind="validateInfos.storage_code">
+                        <a-form-item v-bind="validateInfos.attribute_group_id">
                             <template class="h-full" #label>
-                                <span class="font-medium">Mã kho hàng</span>
+                                <span class="font-medium">Nhóm thuộc tính</span>
                             </template>
                             <a-select
-                                v-model:value="formState.storage_code"
+                                v-model:value="formState.attribute_group_id"
                                 :options="data_storages"
                                 :not-found-content="data_storages_fetching ? undefinded : null"
-                                placeholder="Chọn kho hàng"
+                                placeholder="Chọn nhóm thuộc tính"
                                 @search="handleSearch"
                                 @change="handleChange"
                                 :filter-option="false"
@@ -69,23 +69,12 @@
                                 </template>
                             </a-select>
                         </a-form-item>
-                        <a-form-item v-bind="validateInfos.material_name">
+                        <a-form-item v-bind="validateInfos.atrribute_name">
                             <template class="h-full" #label>
-                                <span class="font-medium">Tên nguyên liệu</span>
+                                <span class="font-medium">Tên thuộc tính</span>
                             </template>
                             <a-input
-                                v-model:value="formState.material_name"
-                                placeholder=""
-                            />
-                        </a-form-item>
-                        <a-form-item v-bind="validateInfos.material_code">
-                            <template class="h-full" #label>
-                                <span class="font-medium"
-                                    >Code Nguyên Liệu</span
-                                >
-                            </template>
-                            <a-input
-                                v-model:value="formState.material_code"
+                                v-model:value="formState.atrribute_name"
                                 placeholder=""
                             />
                         </a-form-item>
@@ -113,7 +102,7 @@
                                     type="primary"
                                     danger
                                     block
-                                    @click="handleChangeMaterialPage"
+                                    @click="handleChangeAttrPage"
                                 >
                                     Hủy bỏ
                                 </a-button>
@@ -186,34 +175,33 @@ const routes = ref([
         breadcrumbName: "Trang chủ",
     },
     {
-        name: "management-materials",
-        breadcrumbName: "Quản lý Nguyên Liệu",
+        name: "management-attribute",
+        breadcrumbName: "Quản lý thuộc tính",
     },
     {
-        name: "management-materials-create",
-        breadcrumbName: "Tạo Nguyên Liệu",
+        name: "create-attribute",
+        breadcrumbName: "Tạo thuộc tính",
     },
 ]);
 
 const formState = ref({
-    storage_code: null,
-    material_name: null,
-    material_code: null,
+    attribute_group_id: null,
+    atrribute_name: null,
 });
 
 const { resetFields, validate, validateInfos } = useForm(
     formState.value,
     reactive({
-        storage_code: [
+        atrribute_name: [
             {
                 required: true,
-                message: "Vui lòng chọn mã đại lý",
+                message: "Vui lòng nhập tên thuộc tính",
             },
         ],
-        material_name: [
+        attribute_group_id: [
             {
                 required: true,
-                message: "Vui lòng nhập tên nguyên liệu",
+                message: "Vui lòng chọn nhóm thuộc tính",
             },
         ],
     })
@@ -222,15 +210,13 @@ const { resetFields, validate, validateInfos } = useForm(
 const onSubmit = async () => {
     validate()
         .then(async (res) => {
-            const response = await axios.post("/api/materials", {
-                name: formState.value.material_name,
-                code: formState.value.material_code,
-                warehouse_id: formState.value.storage_code,
+            const response = await axios.post("/api/attributes", {
+                name: formState.value.atrribute_name,
+                group_id: formState.value.attribute_group_id,
             });
             if (response.data.code == 200) {
                 message.success(response.data.message);
-                handleChangeMaterialPage();
-                // refreshRole();
+                handleChangeAttrPage();
             }
         })
         .catch((err) => {
@@ -243,8 +229,8 @@ const onSubmit = async () => {
         });
 };
 
-const handleChangeMaterialPage = () => {
-    router.push({ name: "management-materials" });
+const handleChangeAttrPage = () => {
+    router.push({ name: "management-attribute" });
 };
 
 const reset = () => {
@@ -275,7 +261,7 @@ const handleSearch = async (val) => {
     fetchStorageDropdown(val, (data) => (data_storages.value = data));
 };
 const handleChange = (val, item) => {
-    formState.storage_code = item;
+    formState.attribute_group_id = item;
     fetchStorageDropdown('', (data) => (data_storages.value = data));
 };
 
@@ -285,24 +271,24 @@ async function searchStorage(value,callback) {
         name: value,
     });
     if (value) {
-        await axios.get(`/api/warehouses?${params}`).then((response) => {
+        await axios.get(`/api/attribute-groups?${params}`).then((response) => {
             if (currentValue === value) {
-                const result = response.data.data?.map((storage) => ({
-                    label: storage.name,
-                    value: storage.id,
-                    data: storage,
+                const result = response.data.data?.map((attr_group) => ({
+                    label: attr_group.name + '('+ attr_group.id + ')',
+                    value: attr_group.id,
+                    data: attr_group,
                 }));
                 data_storages_fetching.value = false;
                 callback(result);
             }
         });
     } else {
-        await axios.get(`/api/warehouses`).then((response) => {
+        await axios.get(`/api/attribute-groups`).then((response) => {
             if (currentValue === value) {
-                const result = response.data.data?.map((storage) => ({
-                    label: storage.name,
-                    value: storage.id,
-                    data: storage,
+                const result = response.data.data?.map((attr_group) => ({
+                    label: attr_group.name + '('+ attr_group.id + ')',
+                    value: attr_group.id,
+                    data: attr_group,
                 }));
                 data_storages_fetching.value = false;
                 callback(result);
@@ -311,7 +297,7 @@ async function searchStorage(value,callback) {
     }
 }
 
-watch(formState.storage_code, () => {
+watch(formState.attribute_group_id, () => {
     data_storages.value = [];
     data_storages_fetching.value = false;
 });
@@ -319,6 +305,11 @@ watch(formState.storage_code, () => {
 onMounted(() => {
     searchStorage('', (data) => (data_storages.value = data));
 });
+const queryData = (params) => {
+    return axios.get("https://6699d5999ba098ed61fd7bc5.mockapi.io/api/v1/pyc", {
+        params,
+    });
+};
 </script>
 
 <style lang="scss" scoped>

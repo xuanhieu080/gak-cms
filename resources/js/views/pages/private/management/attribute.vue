@@ -28,22 +28,52 @@
                         class="filter-box flex items-center lg:justify-between gap-4 flex-wrap"
                     >
                         <a-select
-                            v-model:value="selected_storage"
+                            v-model:value="selected_attr_group"
+                            :options="data_storages"
+                            :not-found-content="
+                                data_storages_fetching ? undefinded : null
+                            "
+                            placeholder="Chọn nhóm thuộc tính"
+                            @search="handleSearchAttrGroup"
+                            @change="handleChangeAttrGroup"
+                            :filter-option="false"
                             show-search
-                            allowClear="true"
-                            placeholder="Chọn kho"
-                            :options="options"
-                            :filter-option="filterOption"
-                            @change="handleChange"
-                            class="w-[150px]"
-                        ></a-select>
+                        >
+                            <template #notFoundContent>
+                                <a-spin
+                                    v-if="data_storages_fetching"
+                                    size="small"
+                                />
+                                <span
+                                    v-if="
+                                        data_storages.length == 0 &&
+                                        !data_storages_fetching
+                                    "
+                                    >Không có kết quả nào</span
+                                >
+                            </template>
+                        </a-select>
                         <div class="search-item">
                             <a-input
                                 v-model:value="atrribute_group_name"
                                 placeholder="Tên nguyên liệu"
                             />
                         </div>
-                        <a-button type="primary">Tìm kiếm</a-button>
+                        <a-button
+                            type="primary"
+                            danger
+                            class="flex items-center"
+                            @click="handleClearSearchTable"
+                            v-if="selected_attr_group || atrribute_group_name"
+                        >
+                            <template #icon>
+                                <DeleteOutlined />
+                            </template>
+                            Xóa
+                        </a-button>
+                        <a-button type="primary" @click="handleSearchTable"
+                            >Tìm kiếm</a-button
+                        >
                     </div>
                 </div>
                 <div class="table-container p-3">
@@ -71,12 +101,8 @@
                             </div>
                         </template>
                         <template #bodyCell="{ column, text, record }">
-                            <template
-                                v-if="column.dataIndex === 'attributes'"
-                            >
-                                <div class="inline" v-if="text.length > 0" v-for="(attr, index) in text">
-                                    {{ attr.name + (index < text.length - 1 ? ', ' : '') }}
-                                </div>
+                            <template v-if="column.dataIndex === 'group'">
+                                {{ text.name }}
                             </template>
                             <template v-if="column.dataIndex === 'action'">
                                 <div class="flex items-center justify-center">
@@ -118,7 +144,7 @@
                                         <template #icon>
                                             <PlusOutlined />
                                         </template>
-                                        Tạo nhóm thuộc tính
+                                        Tạo thuộc tính
                                     </a-button>
                                     <a-popconfirm
                                         :disabled="selectedRow.length == 0"
@@ -159,7 +185,7 @@
                 <a-modal
                     v-if="openAttributeGroupDetails"
                     v-model:open="openAttributeGroupDetails"
-                    title="Thông Tin nguyên liệu"
+                    title="Thông Tin thuộc tính"
                     :footer="null"
                 >
                     <div class="py-4">
@@ -169,16 +195,67 @@
                             layout="vertical"
                             class="h-full"
                         >
-                            <a-form-item v-bind="validateInfos.atrribute_group_name">
+                            <a-form-item
+                                v-bind="validateInfos.attribute_group_id"
+                            >
                                 <template class="h-full" #label>
                                     <span class="font-medium"
-                                        >Tên nhóm</span
+                                        >Nhóm thuộc tính</span
+                                    >
+                                </template>
+                                <a-select
+                                    v-model:value="formState.attribute_group_id"
+                                    :options="data_storages"
+                                    :not-found-content="
+                                        data_storages_fetching
+                                            ? undefinded
+                                            : null
+                                    "
+                                    placeholder="Chọn nhóm thuộc tính"
+                                    @search="handleSearchAttrGroup"
+                                    @change="handleChangeAttrGroup"
+                                    :filter-option="false"
+                                    show-search
+                                >
+                                    <template #notFoundContent>
+                                        <a-spin
+                                            v-if="data_storages_fetching"
+                                            size="small"
+                                        />
+                                        <span
+                                            v-if="
+                                                data_storages.length == 0 &&
+                                                !data_storages_fetching
+                                            "
+                                            >Không có kết quả nào</span
+                                        >
+                                    </template>
+                                </a-select>
+                            </a-form-item>
+                            <a-form-item
+                                v-bind="validateInfos.atrribute_group_name"
+                            >
+                                <template class="h-full" #label>
+                                    <span class="font-medium"
+                                        >Tên thuộc tính</span
                                     >
                                 </template>
                                 <a-input
-                                    v-model:value="formState.atrribute_group_name"
+                                    v-model:value="
+                                        formState.atrribute_group_name
+                                    "
                                     placeholder=""
                                 />
+                            </a-form-item>
+                            <a-form-item v-if="errorInfo.length > 0">
+                                <ul class="list-disc pl-6">
+                                    <li
+                                        class="text-red-500 capitalize"
+                                        v-for="error in errorInfo"
+                                    >
+                                        {{ error[0] }}
+                                    </li>
+                                </ul>
                             </a-form-item>
                             <a-form-item no-style>
                                 <div class="flex gap-6">
@@ -225,7 +302,7 @@ import { Form, message } from "ant-design-vue";
 
 const openSearchTicket = ref([]);
 const atrribute_group_name = ref(null);
-const selected_storage = ref(null);
+const selected_attr_group = ref(null);
 const openAttributeGroupDetails = ref(false);
 const attributeGroupDetails = ref(null);
 
@@ -242,18 +319,23 @@ const routes = ref([
 
 const columns = [
     {
-        title: "Mã nhóm",
+        title: "Mã thuộc tính",
         dataIndex: "id",
         sorter: true,
     },
     {
-        title: "Tên nhóm thuộc tính",
+        title: "Thuộc tính",
         dataIndex: "name",
         sorter: true,
     },
     {
-        title: "Thuộc tính",
-        dataIndex: "attributes",
+        title: "Mã nhóm thuộc tính",
+        dataIndex: "group_id",
+        sorter: true,
+    },
+    {
+        title: "Tên nhóm thuộc tính",
+        dataIndex: "group",
         sorter: true,
     },
     {
@@ -287,11 +369,12 @@ const handleOpenAttributeGroupDetails = (record) => {
     attributeGroupDetails.value = record;
     formState.value = {
         atrribute_group_name: record.name,
+        attribute_group_id: record.group_id,
     };
     openAttributeGroupDetails.value = true;
 };
 const handleCreateAttributeGroup = () => {
-    router.push({ name: "attribute-group-create" });
+    router.push({ name: "management-attribute-create" });
 };
 
 const handleToggleSearchBox = () => {
@@ -314,16 +397,16 @@ const useForm = Form.useForm;
 const { resetFields, validate, validateInfos } = useForm(
     formState.value,
     reactive({
-        storage_code: [
+        attribute_group_id: [
             {
                 required: true,
-                message: "Vui lòng chọn mã đại lý",
+                message: "Vui lòng chọn mã nhóm thuộc tính",
             },
         ],
         atrribute_group_name: [
             {
                 required: true,
-                message: "Vui lòng nhập tên nguyên liệu",
+                message: "Vui lòng nhập tên thuộc tính",
             },
         ],
     })
@@ -333,18 +416,20 @@ const onSubmit = async () => {
     validate()
         .then(async (res) => {
             const response = await axios.post(
-                `/api/attribute-groups/${attributeGroupDetails.value.id}`,
+                `/api/attributes/${attributeGroupDetails.value.id}`,
                 {
                     name: formState.value.atrribute_group_name,
+                    group_id: formState.value.attribute_group_id,
                 }
             );
             if (response.data.code == 200) {
                 message.success(response.data.message);
-                handleCancelEditAttrGroup();
                 handleReloadData();
+                handleCancelEditAttrGroup();
             }
         })
         .catch((err) => {
+            console.log(err.response);
             if (err.response.status == 422) {
                 errorInfo.value = Object.values(err.response.data.errors);
                 message.error("Vui lòng kiểm tra lại thông tin");
@@ -356,10 +441,12 @@ const onSubmit = async () => {
 const handleCancelEditAttrGroup = () => {
     formState.value = null;
     openAttributeGroupDetails.value = false;
+    errorInfo.value = [];
+    resetFields();
 };
 
 const queryData = (params) => {
-    return axios.get("/api/attribute-groups", {
+    return axios.get("/api/attributes", {
         params,
     });
 };
@@ -396,6 +483,26 @@ const handleReloadData = () => {
     });
 };
 
+const handleSearchTable = () => {
+    let params = {};
+    if (selected_attr_group.value) {
+        params.group_id = selected_attr_group.value;
+    }
+    if (atrribute_group_name.value) {
+        params.name = atrribute_group_name.value;
+    }
+    run({
+        limit: pagination.pageSize,
+        page: 1,
+        ...params,
+    });
+};
+const handleClearSearchTable = () => {
+    selected_attr_group.value = null;
+    atrribute_group_name.value = null;
+    handleSearchTable();
+}
+
 const handleTableChange = (pag, filters, sorter) => {
     run({
         limit: pag.pageSize,
@@ -421,9 +528,9 @@ const handleDeleteMaterials = async () => {
         selectedRow.value.forEach(async (id) => {
             try {
                 loading.value = true;
-                const response = await axios.delete(`/api/attribute-groups/${id}`);
-                message.success(response.data.message);
+                const response = await axios.delete(`/api/attributes/${id}`);
                 handleReloadData();
+                message.success(response.data.message);
             } catch (e) {
                 loading.value = false;
                 message.error("Vui lòng thử lại sau");
@@ -433,6 +540,63 @@ const handleDeleteMaterials = async () => {
     }
 };
 
+function fetchAttrGroup(value, callback) {
+    if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+    }
+    currentValue = value;
+    timeout = setTimeout(searchAttrGroup(value, callback), 300);
+}
+
+const handleSearchAttrGroup = async (val) => {
+    fetchAttrGroup(val, (data) => (data_storages.value = data));
+};
+const handleChangeAttrGroup = (val, item) => {
+    formState.attribute_group_id = item;
+    fetchAttrGroup("", (data) => (data_storages.value = data));
+};
+
+async function searchAttrGroup(value, callback) {
+    data_storages_fetching.value = true;
+    const params = new URLSearchParams({
+        name: value,
+    });
+    if (value) {
+        await axios.get(`/api/attribute-groups?${params}`).then((response) => {
+            if (currentValue === value) {
+                const result = response.data.data?.map((attr_group) => ({
+                    label: attr_group.name + "(" + attr_group.id + ")",
+                    value: attr_group.id,
+                    data: attr_group,
+                }));
+                data_storages_fetching.value = false;
+                callback(result);
+            }
+        });
+    } else {
+        await axios.get(`/api/attribute-groups`).then((response) => {
+            if (currentValue === value) {
+                const result = response.data.data?.map((attr_group) => ({
+                    label: attr_group.name + "(" + attr_group.id + ")",
+                    value: attr_group.id,
+                    data: attr_group,
+                }));
+                data_storages_fetching.value = false;
+                callback(result);
+            }
+        });
+    }
+}
+
+watch(formState.attribute_group_id, () => {
+    data_storages.value = [];
+    data_storages_fetching.value = false;
+});
+
+onMounted(() => {
+    searchAttrGroup("", (data) => (data_storages.value = data));
+});
 </script>
 
 <style lang="scss" scoped>

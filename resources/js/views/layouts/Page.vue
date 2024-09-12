@@ -139,7 +139,7 @@
                             </div>
                         </template>
                         <a-menu-item
-                            key="9"
+                            key="management-materials"
                             :class="collapsed ? 'hide-title' : ''"
                         >
                             <router-link
@@ -150,7 +150,7 @@
                             </router-link>
                         </a-menu-item>
                         <a-menu-item
-                            key="10"
+                            key="management-units"
                             :class="collapsed ? 'hide-title' : ''"
                         >
                             <router-link
@@ -161,7 +161,7 @@
                             </router-link>
                         </a-menu-item>
                         <a-menu-item
-                            key="11"
+                            key="management-attribute-group"
                             :class="collapsed ? 'hide-title' : ''"
                         >
                             <router-link
@@ -169,6 +169,17 @@
                                 class="flex items-center gap-2"
                             >
                                 <span>Nhóm thuộc tính</span>
+                            </router-link>
+                        </a-menu-item>
+                        <a-menu-item
+                            key="management-attribute"
+                            :class="collapsed ? 'hide-title' : ''"
+                        >
+                            <router-link
+                                :to="{ name: 'management-attribute' }"
+                                class="flex items-center gap-2"
+                            >
+                                <span>Thuộc tính</span>
                             </router-link>
                         </a-menu-item>
                     </a-sub-menu>
