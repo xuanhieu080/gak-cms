@@ -454,7 +454,6 @@ const handleSearchTable = (e) => {
 };
 
 const beforeUpload = (file) => {
-    console.log(file);
     formState.value.image = [file];
     return false;
 };

@@ -18,6 +18,8 @@ import Attribute from '@/views/pages/private/management/attribute';
 import AttributeCreate from '@/views/pages/private/management/create-attribute';
 import CreateMaterial from '@/views/pages/private/management/create-material';
 import Units from '@/views/pages/private/management/units';
+import ProductManagement from '@/views/pages/private/products/management';
+import ProductCreate from '@/views/pages/private/products/create';
 const routes = [
     {
         name: "home",
@@ -54,6 +56,25 @@ const routes = [
         path: "/profile",
         meta: {requiresAuth: true},
         component: PageProfile,
+    },
+    {
+        name: "product-management",
+        path: "/products",
+        meta: {requiresAuth: true},
+        children: [
+            {
+                path: "",
+                name: "product-index",
+                meta: {requiresAuth: true},
+                component: ProductManagement,
+            },
+            {
+                name: "product-create",
+                path: "create",
+                meta: {requiresAuth: true},
+                component: ProductCreate,
+            },
+        ]
     },
     {
         name: "warehouse",

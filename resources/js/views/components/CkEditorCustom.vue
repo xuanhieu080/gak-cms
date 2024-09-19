@@ -84,7 +84,7 @@ import {
   Undo
 } from 'ckeditor5';
 
-import translations from './vi';
+// import translations from './vi';
 // import * as Editor from 'ckeditor-custom-build/build/ckeditor';
 // import Editor from 'ckeditor5-custom-build/build/ckeditor';
 // import 'ckeditor5-custom-build/sample/styles.css';
@@ -382,7 +382,7 @@ const editorConfig = {
   table: {
     contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
   },
-  translations: [translations],
+  // translations: [translations],
   enableGrip: false,
   extraPlugins: [CustomUploader]
 };

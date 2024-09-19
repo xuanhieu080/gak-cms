@@ -79,10 +79,15 @@
                     </a-menu-item>
 
                     <a-menu-item key="2" :class="collapsed ? 'hide-title' : ''">
-                        <div class="flex items-center">
-                            <ShopOutlined />
-                        </div>
-                        <span>Quản lý sản phẩm</span>
+                        <router-link
+                            :to="{ name: 'product-index' }"
+                            class="flex items-center gap-2"
+                        >
+                            <div class="flex items-center">
+                                <ShopOutlined />
+                            </div>
+                            <span>Quản lý sản phẩm</span>
+                        </router-link>
                     </a-menu-item>
                     <a-sub-menu
                         key="sub1"
