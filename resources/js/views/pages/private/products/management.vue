@@ -62,8 +62,25 @@
                                     }}</span>
                                 </div>
                             </template>
-                            <template v-if="column.dataIndex === 'discount_price'">
+                            <template
+                                v-if="column.dataIndex === 'discount_price'"
+                            >
                                 <span class="text-red-500">{{ text }}</span>
+                            </template>
+                            <template v-if="column.dataIndex === 'action'">
+                                <div class="flex items-center justify-center">
+                                    <a-tooltip>
+                                        <template #title>Chỉnh sửa</template>
+                                        <EditOutlined
+                                            @click="
+                                                handleEditProduct(
+                                                    record
+                                                )
+                                            "
+                                            :style="{ color: '#3b82f6' }"
+                                        />
+                                    </a-tooltip>
+                                </div>
                             </template>
                         </template>
                         <template #title>
@@ -149,7 +166,7 @@ import {
     PlusOutlined,
     DeleteOutlined,
     SyncOutlined,
-    ReloadOutlined,
+    EditOutlined,
     UserOutlined,
     PhoneTwoTone,
 } from "@ant-design/icons-vue";
@@ -231,6 +248,10 @@ const columns = [
         title: "Người Cập Nhật",
         dataIndex: "updated_by_name",
         sorter: true,
+    },
+    {
+        title: "Hành động",
+        dataIndex: "action",
     },
 ];
 
@@ -467,6 +488,10 @@ const rowSelection = {
         id: record.id,
     }),
 };
+
+const handleEditProduct = (record) => {
+    router.push({ name: "product-edit", params: { id: record.id } });
+}
 </script>
 
 <style lang="scss" scoped>

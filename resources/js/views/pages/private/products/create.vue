@@ -38,7 +38,27 @@
                             placeholder="Nhập tên sản phẩm"
                         />
                     </a-form-item>
-
+                    <a-form-item
+                        label="Slug"
+                        name="slug"
+                        :rules="[
+                            {
+                                required: true,
+                                message: 'Vui lòng nhập slug sản phẩm!',
+                            },
+                        ]"
+                    >
+                        <a-input
+                            v-model:value="form.slug"
+                            placeholder="Nhập slug sản phẩm"
+                        />
+                    </a-form-item>
+                    <a-form-item label="Đường dẫn Video" name="video_link">
+                        <a-input
+                            v-model:value="form.video_link"
+                            placeholder="Nhập đường dẫn video"
+                        />
+                    </a-form-item>
                     <a-form-item
                         label="Hình ảnh"
                         name="image"
@@ -47,11 +67,10 @@
                             {
                                 required: true,
                                 message: 'Vui lòng nhập URL hình ảnh!',
-
                             },
                         ]"
                     >
-                        <a-upload
+                        <a-upload-dragger
                             :before-upload="beforeUpload"
                             @preview="handlePreview"
                             list-type="picture-card"
@@ -59,9 +78,11 @@
                         >
                             <div>
                                 <PlusOutlined />
-                                <div style="margin-top: 8px">Upload</div>
+                                <div style="margin-top: 8px">
+                                    Kéo thả hoặc chọn thêm hình ảnh
+                                </div>
                             </div>
-                        </a-upload>
+                        </a-upload-dragger>
                         <a-modal
                             :open="previewVisible"
                             :title="previewTitle"
@@ -80,6 +101,7 @@
                         class="w-full"
                         label="Số lượng tồn kho"
                         name="amount"
+                        :autoLink="false"
                         :rules="[
                             {
                                 required: true,
@@ -90,59 +112,192 @@
                         <a-input-number
                             v-model:value="form.amount"
                             placeholder="Nhập số lượng tồn kho"
+                            :min="1"
                             class="w-full"
                         />
                     </a-form-item>
 
                     <a-form-item
-                        label="Giá gốc"
+                        class="w-full"
+                        label="Giá tiền gốc"
                         name="price"
-                        :rules="[
-                            {
-                                required: true,
-                                message: 'Vui lòng nhập giá gốc!',
-                            },
-                        ]"
                     >
-                        <a-input
+                        <a-input-number
                             v-model:value="form.price"
-                            placeholder="Nhập giá gốc"
+                            :formatter="
+                                (value) =>
+                                    `${value}`.replace(
+                                        /\B(?=(\d{3})+(?!\d))/g,
+                                        ','
+                                    )
+                            "
+                            :parser="
+                                (value) => value.replace(/\$\s?|(,*)/g, '')
+                            "
+                            class="w-full"
+                            @change="calculateDiscountedPrice"
+                        />
+                    </a-form-item>
+                    <a-form-item label="% giảm giá" name="discount_percent">
+                        <a-input-number
+                            :min="0"
+                            :max="100"
+                            :formatter="(value) => `${value}`"
+                            class="w-full"
+                            v-model:value="form.discount_percent"
+                            @change="calculateDiscountedPrice"
+                        />
+                    </a-form-item>
+                    <a-form-item
+                        label="Giá sau giảm"
+                        name="discount_price"
+                        class="w-full"
+                    >
+                        <a-input-number
+                            v-model:value="form.discount_price"
+                            :formatter="
+                                (value) =>
+                                    `${value}`.replace(
+                                        /\B(?=(\d{3})+(?!\d))/g,
+                                        ','
+                                    )
+                            "
+                            :parser="
+                                (value) => value.replace(/\$\s?|(,*)/g, '')
+                            "
+                            class="w-full"
+                            @change="calculateDiscountPercent"
                         />
                     </a-form-item>
 
                     <a-form-item
-                        label="Giá sau giảm"
-                        name="discount_price"
+                        label="Mô tả sản phẩm"
+                        name="product_description"
+                    >
+                        <CkEditorCustom
+                            :key="'description-1'"
+                            :content="form.product_description"
+                        />
+                    </a-form-item>
+
+                    <a-form-item
+                        label="Thông tin nổi bật"
+                        name="feature_description"
+                    >
+                        <CkEditorCustom
+                            :key="'description-2'"
+                            :content="form.feature_description"
+                        />
+                    </a-form-item>
+                    <a-form-item
+                        label="Hình ảnh thông tin nổi bật"
+                        name="image_description_feature"
+                    >
+                        <a-upload-dragger
+                            :before-upload="beforeUploadFImg"
+                            :max-count="1"
+                            @preview="handlePreviewFImg"
+                            list-type="picture-card"
+                            v-model:file-list="form.feature_img"
+                            class="w-full"
+                        >
+                            <div class="w-full">
+                                <PlusOutlined />
+                                <div class="mt-2">
+                                    Kéo thả hoặc chọn thêm hình ảnh
+                                </div>
+                            </div>
+                        </a-upload-dragger>
+                        <a-modal
+                            :open="previewVisibleFImg"
+                            :title="previewFImgTitle"
+                            :footer="null"
+                            @cancel="handleCancelFImg"
+                        >
+                            <img
+                                alt="feature-image"
+                                style="width: 100%"
+                                :src="previewFImg"
+                            />
+                        </a-modal>
+                    </a-form-item>
+                    <a-form-item
+                        label="SEO tiêu đề"
+                        name="seo_title"
                         :rules="[
                             {
                                 required: true,
-                                message: 'Vui lòng nhập giá sau giảm!',
+                                message: 'Vui lòng nhập số lượng tồn kho!',
                             },
                         ]"
                     >
                         <a-input
-                            v-model:value="form.discount_price"
-                            placeholder="Nhập giá sau giảm"
+                            v-model:value="form.seo_title"
+                            placeholder="Nhập SEO tiêu đề"
                         />
                     </a-form-item>
-
-                    <a-form-item label="Đặc điểm nổi bật" name="description1">
-                        <CkEditorCustom :key="'description-1'" />
-                    </a-form-item>
-
-                    <a-form-item label="Mô tả sản phẩm" name="description2">
-                        <CkEditorCustom :key="'description-2'" />
-                    </a-form-item>
-
-                    <a-form-item label="SEO sản phẩm" name="seo">
+                    <a-form-item
+                        label="SEO nội dung"
+                        name="seo_description"
+                        :rules="[
+                            {
+                                required: true,
+                                message: 'Vui lòng nhập số lượng tồn kho!',
+                            },
+                        ]"
+                    >
                         <a-input
-                            v-model:value="form.seo"
-                            placeholder="Nhập SEO sản phẩm"
+                            v-model:value="form.seo_description"
+                            placeholder="Nhập SEO nội dung"
                         />
+                    </a-form-item>
+                    <a-form-item
+                        label="SEO từ khóa"
+                        name="seo_keyword"
+                        :rules="[
+                            {
+                                required: true,
+                                message: 'Vui lòng nhập số lượng tồn kho!',
+                            },
+                        ]"
+                    >
+                        <a-input
+                            v-model:value="form.seo_keyword"
+                            placeholder="Nhập SEO từ khóa"
+                        />
+                    </a-form-item>
+
+                    <a-form-item label="Hình ảnh SEO" name="seo_image">
+                        <a-upload-dragger
+                            :before-upload="beforeUploadSEOImg"
+                            @preview="handlePreviewSEOImg"
+                            list-type="picture-card"
+                            v-model:file-list="form.seo_image"
+                            class="w-full"
+                        >
+                            <div class="w-full">
+                                <PlusOutlined />
+                                <div class="mt-2">
+                                    Kéo thả hoặc chọn thêm hình ảnh
+                                </div>
+                            </div>
+                        </a-upload-dragger>
+                        <a-modal
+                            :open="previewVisibleSEOImg"
+                            :title="previewSEOImgTitle"
+                            :footer="null"
+                            @cancel="handleCancelSEOImg"
+                        >
+                            <img
+                                alt="feature-image"
+                                style="width: 100%"
+                                :src="previewSEOImg"
+                            />
+                        </a-modal>
                     </a-form-item>
                     <a-form-item>
                         <a-button type="primary" html-type="submit"
-                            >Submit</a-button
+                            >Tạo mới</a-button
                         >
                     </a-form-item>
                 </a-form>
@@ -169,13 +324,20 @@ import CkEditorCustom from "@/views/components/CkEditorCustom.vue";
 
 const form = ref({
     name: "",
+    slug: "",
+    video_link: "",
     image: [],
     amount: null,
-    price: "",
-    discount_price: "",
-    description1: "",
-    description2: "",
-    seo: "",
+    price: 0,
+    discount_percent: 0,
+    discount_price: 0,
+    product_description: "",
+    feature_description: "",
+    feature_img: [],
+    seo_title: "",
+    seo_description: "",
+    seo_keyword: "",
+    seo_image: [],
 });
 
 const routes = ref([
@@ -184,12 +346,48 @@ const routes = ref([
         breadcrumbName: "Trang chủ",
     },
     {
-        name: "warehouse",
+        name: "product-create",
         breadcrumbName: "Quản lý Sản phẩm",
     },
 ]);
 
 const router = useRouter();
+
+//Price handle
+
+function calculateDiscountedPrice() {
+    // form.value.discount_price = Math.round(
+    //     form.value.price * (1 - form.value.discount_percent / 100)
+    // );
+    form.value.discount_price = customRound(form.value.price * (1 - form.value.discount_percent / 100));
+}
+function calculateDiscountPercent() {
+    if (
+        form.value.price !== 0 &&
+        form.value.discount_price <= form.value.price
+    ) {
+        let newDiscountPercent =
+            ((form.value.price - form.value.discount_price) /
+                form.value.price) *
+            100;
+        if (Math.abs(newDiscountPercent - form.value.discount_percent) >= 1) {
+            form.value.discount_percent = Math.round(newDiscountPercent);
+        }
+    }
+    if (form.value.discount_price > form.value.price) {
+        form.value.discount_price = 0;
+        form.value.discount_percent = 100;
+        message.error("Giá sau giảm không được lớn hơn giá gốc");
+    }
+}
+
+function customRound(value) {
+    if (value % 1 >= 0.5) {
+        return Math.floor(value);
+    } else {
+        return Math.round(value);
+    }
+}
 
 const handleSubmit = async () => {
     try {
@@ -214,6 +412,8 @@ function getBase64(file) {
         reader.onerror = (error) => reject(error);
     });
 }
+
+// Load hình ảnh sản phẩm chung
 const beforeUpload = (file) => {
     form.value.image = [...(form.value.image || []), file];
     return false;
@@ -233,6 +433,49 @@ const handlePreview = async (file) => {
 const handleCancel = () => {
     previewVisible.value = false;
     previewTitle.value = "";
+};
+
+// Load Hình ảnh thông tin nổi bật
+const beforeUploadFImg = (file) => {
+    form.value.feature_img = [...(form.value.feature_img || []), file];
+    return false;
+};
+const previewVisibleFImg = ref(false);
+const previewFImg = ref("");
+const previewFImgTitle = ref("");
+const handlePreviewFImg = async (file) => {
+    if (!file.url && !file.preview) {
+        file.preview = await getBase64(file.originFileObj);
+    }
+    previewFImg.value = file.url || file.preview;
+    previewVisibleFImg.value = true;
+    previewFImgTitle.value =
+        file.name || file.url.substring(file.url.lastIndexOf("/") + 1);
+};
+const handleCancelFImg = () => {
+    previewVisibleFImg.value = false;
+    previewFImgTitle.value = "";
+};
+// Load Hình ảnh SEO
+const beforeUploadSEOImg = (file) => {
+    form.value.seo_image = [...(form.value.seo_image || []), file];
+    return false;
+};
+const previewVisibleSEOImg = ref(false);
+const previewSEOImg = ref("");
+const previewSEOImgTitle = ref("");
+const handlePreviewSEOImg = async (file) => {
+    if (!file.url && !file.preview) {
+        file.preview = await getBase64(file.originFileObj);
+    }
+    previewSEOImg.value = file.url || file.preview;
+    previewVisibleSEOImg.value = true;
+    previewSEOImgTitle.value =
+        file.name || file.url.substring(file.url.lastIndexOf("/") + 1);
+};
+const handleCancelSEOImg = () => {
+    previewVisibleSEOImg.value = false;
+    previewSEOImgTitle.value = "";
 };
 </script>
 
@@ -275,13 +518,13 @@ const handleCancel = () => {
     }
 }
 .ant-upload-select-picture-card i {
-  font-size: 32px;
-  color: #999;
+    font-size: 32px;
+    color: #999;
 }
 
 .ant-upload-select-picture-card .ant-upload-text {
-  margin-top: 8px;
-  color: #666;
+    margin-top: 8px;
+    color: #666;
 }
 </style>
 <style lang="scss">
