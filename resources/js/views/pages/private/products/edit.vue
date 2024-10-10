@@ -390,12 +390,7 @@
                             <a-form-item
                                 label="Giá tiền"
                                 name="price"
-                                :rules="[
-                                    {
-                                        required: true,
-                                        message: 'Vui lòng nhập tên sản phẩm!',
-                                    },
-                                ]"
+                                class="w-full"
                             >
                                 <a-input-number
                                     class="w-full"
@@ -477,7 +472,14 @@
                             :wrapper-col="wrapperCol"
                         >
                             <div>
-                                <h3>Thêm thuộc tính</h3>
+                                <div class="flex items-center gap-4 mb-4">
+                                    <h3>Thêm thuộc tính</h3>
+                                    <a-button
+                                        type="primary"
+                                        @click="addAttribute"
+                                        >Thêm chi tiết thuộc tính</a-button
+                                    >
+                                </div>
                                 <div
                                     v-for="(
                                         attribute, index
@@ -547,7 +549,7 @@
                                         </a-col>
                                         <a-col :span="2">
                                             <div
-                                                class="flex items-center gap-1 mt-2.5"
+                                                class="flex items-center gap-1 ml-4 mt-2.5"
                                             >
                                                 <MinusCircleOutlined
                                                     :style="{ color: 'red' }"
@@ -559,13 +561,6 @@
                                         </a-col>
                                     </a-row>
                                 </div>
-                                <a-form-item>
-                                    <a-button
-                                        type="primary"
-                                        @click="addAttribute"
-                                        >Thêm chi tiết thuộc tính</a-button
-                                    >
-                                </a-form-item>
                             </div>
                             <div>
                                 <h3>Thuộc tính đã chọn</h3>
@@ -658,244 +653,173 @@
                             </a-form-item>
                         </a-form>
                     </a-tab-pane>
-                    <a-tab-pane key="4" tab="Đánh giá">
-                        <div class="grid grid-cols-6 gap-2 w-full">
-                            <div class="left-review">
-                                <a-button type="primary" @click="showModal"
-                                    >Thêm đánh giá</a-button
-                                >
-                            </div>
-                            <div
-                                class="col-span-5 right-review flex flex-col gap-2"
-                            >
-                                <a-card
-                                    v-for="(
-                                        review, index
-                                    ) in formReview.reviews"
-                                    :key="index"
-                                >
-                                    <div class="flex flex-col gap-4 w-full">
-                                        <div
-                                            class="flex items-center gap-4 justify-between w-full"
-                                        >
-                                            <a-rate
-                                                :value="review.rating"
-                                                :disabled="true"
-                                                class="text-green-700"
-                                            />
-                                            <div
-                                                class="review-actions flex items-center gap-4"
-                                            >
-                                                <a-tooltip title="Chỉnh sửa">
-                                                    <a-button shape="circle" class="flex items-center justify-center">
-                                                        <EditOutlined :style="{color: 'blue'}"
-                                                            @click="
-                                                                handleEditReview(
-                                                                    review
-                                                                )
-                                                            "
-                                                        />
-                                                    </a-button>
-                                                </a-tooltip>
-                                                <a-tooltip title="Xóa">
-                                                    <a-button shape="circle" class="flex items-center justify-center">
-                                                        <DeleteOutlined  :style="{color: 'red'}"
-                                                            @click="
-                                                                handleDeleteReview(
-                                                                    review
-                                                                )
-                                                            "
-                                                        />
-                                                    </a-button>
-                                                </a-tooltip>
-                                            </div>
-                                        </div>
-
-                                        <div class="text-lg font-semibold">
-                                            {{ review.author }}
-                                        </div>
-                                        <div class="text-lg font-semibold">
-                                            {{ review.variable }}
-                                        </div>
-                                        <span class="text-gray-700">
-                                            {{ review.content }}
-                                        </span>
-                                        <div
-                                            class="p-4 bg-gray-300 rounded-lg font-semibold"
-                                        >
-                                            {{ review.reply }}
-                                        </div>
-                                        <span class="text-gray-500">
-                                            {{ review.date }}
-                                        </span>
-                                    </div>
-                                </a-card>
-                            </div>
-                        </div>
-
-                        <a-modal
-                            v-model:open="visible"
-                            title="Thêm đánh giá"
-                            ok-text="Save"
-                            @ok="handleOk"
+                    <a-tab-pane key="4" tab="Biến thể">
+                        <a-form
+                            :form="variableForm"
+                            @submit="handleSubmitEachVariant"
+                            layout="vertical"
                         >
-                            <a-form
-                                ref="formReviewRef"
-                                :model="formReview"
-                                layout="vertical"
-                            >
+                            <a-form-item label="Chọn biến thể">
+                                <a-select
+                                    v-model:value="selectedVariant"
+                                    placeholder="Chọn biến thể"
+                                    @change="handleVariantChange"
+                                >
+                                    <a-select-option
+                                        v-for="variant in variants"
+                                        :key="variant.id"
+                                        :value="variant.id"
+                                    >
+                                        {{ variant.name }}
+                                    </a-select-option>
+                                </a-select>
+                            </a-form-item>
+
+                            <template v-if="selectedVariant">
                                 <a-form-item
-                                    label="Tên"
-                                    name="author"
+                                    label="Mã sản phẩm"
                                     :rules="[
                                         {
                                             required: true,
                                             message:
-                                                'Vui lòng nhập tên tác giả!',
+                                                'Vui lòng nhập mã sản phẩm!',
                                         },
                                     ]"
+                                    name="productCode"
+                                    :autoLink="false"
                                 >
                                     <a-input
-                                        v-model:value="formReview.author"
+                                        v-model:value="variableForm.productCode"
                                     />
                                 </a-form-item>
+
                                 <a-form-item
-                                    label="Chọn biến thể"
-                                    name="variable"
-                                    :auto-link="false"
-                                    :rules="[
-                                        {
-                                            required: true,
-                                            message: 'Vui lòng chọn biến thể!',
-                                        },
-                                    ]"
-                                >
-                                    <a-select
-                                        v-model:value="formReview.variable"
-                                    ></a-select>
-                                </a-form-item>
-                                <a-form-item label="Đánh giá" name="rating">
-                                    <div class="flex flex-col gap-2 w-full">
-                                        <a-input-number
-                                            max="5"
-                                            min="0"
-                                            step="0.5"
-                                            v-model:value="formReview.rating"
-                                        ></a-input-number>
-                                        <a-rate
-                                            v-model:value="formReview.rating"
-                                            allow-half
-                                        />
-                                    </div>
-                                </a-form-item>
-                                <a-form-item
-                                    label="Nội dung"
-                                    name="content"
-                                    :rules="[
-                                        {
-                                            required: true,
-                                            message: 'Vui lòng nhập nội dung!',
-                                        },
-                                    ]"
-                                >
-                                    <a-textarea
-                                        v-model:value="formReview.content"
-                                    />
-                                </a-form-item>
-                                <a-form-item label="Trả lời" name="reply">
-                                    <a-textarea
-                                        v-model:value="formReview.reply"
-                                    />
-                                </a-form-item>
-                                <a-form-item label="Thời gian" name="date">
-                                    <a-date-picker
-                                        class="w-full"
-                                        v-model:value="formReview.date"
-                                    />
-                                </a-form-item>
-                            </a-form>
-                        </a-modal>
-                        <a-modal
-                            v-model:open="visibleEditReview"
-                            title="Thêm đánh giá"
-                            ok-text="Update"
-                            @ok="handleUpdateReview"
-                        >
-                            <a-form
-                                :model="formEditReview"
-                                layout="vertical"
-                            >
-                                <a-form-item
-                                    label="Tên"
-                                    name="author"
+                                    label="Tên biến thể"
                                     :rules="[
                                         {
                                             required: true,
                                             message:
-                                                'Vui lòng nhập tên tác giả!',
+                                                'Vui lòng nhập tên biến thể!',
                                         },
                                     ]"
+                                    :autoLink="false"
+                                    name="variantName"
                                 >
                                     <a-input
-                                        v-model:value="formEditReview.author"
+                                        v-model:value="variableForm.variantName"
                                     />
                                 </a-form-item>
+
                                 <a-form-item
-                                    label="Chọn biến thể"
-                                    name="variable"
-                                    :auto-link="false"
-                                    :rules="[
-                                        {
-                                            required: true,
-                                            message: 'Vui lòng chọn biến thể!',
-                                        },
-                                    ]"
+                                    label="Nội dung biến thể"
+                                    name="variantContent"
                                 >
-                                    <a-select
-                                        v-model:value="formEditReview.variable"
-                                    ></a-select>
+                                    <a-input
+                                        v-model:value="
+                                            variableForm.variantContent
+                                        "
+                                        :disabled="true"
+                                    />
                                 </a-form-item>
-                                <a-form-item label="Điểm Đánh giá" name="rating">
-                                    <div class="flex flex-col gap-2 w-full">
-                                        <a-input-number
-                                            max="5"
-                                            min="0"
-                                            step="0.5"
-                                            v-model:value="formEditReview.rating"
-                                        ></a-input-number>
-                                        <a-rate
-                                            v-model:value="formEditReview.rating"
-                                            allow-half
-                                        />
-                                    </div>
-                                </a-form-item>
+
                                 <a-form-item
-                                    label="Nội dung"
-                                    name="content"
-                                    :rules="[
-                                        {
-                                            required: true,
-                                            message: 'Vui lòng nhập nội dung!',
-                                        },
-                                    ]"
+                                    label="Param biến thể"
+                                    name="variantParam"
                                 >
-                                    <a-textarea
-                                        v-model:value="formEditReview.content"
+                                    <a-input
+                                        v-model:value="
+                                            variableForm.variantParam
+                                        "
                                     />
                                 </a-form-item>
-                                <a-form-item label="Trả lời" name="reply">
-                                    <a-textarea
-                                        v-model:value="formEditReview.reply"
-                                    />
-                                </a-form-item>
-                                <a-form-item label="Thời gian" name="date">
-                                    <a-date-picker
+
+                                <a-form-item label="Giá tiền" name="price">
+                                    <a-input-number
+                                        v-model:value="variableForm.price"
                                         class="w-full"
-                                        v-model:value="formEditReview.date"
+                                        :formatter="
+                                            (value) =>
+                                                `${value}`.replace(
+                                                    /\B(?=(\d{3})+(?!\d))/g,
+                                                    ','
+                                                )
+                                        "
+                                        :parser="
+                                            (value) =>
+                                                value.replace(/\$\s?|(,*)/g, '')
+                                        "
+                                        @change="
+                                            calculateDiscountedVariablePrice
+                                        "
                                     />
                                 </a-form-item>
-                            </a-form>
-                        </a-modal>
+
+                                <a-form-item
+                                    label="% giảm giá"
+                                    name="discountPercent"
+                                >
+                                    <a-input-number
+                                        v-model:value="
+                                            variableForm.discount_percent
+                                        "
+                                        :min="0"
+                                        :max="100"
+                                        :formatter="(value) => `${value}`"
+                                        class="w-full"
+                                        @change="
+                                            calculateDiscountedVariablePrice
+                                        "
+                                    />
+                                </a-form-item>
+
+                                <a-form-item
+                                    label="Tiền sau giảm"
+                                    name="discountedPrice"
+                                >
+                                    <a-input-number
+                                        v-model:value="
+                                            variableForm.discount_price
+                                        "
+                                        class="w-full"
+                                        :formatter="
+                                            (value) =>
+                                                `${value}`.replace(
+                                                    /\B(?=(\d{3})+(?!\d))/g,
+                                                    ','
+                                                )
+                                        "
+                                        :parser="
+                                            (value) =>
+                                                value.replace(/\$\s?|(,*)/g, '')
+                                        "
+                                        @change="
+                                            calculateVariableDiscountPercent
+                                        "
+                                    />
+                                </a-form-item>
+
+                                <a-form-item label="Số lượng" name="quantity">
+                                    <a-input-number
+                                        class="w-full"
+                                        :formatter="
+                                            (value) =>
+                                                `${value}`.replace(
+                                                    /\B(?=(\d{3})+(?!\d))/g,
+                                                    ','
+                                                )
+                                        "
+                                        v-model:value="variableForm.quantity"
+                                        :min="0"
+                                    />
+                                </a-form-item>
+
+                                <a-form-item>
+                                    <a-button type="primary" html-type="submit">
+                                        Lưu
+                                    </a-button>
+                                </a-form-item>
+                            </template>
+                        </a-form>
                     </a-tab-pane>
                 </a-tabs>
             </a-card>
@@ -920,7 +844,7 @@ import { useRouter } from "vue-router";
 import { message } from "ant-design-vue";
 import Page from "@/views/layouts/Page";
 import CkEditorCustom from "@/views/components/CkEditorCustom.vue";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 const form = ref({
     name: "",
     slug: "",
@@ -994,6 +918,25 @@ const formEditReview = ref({
     content: "",
     reply: "",
     date: null,
+});
+
+// Handle Change, edit một variable
+
+const selectedVariant = ref(null);
+const variants = ref([
+    { id: 1, name: "Biến thể 1", content: "Nội dung biến thể 1" },
+    { id: 2, name: "Biến thể 2", content: "Nội dung biến thể 2" },
+    // Thêm các biến thể khác vào đây
+]);
+const variableForm = ref({
+    productCode: "",
+    variantName: "",
+    variantContent: "",
+    variantParam: "",
+    price: 0,
+    discount_percent: 0,
+    discount_price: 0,
+    quantity: 0,
 });
 const routes = ref([
     {
@@ -1069,6 +1012,43 @@ function calculateDiscountPercentVariable() {
     if (formVariables.value.discount_price > formVariables.value.price) {
         formVariables.value.discount_price = 0;
         formVariables.value.discount_percent = 100;
+        message.error("Giá sau giảm không được lớn hơn giá gốc");
+    }
+}
+
+// Price specific variable
+//Price handle
+
+function calculateDiscountedVariablePrice() {
+    // form.value.discount_price = Math.round(
+    //     form.value.price * (1 - form.value.discount_percent / 100)
+    // );
+    variableForm.value.discount_price = customRound(
+        variableForm.value.price *
+            (1 - variableForm.value.discount_percent / 100)
+    );
+}
+function calculateVariableDiscountPercent() {
+    if (
+        variableForm.value.price !== 0 &&
+        variableForm.value.discount_price <= variableForm.value.price
+    ) {
+        let newDiscountPercent =
+            ((variableForm.value.price - variableForm.value.discount_price) /
+                variableForm.value.price) *
+            100;
+        if (
+            Math.abs(
+                newDiscountPercent - variableForm.value.discount_percent
+            ) >= 1
+        ) {
+            variableForm.value.discount_percent =
+                Math.round(newDiscountPercent);
+        }
+    }
+    if (variableForm.value.discount_price > variableForm.value.price) {
+        variableForm.value.discount_price = 0;
+        variableForm.value.discount_percent = 100;
         message.error("Giá sau giảm không được lớn hơn giá gốc");
     }
 }
@@ -1236,15 +1216,30 @@ function handleUpdateReview() {
         rating: 0,
         content: "",
         date: null,
-    }
+    };
 }
 function handleEditReview(reviewItem) {
     visibleEditReview.value = true;
     formEditReview.value = reviewItem;
-
 }
-function handleDeleteReview(reviewItem) {
+function handleDeleteReview(reviewItem) {}
 
+//Handle Edit, change Each Variable
+function handleVariantChange(value) {
+    selectedVariant.value = value;
+    resetVariantFields();
+}
+function resetVariantFields() {
+    variableForm.value = {
+        productCode: "",
+        variantName: "",
+        variantContent: "",
+        variantParam: "",
+        price: 0,
+        discount_percent: 0,
+        discount_price: 0,
+        quantity: 0,
+    };
 }
 </script>
 

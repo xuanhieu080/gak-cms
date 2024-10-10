@@ -252,6 +252,7 @@ const columns = [
     {
         title: "Hành động",
         dataIndex: "action",
+        fixed: 'right',
     },
 ];
 

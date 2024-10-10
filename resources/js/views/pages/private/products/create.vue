@@ -179,122 +179,6 @@
                             :content="form.product_description"
                         />
                     </a-form-item>
-
-                    <a-form-item
-                        label="Thông tin nổi bật"
-                        name="feature_description"
-                    >
-                        <CkEditorCustom
-                            :key="'description-2'"
-                            :content="form.feature_description"
-                        />
-                    </a-form-item>
-                    <a-form-item
-                        label="Hình ảnh thông tin nổi bật"
-                        name="image_description_feature"
-                    >
-                        <a-upload-dragger
-                            :before-upload="beforeUploadFImg"
-                            :max-count="1"
-                            @preview="handlePreviewFImg"
-                            list-type="picture-card"
-                            v-model:file-list="form.feature_img"
-                            class="w-full"
-                        >
-                            <div class="w-full">
-                                <PlusOutlined />
-                                <div class="mt-2">
-                                    Kéo thả hoặc chọn thêm hình ảnh
-                                </div>
-                            </div>
-                        </a-upload-dragger>
-                        <a-modal
-                            :open="previewVisibleFImg"
-                            :title="previewFImgTitle"
-                            :footer="null"
-                            @cancel="handleCancelFImg"
-                        >
-                            <img
-                                alt="feature-image"
-                                style="width: 100%"
-                                :src="previewFImg"
-                            />
-                        </a-modal>
-                    </a-form-item>
-                    <a-form-item
-                        label="SEO tiêu đề"
-                        name="seo_title"
-                        :rules="[
-                            {
-                                required: true,
-                                message: 'Vui lòng nhập số lượng tồn kho!',
-                            },
-                        ]"
-                    >
-                        <a-input
-                            v-model:value="form.seo_title"
-                            placeholder="Nhập SEO tiêu đề"
-                        />
-                    </a-form-item>
-                    <a-form-item
-                        label="SEO nội dung"
-                        name="seo_description"
-                        :rules="[
-                            {
-                                required: true,
-                                message: 'Vui lòng nhập số lượng tồn kho!',
-                            },
-                        ]"
-                    >
-                        <a-input
-                            v-model:value="form.seo_description"
-                            placeholder="Nhập SEO nội dung"
-                        />
-                    </a-form-item>
-                    <a-form-item
-                        label="SEO từ khóa"
-                        name="seo_keyword"
-                        :rules="[
-                            {
-                                required: true,
-                                message: 'Vui lòng nhập số lượng tồn kho!',
-                            },
-                        ]"
-                    >
-                        <a-input
-                            v-model:value="form.seo_keyword"
-                            placeholder="Nhập SEO từ khóa"
-                        />
-                    </a-form-item>
-
-                    <a-form-item label="Hình ảnh SEO" name="seo_image">
-                        <a-upload-dragger
-                            :before-upload="beforeUploadSEOImg"
-                            @preview="handlePreviewSEOImg"
-                            list-type="picture-card"
-                            v-model:file-list="form.seo_image"
-                            class="w-full"
-                        >
-                            <div class="w-full">
-                                <PlusOutlined />
-                                <div class="mt-2">
-                                    Kéo thả hoặc chọn thêm hình ảnh
-                                </div>
-                            </div>
-                        </a-upload-dragger>
-                        <a-modal
-                            :open="previewVisibleSEOImg"
-                            :title="previewSEOImgTitle"
-                            :footer="null"
-                            @cancel="handleCancelSEOImg"
-                        >
-                            <img
-                                alt="feature-image"
-                                style="width: 100%"
-                                :src="previewSEOImg"
-                            />
-                        </a-modal>
-                    </a-form-item>
                     <a-form-item>
                         <a-button type="primary" html-type="submit"
                             >Tạo mới</a-button
@@ -346,8 +230,12 @@ const routes = ref([
         breadcrumbName: "Trang chủ",
     },
     {
-        name: "product-create",
+        name: "product-index",
         breadcrumbName: "Quản lý Sản phẩm",
+    },
+    {
+        name: "product-create",
+        breadcrumbName: "Tạo sản phẩm",
     },
 ]);
 
