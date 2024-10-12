@@ -22,11 +22,13 @@ class CategoryResource extends JsonResource
     public function toArray($request): array
     {
         return [
-            "id"              => $this->id,
-            "name"            => $this->name,
-            "image"           => $this->getFirstMediaUrl(),
-            "parent_id"       => $this->parent_id,
-            "parent"          => new CategoryShortResource($this->parent),
+            "id"          => $this->id,
+            "name"        => $this->name,
+            "image"       => $this->getFirstMediaUrl(),
+            "parent_id"   => $this->parent_id,
+            "is_active"   => $this->is_active,
+            "description" => $this->description,
+            "parent"      => new CategoryShortResource($this->parent),
         ];
     }
 }
