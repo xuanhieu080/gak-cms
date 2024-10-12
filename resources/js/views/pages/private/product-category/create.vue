@@ -1,25 +1,4 @@
 <template>
-    <svg xmlns="http://www.w3.org/2000/svg" class="hidden">
-        <symbol viewBox="0 0 24 24" id="fe-ticket">
-            <path
-                fill="currentColor"
-                fill-rule="evenodd"
-                d="M2 10V8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2a2 2 0 1 0 0 4v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2a2 2 0 1 0 0-4m3-2v8h14V8zm2 2h10v4H7z"
-            ></path>
-        </symbol>
-        <symbol viewBox="0 0 24 24" id="ms-account-circle">
-            <path
-                fill="currentColor"
-                d="M5.85 17.1q1.275-.975 2.85-1.537T12 15t3.3.563t2.85 1.537q.875-1.025 1.363-2.325T20 12q0-3.325-2.337-5.663T12 4T6.337 6.338T4 12q0 1.475.488 2.775T5.85 17.1M12 13q-1.475 0-2.488-1.012T8.5 9.5t1.013-2.488T12 6t2.488 1.013T15.5 9.5t-1.012 2.488T12 13m0 9q-2.075 0-3.9-.788t-3.175-2.137T2.788 15.9T2 12t.788-3.9t2.137-3.175T8.1 2.788T12 2t3.9.788t3.175 2.137T21.213 8.1T22 12t-.788 3.9t-2.137 3.175t-3.175 2.138T12 22"
-            ></path>
-        </symbol>
-        <symbol viewBox="0 0 16 16" id="bi-boxes">
-            <path
-                fill="currentColor"
-                d="M7.752.066a.5.5 0 0 1 .496 0l3.75 2.143a.5.5 0 0 1 .252.434v3.995l3.498 2A.5.5 0 0 1 16 9.07v4.286a.5.5 0 0 1-.252.434l-3.75 2.143a.5.5 0 0 1-.496 0l-3.502-2l-3.502 2.001a.5.5 0 0 1-.496 0l-3.75-2.143A.5.5 0 0 1 0 13.357V9.071a.5.5 0 0 1 .252-.434L3.75 6.638V2.643a.5.5 0 0 1 .252-.434zM4.25 7.504L1.508 9.071l2.742 1.567l2.742-1.567zM7.5 9.933l-2.75 1.571v3.134l2.75-1.571zm1 3.134l2.75 1.571v-3.134L8.5 9.933zm.508-3.996l2.742 1.567l2.742-1.567l-2.742-1.567zm2.242-2.433V3.504L8.5 5.076V8.21zM7.5 8.21V5.076L4.75 3.504v3.134zM5.258 2.643L8 4.21l2.742-1.567L8 1.076zM15 9.933l-2.75 1.571v3.134L15 13.067zM3.75 14.638v-3.134L1 9.933v3.134z"
-            ></path>
-        </symbol>
-    </svg>
     <Page>
         <div class="warehouse-create space-y-4">
             <a-breadcrumb :routes="routes" class="bg-gray-100 p-2">
@@ -42,7 +21,7 @@
                 <div
                     class="title-box bg-blue-500 text-white p-3 flex items-center gap-1"
                 >
-                    Phiếu tạo kho
+                    Tạo nhóm sản phẩm
                 </div>
                 <div class="p-6 warehouse-create-form gap-6">
                     <a-form
@@ -50,19 +29,61 @@
                         layout="vertical"
                         @finishFailed="onFinishFailed"
                     >
-                        <a-form-item v-bind="validateInfos.manager_id">
+                        <a-form-item v-bind="validateInfos.category_name">
                             <template class="h-full" #label>
-                                <span class="font-medium">Manager ID</span>
+                                <span class="font-medium"
+                                    >Tên nhóm sản phẩm</span
+                                >
+                            </template>
+                            <a-input
+                                v-model:value="formState.category_name"
+                                placeholder=""
+                            />
+                        </a-form-item>
+                        <a-form-item label="Hình ảnh" name="image">
+                            <a-upload-dragger
+                                :before-upload="beforeUploadFImg"
+                                :max-count="1"
+                                @preview="handlePreviewFImg"
+                                list-type="picture-card"
+                                v-model:file-list="formState.image"
+                                class="w-full"
+                            >
+                                <div class="w-full">
+                                    <PlusOutlined />
+                                    <div class="mt-2">
+                                        Kéo thả hoặc chọn thêm hình ảnh
+                                    </div>
+                                </div>
+                            </a-upload-dragger>
+                            <a-modal
+                                :open="previewVisibleFImg"
+                                :title="previewFImgTitle"
+                                :footer="null"
+                                @cancel="handleCancelFImg"
+                            >
+                                <img
+                                    alt="feature-image"
+                                    style="width: 100%"
+                                    :src="previewFImg"
+                                />
+                            </a-modal>
+                        </a-form-item>
+                        <a-form-item v-bind="validateInfos.parent_category_id">
+                            <template class="h-full" #label>
+                                <span class="font-medium"
+                                    >Nhóm sản phẩm cha (Optional)</span
+                                >
                             </template>
                             <a-select
-                                v-model:value="formState.manager_id"
+                                v-model:value="formState.parent_category_id"
                                 :options="data_manager"
                                 :not-found-content="
                                     data_manager_fetching ? undefinded : null
                                 "
-                                placeholder="Chọn người quản lý"
-                                @search="handleSearch"
-                                @change="handleChange"
+                                placeholder="Chọn nhóm sản phẩm"
+                                @search="handleSearchCategory"
+                                @change="handleChangeCategory"
                                 :filter-option="false"
                                 show-search
                             >
@@ -81,46 +102,23 @@
                                 </template>
                             </a-select>
                         </a-form-item>
-                        <a-form-item v-bind="validateInfos.storage_name">
+                        <a-form-item v-bind="validateInfos.description">
                             <template class="h-full" #label>
-                                <span class="font-medium">Tên kho</span>
-                            </template>
-                            <a-input
-                                v-model:value="formState.storage_name"
-                                placeholder=""
-                            />
-                        </a-form-item>
-                        <a-form-item v-bind="validateInfos.storage_code">
-                            <template class="h-full" #label>
-                                <span class="font-medium">Code kho</span>
-                            </template>
-                            <a-input
-                                v-model:value="formState.storage_code"
-                                placeholder=""
-                            />
-                        </a-form-item>
-                        <a-form-item v-bind="validateInfos.email">
-                            <template class="h-full" #label>
-                                <span class="font-medium">Email</span>
-                            </template>
-                            <a-input
-                                v-model:value="formState.email"
-                                type="email"
-                                placeholder=""
-                            />
-                        </a-form-item>
-                        <a-form-item v-bind="validateInfos.phone">
-                            <template class="h-full" #label>
-                                <span class="font-medium">Số điện thoại</span>
-                            </template>
-                            <a-input id="phoneInput" v-model:value="formState.phone" v-only-numbers type="text" maxlength="10" :autocomplete="false" required></a-input>
-                        </a-form-item>
-                        <a-form-item v-bind="validateInfos.address">
-                            <template class="h-full" #label>
-                                <span class="font-medium">Địa chỉ</span>
+                                <span class="font-medium">Mô tả</span>
                             </template>
                             <a-textarea
-                                v-model:value="formState.address"
+                                v-model:value="formState.description"
+                                placeholder=""
+                                rows="5"
+                                :resize="false"
+                            />
+                        </a-form-item>
+                        <a-form-item v-bind="validateInfos.is_active">
+                            <template class="h-full" #label>
+                                <span class="font-medium">Hoạt động</span>
+                            </template>
+                            <a-switch
+                                v-model:checked="formState.is_active"
                                 placeholder=""
                             />
                         </a-form-item>
@@ -138,7 +136,7 @@
                                     type="primary"
                                     danger
                                     block
-                                    @click="handleChangeMaterialPage"
+                                    @click="handleChangeCategoryPage"
                                 >
                                     Hủy bỏ
                                 </a-button>
@@ -176,7 +174,7 @@ const useForm = Form.useForm;
 const data_manager = ref([]);
 const data_manager_fetching = ref(false);
 let timeout;
-let currentValue = '';
+let currentValue = "";
 
 const routes = ref([
     {
@@ -184,61 +182,52 @@ const routes = ref([
         breadcrumbName: "Trang chủ",
     },
     {
-        name: "warehouse-index",
-        breadcrumbName: "Quản lý kho",
+        name: "category-index",
+        breadcrumbName: "Quản lý nhóm sản phẩm",
     },
     {
-        name: "warehouse-create",
-        breadcrumbName: "Tạo kho",
+        name: "category-create",
+        breadcrumbName: "Tạo nhóm sản phẩm",
     },
 ]);
 
 const formState = ref({
-    manager_id: null,
-    storage_code: null,
-    storage_name: null,
-    phone: null,
+    parent_category_id: null,
+    description: null,
+    category_name: null,
+    image: null,
     email: null,
-    address: null,
+    is_active: false,
 });
 const errorInfo = ref([]);
 const { resetFields, validate, validateInfos } = useForm(
     formState.value,
     reactive({
-        manager_id: [
+        parent_category_id: [
             {
-                required: true,
-                message: "Vui lòng chọn mã quản lý",
+                required: false,
             },
         ],
-        storage_code: [
+        description: [
             {
-                required: true,
-                message: "Vui lòng chọn mã kho",
+                required: false,
             },
         ],
-        storage_name: [
+        category_name: [
             {
                 required: true,
                 message: "Vui lòng nhập tên kho",
             },
         ],
-        phone: [
+        image: [
             {
                 required: true,
                 message: "Vui lòng nhập Số điện thoại",
             },
         ],
-        email: [
+        is_active: [
             {
-                required: true,
-                message: "Vui lòng nhập Email",
-            },
-        ],
-        address: [
-            {
-                required: true,
-                message: "Vui lòng nhập địa chỉ",
+                required: false,
             },
         ],
     })
@@ -247,18 +236,32 @@ const { resetFields, validate, validateInfos } = useForm(
 const onSubmit = async () => {
     validate()
         .then(async (res) => {
-            const response = await axios.post("/api/warehouses", {
-                name: formState.value.storage_name,
-                code: formState.value.storage_code,
-                email: formState.value.email,
-                phone: formState.value.phone,
-                address: formState.value.address,
-                manager_id: formState.value.manager_id,
+            let formData = new FormData();
+            formData.append("name", formState.value.category_name);
+            if (formState.value.description) {
+                formData.append("description", formState.value.description);
+            }
+            if (formState.value.image && formState.value.image.length > 0) {
+                formData.append(
+                    "image",
+                    formState.value.image[0].originFileObj
+                );
+            }
+            if (formState.value.parent_category_id) {
+                formData.append(
+                    "parent_id",
+                    formState.value.parent_category_id
+                );
+            }
+            formData.append("is_active", true);
+            const response = await axios.post("/api/categories", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
             });
             if (response.data.code == 200) {
                 message.success(response.data.message);
-                handleChangeMaterialPage();
-                // refreshRole();
+                handleChangeCategoryPage();
             }
         })
         .catch((err) => {
@@ -271,58 +274,35 @@ const onSubmit = async () => {
         });
 };
 
-const handleChangeMaterialPage = () => {
+const handleChangeCategoryPage = () => {
     resetFields();
-    router.push({ name: "warehouse-index" });
+    router.push({ name: "category-index" });
 };
 
-const onlyNumbers = {
-  beforeMount(el) {
-    el.addEventListener('input', () => {
-      el.value = el.value.replace(/\D/g, '');
-    });
-  }
-};
-
-const reset = () => {
-    resetFields();
-};
-
-const handleOk = () => {
-    loading.value = true;
-    setTimeout(() => {
-        loading.value = false;
-        openCallingBack.value = false;
-    }, 1000);
-};
-const handleCancel = () => {
-    openCallingBack.value = false;
-};
-
-function fetchStorageDropdown(value, callback) {
+function fetchCategoriesDropdown(value, callback) {
     if (timeout) {
         clearTimeout(timeout);
         timeout = null;
     }
     currentValue = value;
-    timeout = setTimeout(searchStorage(value, callback), 300);
+    timeout = setTimeout(searchCategory(value, callback), 300);
 }
 
-const handleSearch = async (val) => {
-    fetchStorageDropdown(val, (data) => (data_manager.value = data));
+const handleSearchCategory = async (val) => {
+    fetchCategoriesDropdown(val, (data) => (data_manager.value = data));
 };
-const handleChange = (val, item) => {
-    formState.storage_code = item;
-    fetchStorageDropdown('', (data) => (data_manager.value = data));
+const handleChangeCategory = (val, item) => {
+    formState.value.parent_category_id = item;
+    fetchCategoriesDropdown("", (data) => (data_manager.value = data));
 };
 
-async function searchStorage(value,callback) {
+async function searchCategory(value, callback) {
     data_manager_fetching.value = true;
     const params = new URLSearchParams({
         name: value,
     });
     if (value) {
-        await axios.get(`/api/users?${params}`).then((response) => {
+        await axios.get(`/api/categories?${params}`).then((response) => {
             if (currentValue === value) {
                 const result = response.data.data?.map((storage) => ({
                     label: storage.name,
@@ -334,7 +314,7 @@ async function searchStorage(value,callback) {
             }
         });
     } else {
-        await axios.get(`/api/users`).then((response) => {
+        await axios.get(`/api/categories`).then((response) => {
             if (currentValue === value) {
                 const result = response.data.data?.map((storage) => ({
                     label: storage.name,
@@ -348,19 +328,44 @@ async function searchStorage(value,callback) {
     }
 }
 
-watch(formState.storage_code, () => {
+watch(formState.value.parent_category_id, () => {
     data_manager.value = [];
     data_manager_fetching.value = false;
 });
 
+// Load Hình ảnh thông tin nổi bật
+function getBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+    });
+}
+const beforeUploadFImg = (file) => {
+    formState.value.image = [...(formState.value.image || []), file];
+    return false;
+};
+const previewVisibleFImg = ref(false);
+const previewFImg = ref("");
+const previewFImgTitle = ref("");
+const handlePreviewFImg = async (file) => {
+    if (!file.url && !file.preview) {
+        file.preview = await getBase64(file.originFileObj);
+    }
+    previewFImg.value = file.url || file.preview;
+    previewVisibleFImg.value = true;
+    previewFImgTitle.value =
+        file.name || file.url.substring(file.url.lastIndexOf("/") + 1);
+};
+const handleCancelFImg = () => {
+    previewVisibleFImg.value = false;
+    previewFImgTitle.value = "";
+};
+
 onMounted(() => {
-    searchStorage('', (data) => (data_manager.value = data));
-    const input = document.getElementById('phoneInput');
-    onlyNumbers.beforeMount(input);
+    searchCategory("", (data) => (data_manager.value = data));
 });
-
-
-
 </script>
 
 <style lang="scss" scoped>

@@ -220,7 +220,7 @@ const onSubmit = async () => {
             }
         })
         .catch((err) => {
-            if (err.response.status == 422) {
+            if (err?.response?.status == 422) {
                 errorInfo.value = Object.values(err.response.data.errors);
                 message.error("Vui lòng kiểm tra lại thông tin");
             } else {
