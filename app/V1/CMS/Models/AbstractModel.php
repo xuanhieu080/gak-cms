@@ -2,6 +2,7 @@
 
 namespace App\V1\CMS\Models;
 
+use App\Models\Product;
 use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -622,6 +623,8 @@ abstract class AbstractModel
         if (empty($model)) {
             throw new \Exception('Dữ liệu không tồn tại');
         }
+
+        Product::query()->where('category_id', $id)->delete();
 
         return $model->delete();
     }
