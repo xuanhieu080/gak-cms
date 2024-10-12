@@ -20,6 +20,7 @@ import CreateMaterial from '@/views/pages/private/management/create-material';
 import Units from '@/views/pages/private/management/units';
 import ProductManagement from '@/views/pages/private/products/management';
 import ProductCreate from '@/views/pages/private/products/create';
+import ProductEdit from '@/views/pages/private/products/edit';
 const routes = [
     {
         name: "home",
@@ -73,6 +74,12 @@ const routes = [
                 path: "create",
                 meta: {requiresAuth: true},
                 component: ProductCreate,
+            },
+            {
+                name: "product-edit",
+                path: "edit/:id",
+                meta: {requiresAuth: true},
+                component: ProductEdit,
             },
         ]
     },
