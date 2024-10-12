@@ -19,7 +19,7 @@ class UpdateRequest extends ValidatorBase
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('categories', 'name')->ignore($this->route('category')->id)
+                Rule::unique('categories', 'name')->ignore($this->route('id'))
             ],
             'description' => 'nullable|max:255',
             'parent_id'   => 'nullable|exists:categories,id',

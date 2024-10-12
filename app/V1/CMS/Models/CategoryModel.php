@@ -10,7 +10,7 @@ class CategoryModel extends AbstractModel
 {
     public function __construct()
     {
-        $model = new Attribute();
+        $model = new Category();
         parent::__construct($model);
     }
 
