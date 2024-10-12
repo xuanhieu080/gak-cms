@@ -24,7 +24,7 @@ class UpdateRequest extends ValidatorBase
             'description' => 'nullable|max:255',
             'parent_id'   => 'nullable|exists:categories,id',
             'image'       => 'nullable|image|max:3145728|mimes:jpg,jpeg,png,bmp,gif,svg,webp,mp4,ogx,oga,ogv,ogg,webm',
-            'is_active'   => 'required|boolean',
+            'is_active'   => 'required|in:1,0,true,false',
         ];
 
         if (filter_var($this->input('remove_image'), FILTER_VALIDATE_BOOLEAN)) {
