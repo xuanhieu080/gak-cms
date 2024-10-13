@@ -96,7 +96,9 @@
                                         @click="handleClearSearchTable"
                                     >
                                         <template #icon>
-                                            <DeleteOutlined :style="{color: red}" />
+                                            <DeleteOutlined
+                                                :style="{ color: red }"
+                                            />
                                         </template>
                                     </a-button>
                                 </div>
@@ -385,17 +387,20 @@ const handleEditProduct = (record) => {
 const getActiveProductCategory = async (record) => {
     try {
         loading.value = true;
-        const response = await axios.post(`/api/categories/${record.id}`, {
-            name: record.name,
-            is_active: record.is_active,
-        });
-        if(response.data.status) {
+        let formData = new FormData();
+        formData.append("name", record.name);
+        formData.append("is_active", record.is_active);
+        const response = await axios.post(
+            `/api/categories/${record.id}`,
+            formData
+        );
+        if (response.data.status) {
             message.success(response.data.message);
             handleReloadData();
         }
     } catch (e) {
         record.is_active = !record.is_active;
-        if(e.response.status == 422) {
+        if (e.response.status == 422) {
             message.error(e.response.data.errors.is_active[0]);
         } else {
             message.error("Server bận. Vui lòng thử lại sau!");
@@ -403,7 +408,6 @@ const getActiveProductCategory = async (record) => {
         loading.value = false;
     }
 };
-
 
 //handle search table
 const handleSearchTable = () => {
@@ -427,11 +431,17 @@ const handleClearSearchTable = () => {
     });
 };
 
-watch(() => search_name.value, () => {
-    if((search_name.value === null || search_name.value === '') && is_search.value) {
-        handleClearSearchTable();
+watch(
+    () => search_name.value,
+    () => {
+        if (
+            (search_name.value === null || search_name.value === "") &&
+            is_search.value
+        ) {
+            handleClearSearchTable();
+        }
     }
-})
+);
 </script>
 
 <style lang="scss" scoped>
