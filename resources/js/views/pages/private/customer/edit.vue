@@ -195,11 +195,11 @@ const routes = ref([
         breadcrumbName: "Trang chủ",
     },
     {
-        name: "category-index",
+        name: "customer-index",
         breadcrumbName: "Quản lý nhóm sản phẩm",
     },
     {
-        name: "category-edit",
+        name: "customer-edit",
         breadcrumbName: "Chỉnh sửa nhóm sản phẩm",
     },
 ]);

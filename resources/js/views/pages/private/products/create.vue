@@ -179,6 +179,84 @@
                             :content="form.product_description"
                         />
                     </a-form-item>
+                    <hr />
+                    <a-form-item class="my-4">
+                        <a-button
+                            type="dashed"
+                            size="lg"
+                            @click="addWarehouse"
+                            class="flex items-center gap-1 justify-center"
+                        >
+                            <PlusOutlined /> Thêm kho
+                        </a-button>
+                    </a-form-item>
+
+                    <div
+                        v-for="(warehouse, index) in form.warehouses"
+                        :key="index"
+                    >
+                        <div class="grid grid-cols-4 gap-4">
+                            <a-form-item
+                                :label="`Kho ${index + 1}`"
+                                :name="['warehouses', index, 'warehouse_id']"
+                                :autoLink="false"
+                                :rules="[
+                                    {
+                                        required: true,
+                                        message: 'Vui lòng chọn kho',
+                                    },
+                                ]"
+                            >
+                                <a-select
+                                    v-model:value="warehouse.warehouse_id"
+                                    placeholder="Chọn kho"
+                                    :loading="warehouse.loading"
+                                    :options="warehouse.options"
+                                    show-search
+                                    @search="
+                                        (val) =>
+                                            handleSearchStorage(val, warehouse)
+                                    "
+                                    @change="
+                                        (val) =>
+                                            handleChangeStorage(val, warehouse)
+                                    "
+                                />
+                            </a-form-item>
+                            <a-form-item
+                                :label="`Số lượng`"
+                                :name="['warehouses', index, 'quantity']"
+                                :autoLink="false"
+                                :rules="[
+                                    {
+                                        required: true,
+                                        message: 'Vui lòng nhập số lượng',
+                                    },
+                                ]"
+                            >
+                                <a-input-number
+                                    v-model:value="warehouse.quantity"
+                                    class="w-full"
+                                    placeholder="Số lượng"
+                                    :min="1"
+                                />
+                            </a-form-item>
+
+                            <div class="w-fit flex items-center">
+                                <a-button
+                                    type="primary"
+                                    danger
+                                    @click="removeWarehouse(index)"
+                                    v-if="form.warehouses.length > 1"
+                                    class="flex items-center gap-2"
+                                >
+                                    <MinusOutlined /> Xóa
+                                </a-button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
                     <a-form-item>
                         <a-button type="primary" html-type="submit"
                             >Tạo mới</a-button
@@ -198,10 +276,11 @@ import {
     SyncOutlined,
     ReloadOutlined,
     UserOutlined,
-    PhoneTwoTone,
+    MinusOutlined,
 } from "@ant-design/icons-vue";
-import { ref } from "vue";
+import { ref, reactive, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
+import axios from "axios";
 import { message } from "ant-design-vue";
 import Page from "@/views/layouts/Page";
 import CkEditorCustom from "@/views/components/CkEditorCustom.vue";
@@ -222,6 +301,7 @@ const form = ref({
     seo_description: "",
     seo_keyword: "",
     seo_image: [],
+    warehouses: [],
 });
 
 const routes = ref([
@@ -239,6 +319,11 @@ const routes = ref([
     },
 ]);
 
+const warehouseOptions = ref([]);
+const data_warehouse_fetching = ref(false);
+let timeout;
+let currentValue = "";
+
 const router = useRouter();
 
 //Price handle
@@ -247,7 +332,9 @@ function calculateDiscountedPrice() {
     // form.value.discount_price = Math.round(
     //     form.value.price * (1 - form.value.discount_percent / 100)
     // );
-    form.value.discount_price = customRound(form.value.price * (1 - form.value.discount_percent / 100));
+    form.value.discount_price = customRound(
+        form.value.price * (1 - form.value.discount_percent / 100)
+    );
 }
 function calculateDiscountPercent() {
     if (
@@ -323,48 +410,88 @@ const handleCancel = () => {
     previewTitle.value = "";
 };
 
-// Load Hình ảnh thông tin nổi bật
-const beforeUploadFImg = (file) => {
-    form.value.feature_img = [...(form.value.feature_img || []), file];
-    return false;
+//Add Kho
+const addWarehouse = () => {
+    form.value.warehouses.push({
+        warehouse_id: null,
+        quantity: null,
+        loading: true,
+        options: [],
+    });
+    handleSearchStorage(
+        "",
+        form.value.warehouses[form.value.warehouses.length - 1],
+        (data) =>
+            (form.value.warehouses[form.value.warehouses.length - 1].options =
+                data)
+    );
 };
-const previewVisibleFImg = ref(false);
-const previewFImg = ref("");
-const previewFImgTitle = ref("");
-const handlePreviewFImg = async (file) => {
-    if (!file.url && !file.preview) {
-        file.preview = await getBase64(file.originFileObj);
+
+const removeWarehouse = (index) => {
+    form.value.warehouses.splice(index, 1);
+};
+
+//Load Kho options
+function fetchCategoriesDropdown(value, item = null, callback) {
+    if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
     }
-    previewFImg.value = file.url || file.preview;
-    previewVisibleFImg.value = true;
-    previewFImgTitle.value =
-        file.name || file.url.substring(file.url.lastIndexOf("/") + 1);
+    currentValue = value;
+    timeout = setTimeout(searchCategory(value, item, callback), 300);
+}
+
+const handleSearchStorage = async (val, ỉtem = null) => {
+    ỉtem.loading = true;
+    fetchCategoriesDropdown(val, ỉtem, (data) => (ỉtem.options = data));
 };
-const handleCancelFImg = () => {
-    previewVisibleFImg.value = false;
-    previewFImgTitle.value = "";
+const handleChangeStorage = (val, item) => {
+    item.warehouse_id = val;
+    item.loading = false;
+    fetchCategoriesDropdown("", (data) => (item.options = data));
 };
-// Load Hình ảnh SEO
-const beforeUploadSEOImg = (file) => {
-    form.value.seo_image = [...(form.value.seo_image || []), file];
-    return false;
-};
-const previewVisibleSEOImg = ref(false);
-const previewSEOImg = ref("");
-const previewSEOImgTitle = ref("");
-const handlePreviewSEOImg = async (file) => {
-    if (!file.url && !file.preview) {
-        file.preview = await getBase64(file.originFileObj);
+
+async function searchCategory(value, item, callback) {
+    item.loading = true;
+    const params = new URLSearchParams({
+        name: value,
+    });
+    let excludeStorage = [];
+    if (form.value.warehouses.length > 0) {
+        form.value.warehouses.forEach((item, index) => {
+            if (index < form.value.warehouses.length - 1)
+                excludeStorage.push(item.warehouse_id);
+        });
     }
-    previewSEOImg.value = file.url || file.preview;
-    previewVisibleSEOImg.value = true;
-    previewSEOImgTitle.value =
-        file.name || file.url.substring(file.url.lastIndexOf("/") + 1);
-};
-const handleCancelSEOImg = () => {
-    previewVisibleSEOImg.value = false;
-    previewSEOImgTitle.value = "";
-};
+
+    console.log(excludeStorage);
+    // excludeStorage => Loại bỏ những kho đã lựa chọn trước đó
+    if (value) {
+        await axios.get(`/api/warehouses?${params}`).then((response) => {
+            if (currentValue === value) {
+                const result = response.data.data?.map((storage) => ({
+                    label: storage.name,
+                    value: storage.id,
+                    data: storage,
+                }));
+                item.loading = false;
+                callback(result);
+            }
+        });
+    } else {
+        await axios.get(`/api/warehouses`).then((response) => {
+            if (currentValue === value) {
+                const result = response.data.data?.map((storage) => ({
+                    label: storage.name,
+                    value: storage.id,
+                    data: storage,
+                }));
+                item.loading = false;
+                callback(result);
+            }
+        });
+    }
+}
 </script>
 
 <style lang="scss" scoped>

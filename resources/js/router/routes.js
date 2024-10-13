@@ -17,7 +17,9 @@ import CreateAttributeGroup from '@/views/pages/private/management/create-attrib
 import Attribute from '@/views/pages/private/management/attribute';
 import AttributeCreate from '@/views/pages/private/management/create-attribute';
 import CreateMaterial from '@/views/pages/private/management/create-material';
-import Units from '@/views/pages/private/management/units';
+import Units from '@/views/pages/private/management/units/index';
+import UnitsCreate from '@/views/pages/private/management/units/create';
+import UnitsEdit from '@/views/pages/private/management/units/edit';
 import ProductManagement from '@/views/pages/private/products/management';
 import ProductCreate from '@/views/pages/private/products/create';
 import ProductEdit from '@/views/pages/private/products/edit';
@@ -181,6 +183,18 @@ const routes = [
                 path: "units",
                 meta: {requiresAuth: true},
                 component: Units
+            },
+            {
+                name: "units-create",
+                path: "units/create",
+                meta: {requiresAuth: true},
+                component: UnitsCreate
+            },
+            {
+                name: "units-edit",
+                path: "units/edit/:id",
+                meta: {requiresAuth: true},
+                component: UnitsEdit
             },
             {
                 name: "management-materials-create",

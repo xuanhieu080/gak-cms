@@ -180,7 +180,7 @@ const routes = ref([
         breadcrumbName: "Trang chủ",
     },
     {
-        name: "warehouse",
+        name: "category-index",
         breadcrumbName: "Quản lý nhóm sản phẩm",
     },
 ]);
