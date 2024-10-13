@@ -24,6 +24,10 @@ import ProductEdit from '@/views/pages/private/products/edit';
 import ProductCategory from '@/views/pages/private/product-category/index';
 import ProductCategoryCreate from '@/views/pages/private/product-category/create';
 import ProductCategoryEdit from '@/views/pages/private/product-category/edit';
+import CustomerManagement from '@/views/pages/private/customer/index';
+import CustomerCreate from '@/views/pages/private/customer/create';
+import CustomerEdit from '@/views/pages/private/customer/edit';
+
 const routes = [
     {
         name: "home",
@@ -83,6 +87,31 @@ const routes = [
                 path: "edit/:id",
                 meta: {requiresAuth: true},
                 component: ProductCategoryEdit,
+            },
+        ]
+    },
+    {
+        name: "customer-management",
+        path: "/customer-management",
+        meta: {requiresAuth: true},
+        children: [
+            {
+                path: "",
+                name: "customer-index",
+                meta: {requiresAuth: true},
+                component: CustomerManagement,
+            },
+            {
+                name: "customer-create",
+                path: "create",
+                meta: {requiresAuth: true},
+                component: CustomerCreate,
+            },
+            {
+                name: "customer-edit",
+                path: "edit/:id",
+                meta: {requiresAuth: true},
+                component: CustomerEdit,
             },
         ]
     },

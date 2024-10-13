@@ -229,6 +229,17 @@
                         </a-menu-item>
                     </a-sub-menu>
 
+                    <a-menu-item key="customer-managment" :class="collapsed ? 'hide-title' : ''">
+                        <router-link
+                            :to="{ name: 'customer-index' }"
+                            class="flex items-center gap-2"
+                        >
+                            <div class="flex items-center">
+                                <IdcardOutlined />
+                            </div>
+                            <span>Quản lý khách hàng</span>
+                        </router-link>
+                    </a-menu-item>
                     <a-menu-item key="6" :class="collapsed ? 'hide-title' : ''">
                         <router-link
                             :to="{ name: 'users-management' }"
@@ -237,7 +248,7 @@
                             <div class="flex items-center">
                                 <TeamOutlined />
                             </div>
-                            <span>Quản lý danh sách nhân viên</span>
+                            <span>Quản lý nhân viên</span>
                         </router-link>
                     </a-menu-item>
                     <a-menu-item key="7" :class="collapsed ? 'hide-title' : ''">
@@ -300,6 +311,7 @@ import {
     MenuFoldOutlined,
     LogoutOutlined,
     GroupOutlined,
+    IdcardOutlined
 } from "@ant-design/icons-vue";
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";

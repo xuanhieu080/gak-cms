@@ -18,7 +18,7 @@
             </a-breadcrumb>
             <div class="pyc-table border border-blue-500 flex flex-col">
                 <div class="title-box bg-blue-500 text-white p-4">
-                    Quản lý nhóm sản phẩm
+                    Quản lý khách hàng
                 </div>
                 <div class="table-container">
                     <a-table
@@ -96,7 +96,9 @@
                                         @click="handleClearSearchTable"
                                     >
                                         <template #icon>
-                                            <DeleteOutlined :style="{color: red}" />
+                                            <DeleteOutlined
+                                                :style="{ color: red }"
+                                            />
                                         </template>
                                     </a-button>
                                 </div>
@@ -104,12 +106,12 @@
                                     <a-button
                                         type="primary"
                                         class="flex items-center"
-                                        @click="handleCreateProduct"
+                                        @click="handleCreateCustomer"
                                     >
                                         <template #icon>
                                             <PlusOutlined />
                                         </template>
-                                        Tạo Nhóm Sản Phẩm
+                                        Tạo khách hàng
                                     </a-button>
                                     <a-popconfirm
                                         :disabled="selectedRow.length == 0"
@@ -195,13 +197,33 @@ const columns = [
         sorter: true,
     },
     {
-        title: "Tên nhóm sản phẩm",
+        title: "Tên khách hàng",
         dataIndex: "name",
         sorter: true,
     },
     {
-        title: "Description",
-        dataIndex: "description",
+        title: "Email",
+        dataIndex: "email",
+        sorter: true,
+    },
+    {
+        title: "Phone",
+        dataIndex: "phone",
+        sorter: true,
+    },
+    {
+        title: "Địa chỉ",
+        dataIndex: "address",
+        sorter: true,
+    },
+    {
+        title: "Giảm giá",
+        dataIndex: "discount",
+        sorter: true,
+    },
+    {
+        title: "Ghi chú",
+        dataIndex: "note",
         sorter: true,
         width: "150px",
     },
@@ -287,8 +309,8 @@ const options = ref([
     },
 ]);
 const router = useRouter();
-const handleCreateProduct = () => {
-    router.push({ name: "category-create" });
+const handleCreateCustomer = () => {
+    router.push({ name: "customer-create" });
 };
 
 const handleToggleSearchBox = () => {
@@ -308,7 +330,7 @@ const handleDeleteCategory = async () => {
         selectedRow.value.forEach(async (id) => {
             try {
                 loading.value = true;
-                const response = await axios.delete(`/api/categories/${id}`);
+                const response = await axios.delete(`/api/customers/${id}`);
                 message.success(response.data.message);
                 handleReloadData();
             } catch (e) {
@@ -321,7 +343,7 @@ const handleDeleteCategory = async () => {
 };
 
 const queryData = (params) => {
-    return axios.get("/api/categories", {
+    return axios.get("/api/customers", {
         params,
     });
 };
@@ -379,23 +401,24 @@ const rowSelection = {
 };
 
 const handleEditProduct = (record) => {
-    router.push({ name: "category-edit", params: { id: record.id } });
+    router.push({ name: "customer-edit", params: { id: record.id } });
 };
 
 const getActiveProductCategory = async (record) => {
     try {
         loading.value = true;
-        const response = await axios.post(`/api/categories/${record.id}`, {
+        const response = await axios.post(`/api/customers/${record.id}`, {
             name: record.name,
+            phone: record.phone,
             is_active: record.is_active,
         });
-        if(response.data.status) {
+        if (response.data.status) {
             message.success(response.data.message);
             handleReloadData();
         }
     } catch (e) {
         record.is_active = !record.is_active;
-        if(e.response.status == 422) {
+        if (e.response.status == 422) {
             message.error(e.response.data.errors.is_active[0]);
         } else {
             message.error("Server bận. Vui lòng thử lại sau!");
@@ -403,7 +426,6 @@ const getActiveProductCategory = async (record) => {
         loading.value = false;
     }
 };
-
 
 //handle search table
 const handleSearchTable = () => {
@@ -427,11 +449,17 @@ const handleClearSearchTable = () => {
     });
 };
 
-watch(() => search_name.value, () => {
-    if((search_name.value === null || search_name.value === '') && is_search.value) {
-        handleClearSearchTable();
+watch(
+    () => search_name.value,
+    () => {
+        if (
+            (search_name.value === null || search_name.value === "") &&
+            is_search.value
+        ) {
+            handleClearSearchTable();
+        }
     }
-})
+);
 </script>
 
 <style lang="scss" scoped>
