@@ -2,30 +2,35 @@
 
 namespace App\V1\CMS\Models;
 
-use App\Models\Attribute;
-use App\Models\Category;
+use App\Models\Customer;
+use App\Supports\Support;
 use Illuminate\Support\Arr;
 
-class CategoryModel extends AbstractModel
+class CustomerModel extends AbstractModel
 {
     public function __construct()
     {
-        $model = new Category();
+        $model = new Customer();
         parent::__construct($model);
     }
 
     public function store(array $data)
     {
         $data['is_active'] = filter_var($data['is_active'], FILTER_VALIDATE_BOOLEAN);
+        $data['code'] = Support::genCode('customers', 'code');
+
         $model = $this->create($data);
+
         if (empty($model)) {
             throw new \Exception('Thêm dữ liệu thất bại');
         }
 
-        $model->addMedia($data['image'])
-            ->usingName($model->name)
-            ->usingFileName($model->name . '-' . time() . '.' . $data['image']->getClientOriginalExtension())
-            ->toMediaCollection();
+        if (!empty($data['image'])) {
+            $model->addMedia($data['image'])
+                ->usingName($model->name)
+                ->usingFileName($model->name . '-' . time() . '.' . $data['image']->getClientOriginalExtension())
+                ->toMediaCollection();
+        }
         $model->refresh();
 
         return $model;
@@ -35,16 +40,9 @@ class CategoryModel extends AbstractModel
     {
         $model = $this->model->with($with)->find($data[$this->model->getKeyName()]);
         if (empty($model)) {
-            throw new \Exception('Dữ liệu không tồn tại',404);
+            throw new \Exception('Dữ liệu không tồn tại', 404);
         }
 
-        if (!empty($data['parent_id'])) {
-            $node = Category::find($data['parent_id']);
-            $bool = $node->isDescendantOf($model);
-            if ($bool) {
-                throw new \Exception("Không thể chọn danh mục con làm danh mục cha");
-            }
-        }
         $data['is_active'] = filter_var(Arr::get($data, 'is_active', $model->is_active), FILTER_VALIDATE_BOOLEAN);
         $model->fill($data);
 

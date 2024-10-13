@@ -40,4 +40,5 @@ Route::middleware(['auth:sanctum', 'apply_locale'])->group(function () {
     require __DIR__ . '/v1/warehouse.php';
     require __DIR__ . '/v1/material.php';
     require __DIR__ . '/v1/category.php';
+    require __DIR__ . '/v1/customer.php';
 });
