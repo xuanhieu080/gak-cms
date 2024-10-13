@@ -77,7 +77,17 @@
                             <span>Trang chủ</span>
                         </router-link>
                     </a-menu-item>
-
+                    <a-menu-item key="product-category" :class="collapsed ? 'hide-title' : ''">
+                        <router-link
+                            :to="{ name: 'category-index' }"
+                            class="flex items-center gap-2"
+                        >
+                            <div class="flex items-center">
+                                <GroupOutlined />
+                            </div>
+                            <span>Quản lý nhóm sản phẩm</span>
+                        </router-link>
+                    </a-menu-item>
                     <a-menu-item key="2" :class="collapsed ? 'hide-title' : ''">
                         <router-link
                             :to="{ name: 'product-index' }"
@@ -289,6 +299,7 @@ import {
     MenuUnfoldOutlined,
     MenuFoldOutlined,
     LogoutOutlined,
+    GroupOutlined,
 } from "@ant-design/icons-vue";
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";

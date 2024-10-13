@@ -21,6 +21,9 @@ import Units from '@/views/pages/private/management/units';
 import ProductManagement from '@/views/pages/private/products/management';
 import ProductCreate from '@/views/pages/private/products/create';
 import ProductEdit from '@/views/pages/private/products/edit';
+import ProductCategory from '@/views/pages/private/product-category/index';
+import ProductCategoryCreate from '@/views/pages/private/product-category/create';
+import ProductCategoryEdit from '@/views/pages/private/product-category/edit';
 const routes = [
     {
         name: "home",
@@ -57,6 +60,31 @@ const routes = [
         path: "/profile",
         meta: {requiresAuth: true},
         component: PageProfile,
+    },
+    {
+        name: "product-category",
+        path: "/product-category",
+        meta: {requiresAuth: true},
+        children: [
+            {
+                path: "",
+                name: "category-index",
+                meta: {requiresAuth: true},
+                component: ProductCategory,
+            },
+            {
+                name: "category-create",
+                path: "create",
+                meta: {requiresAuth: true},
+                component: ProductCategoryCreate,
+            },
+            {
+                name: "category-edit",
+                path: "edit/:id",
+                meta: {requiresAuth: true},
+                component: ProductCategoryEdit,
+            },
+        ]
     },
     {
         name: "product-management",
