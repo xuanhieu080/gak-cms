@@ -407,11 +407,14 @@ const handleEditProduct = (record) => {
 const getActiveProductCategory = async (record) => {
     try {
         loading.value = true;
-        const response = await axios.post(`/api/customers/${record.id}`, {
-            name: record.name,
-            phone: record.phone,
-            is_active: record.is_active,
-        });
+        let formData = new FormData();
+        formData.append("name", record.name);
+        formData.append("phone", record.phone);
+        formData.append("is_active", record.is_active);
+        const response = await axios.post(
+            `/api/customers/${record.id}`,
+            formData
+        );
         if (response.data.status) {
             message.success(response.data.message);
             handleReloadData();
