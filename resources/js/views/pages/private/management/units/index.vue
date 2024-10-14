@@ -1,6 +1,6 @@
 <template>
     <Page>
-        <div class="main-pyc">
+        <div class="product-category">
             <a-breadcrumb :routes="routes" class="bg-gray-100 p-2">
                 <template #itemRender="{ route, params, routes, paths }">
                     <span
@@ -18,7 +18,7 @@
             </a-breadcrumb>
             <div class="pyc-table border border-blue-500 flex flex-col">
                 <div class="title-box bg-blue-500 text-white p-4">
-                    Quản lý Sản phẩm
+                    Quản lý khách hàng
                 </div>
                 <div class="table-container">
                     <a-table
@@ -27,7 +27,7 @@
                         :pagination="pagination"
                         :loading="loading"
                         :row-key="(record) => record.id"
-                        :data-source="fakeData"
+                        :data-source="dataSource?.data?.data"
                         @change="handleTableChange"
                         bordered
                         :scroll="{ x: 'max-content' }"
@@ -42,41 +42,21 @@
                                 />
                             </template>
                             <template v-if="column.dataIndex === 'name'">
-                                <div class="flex flex-col gap-1">
-                                    <span class="text-blue-700">{{
-                                        record.name
-                                    }}</span>
-                                    <div
-                                        v-if="record.color && record.size"
-                                        class="flex items-center gap-1 text-green-600"
-                                    >
-                                        {{
-                                            "Color: " +
-                                            record.color +
-                                            ", Size: " +
-                                            record.size
-                                        }}
-                                    </div>
-                                    <span class="text-gray-500">{{
-                                        record.product_code
-                                    }}</span>
-                                </div>
+                                <span class="text-blue-700">{{ text }}</span>
                             </template>
-                            <template
-                                v-if="column.dataIndex === 'discount_price'"
-                            >
-                                <span class="text-red-500">{{ text }}</span>
+                            <template v-if="column.dataIndex === 'is_active'">
+                                <a-switch
+                                    v-model:checked="record.is_active"
+                                    :loading="loading"
+                                    @change="getActiveProductCategory(record)"
+                                />
                             </template>
                             <template v-if="column.dataIndex === 'action'">
                                 <div class="flex items-center justify-center">
                                     <a-tooltip>
                                         <template #title>Chỉnh sửa</template>
                                         <EditOutlined
-                                            @click="
-                                                handleEditProduct(
-                                                    record
-                                                )
-                                            "
+                                            @click="handleEditProduct(record)"
                                             :style="{ color: '#3b82f6' }"
                                         />
                                     </a-tooltip>
@@ -90,8 +70,9 @@
                                 <div class="flex items-center gap-4">
                                     <div class="search-item">
                                         <a-input
-                                            v-model:value="storage_id"
+                                            v-model:value="search_name"
                                             placeholder="Tìm kiếm"
+                                            allow-clear
                                         >
                                             <template #prefix>
                                                 <SearchOutlined />
@@ -108,24 +89,36 @@
                                         </template>
                                         Tìm kiếm
                                     </a-button>
+                                    <a-button
+                                        class="flex items-center justify-center"
+                                        v-if="is_search"
+                                        danger
+                                        @click="handleClearSearchTable"
+                                    >
+                                        <template #icon>
+                                            <DeleteOutlined
+                                                :style="{ color: red }"
+                                            />
+                                        </template>
+                                    </a-button>
                                 </div>
                                 <div class="flex items-center flex-wrap gap-2">
                                     <a-button
                                         type="primary"
                                         class="flex items-center"
-                                        @click="handleCreateProduct"
+                                        @click="handleCreateUnits"
                                     >
                                         <template #icon>
                                             <PlusOutlined />
                                         </template>
-                                        Tạo Sản Phẩm
+                                        Tạo đơn vị tính
                                     </a-button>
                                     <a-popconfirm
                                         :disabled="selectedRow.length == 0"
                                         title="Bạn chắc chắn xóa chứ?"
                                         ok-text="Đúng"
                                         cancel-text="Hủy bỏ"
-                                        @confirm="handleDeleteWareHouse"
+                                        @confirm="handleDeleteCategory"
                                         @cancel="cancel"
                                     >
                                         <a-button
@@ -170,7 +163,7 @@ import {
     UserOutlined,
     PhoneTwoTone,
 } from "@ant-design/icons-vue";
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { usePagination } from "vue-request";
 import { useRouter } from "vue-router";
 import axios from "axios";
@@ -178,19 +171,17 @@ import Page from "@/views/layouts/Page";
 import { message } from "ant-design-vue";
 
 const openSearchTicket = ref([]);
-const storage_id = ref(null);
-const storage_name = ref(null);
-const storage_address = ref(null);
-const selected_date_request = ref(null);
+const search_name = ref(null);
 const selectedRow = ref([]);
+const is_search = ref(false);
 const routes = ref([
     {
         name: "home",
         breadcrumbName: "Trang chủ",
     },
     {
-        name: "product-index",
-        breadcrumbName: "Quản lý Sản phẩm",
+        name: "management-units",
+        breadcrumbName: "Quản lý đơn vị tính",
     },
 ]);
 
@@ -201,188 +192,29 @@ const columns = [
         sorter: true,
     },
     {
-        title: "image",
-        dataIndex: "image",
-    },
-    {
-        title: "Tên Sản phẩm",
+        title: "Tên đơn vị tính",
         dataIndex: "name",
         sorter: true,
     },
     {
-        title: "Số lượng tồn kho",
-        dataIndex: "amount",
-        sorter: true,
-        width: "150px",
-    },
-    {
-        title: "Giá",
-        dataIndex: "price",
-        sorter: true,
-        width: "150px",
-    },
-    {
-        title: "Giá sau giảm",
-        dataIndex: "discount_price",
-        sorter: true,
-        width: "150px",
-    },
-    {
-        title: "Ngày Tạo",
-        dataIndex: "created_at",
-        sorter: true,
-        width: "150px",
-    },
-    {
-        title: "Cập Nhật Lúc",
-        dataIndex: "updated_at",
-        sorter: true,
-        width: "150px",
-    },
-    {
-        title: "Người Tạo",
-        dataIndex: "created_by_name",
+        title: "Code",
+        dataIndex: "code",
         sorter: true,
     },
     {
-        title: "Người Cập Nhật",
-        dataIndex: "updated_by_name",
+        title: "Hoạt động",
+        dataIndex: "is_active",
+        width: '150px',
         sorter: true,
     },
     {
         title: "Hành động",
         dataIndex: "action",
-        fixed: 'right',
+        width: '150px',
+        fixed: "right",
     },
 ];
 
-const fakeData = ref([
-    {
-        id: 1,
-        image: "https://app.gak.vn/storage/media/products/mau-dong-phuc-cong-nhan-kieu-phoi-so-2-1722417926uuKZT23p.jpg",
-        name: "Mẫu đồnh phục công nhân kiểu phối số 2",
-        product_code: "SKU-081141",
-        price: "288.000đ",
-        discount_price: "199.000đ",
-        color: "",
-        size: "",
-        amount: 10000,
-        children: [
-            {
-                id: 11,
-                image: "",
-                name: "",
-                product_code: "SKU-7749123",
-                color: "Brown",
-                size: "M",
-                price: "288.000đ",
-                discount_price: "199.000đ",
-                amount: 200,
-            },
-            {
-                id: 12,
-                image: "",
-                name: "",
-                product_code: "SKU-7749124",
-                color: "Brown",
-                size: "L",
-                price: "288.000đ",
-                discount_price: "199.000đ",
-                amount: 300,
-            },
-            {
-                id: 13,
-                image: "",
-                name: "",
-                product_code: "SKU-7749321",
-                color: "Brown",
-                size: "S",
-                price: "288.000đ",
-                discount_price: "199.000đ",
-                amount: 1500,
-            },
-            {
-                id: 14,
-                image: "",
-                name: "",
-                product_code: "SKU-7749111",
-                color: "Black",
-                size: "S",
-                price: "288.000đ",
-                discount_price: "199.000đ",
-                amount: 8000,
-            },
-        ],
-    },
-    {
-        id: 3,
-        image: "https://app.gak.vn/storage/media/products/mau-dong-phuc-cong-nhan-kieu-phoi-so-2-1722417926uuKZT23p.jpg",
-        name: "Mẫu đồnh phục công nhân kiểu phối số 4",
-        product_code: "SKU-081143",
-        price: "350.000đ",
-        discount_price: "250.000đ",
-        amount: 8000,
-        color: "White",
-        size: "XL",
-    },
-    {
-        id: 2,
-        image: "https://app.gak.vn/storage/media/products/mau-dong-phuc-cong-nhan-kieu-phoi-so-2-1722417926uuKZT23p.jpg",
-        name: "Mẫu đồnh phục công nhân kiểu phối số 3",
-        product_code: "SKU-081142",
-        price: "399.000đ",
-        discount_price: "299.000đ",
-        color: "",
-        size: "",
-        amount: 10000,
-        children: [
-            {
-                product_code: "SKU-7749555",
-                color: "Brown",
-                size: "M",
-                price: "399.000đ",
-                discount_price: "299.000đ",
-                amount: 200,
-            },
-            {
-                product_code: "SKU-7749666",
-                color: "Brown",
-                size: "L",
-                price: "399.000đ",
-                discount_price: "299.000đ",
-                amount: 300,
-            },
-            {
-                product_code: "SKU-7749777",
-                color: "Brown",
-                size: "S",
-                price: "399.000đ",
-                discount_price: "299.000đ",
-                amount: 5000,
-            },
-            {
-                product_code: "SKU-7749888",
-                color: "Black",
-                size: "S",
-                price: "399.000đ",
-                discount_price: "299.000đ",
-                amount: 9000,
-            },
-        ],
-    },
-    {
-        id: 4,
-        image: "https://app.gak.vn/storage/media/products/mau-dong-phuc-cong-nhan-kieu-phoi-so-2-1722417926uuKZT23p.jpg",
-        name: "Mẫu đồnh phục công nhân kiểu phối số 5",
-        product_code: "SKU-081144",
-        price: "450.000đ",
-        discount_price: "350.000đ",
-        amount: 6000,
-        color: "Black",
-        size: "L",
-        // Không có children
-    },
-]);
 
 const options = ref([
     {
@@ -399,8 +231,8 @@ const options = ref([
     },
 ]);
 const router = useRouter();
-const handleCreateProduct = () => {
-    router.push({ name: "product-create" });
+const handleCreateUnits = () => {
+    router.push({ name: "units-create" });
 };
 
 const handleToggleSearchBox = () => {
@@ -415,12 +247,12 @@ const filterOption = (input, option) => {
     return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 };
 
-const handleDeleteWareHouse = async () => {
+const handleDeleteCategory = async () => {
     if (selectedRow.value.length > 0) {
         selectedRow.value.forEach(async (id) => {
             try {
                 loading.value = true;
-                const response = await axios.delete(`/api/warehouses/${id}`);
+                const response = await axios.delete(`/api/units/${id}`);
                 message.success(response.data.message);
                 handleReloadData();
             } catch (e) {
@@ -433,7 +265,7 @@ const handleDeleteWareHouse = async () => {
 };
 
 const queryData = (params) => {
-    return axios.get("/api/warehouses", {
+    return axios.get("/api/units", {
         params,
     });
 };
@@ -491,12 +323,76 @@ const rowSelection = {
 };
 
 const handleEditProduct = (record) => {
-    router.push({ name: "product-edit", params: { id: record.id } });
-}
+    router.push({ name: "units-edit", params: { id: record.id } });
+};
+
+const getActiveProductCategory = async (record) => {
+    try {
+        loading.value = true;
+        // let formData = new FormData();
+        // formData.append("name", record.name);
+        // formData.append("phone", record.phone);
+        // formData.append("is_active", record.is_active);
+        const response = await axios.post(
+            `/api/units/${record.id}`,
+            {
+                is_active: record.is_active,
+                name: record.name,
+                code: record.code,
+            }
+        );
+        if (response.data.status) {
+            message.success(response.data.message);
+            handleReloadData();
+        }
+    } catch (e) {
+        record.is_active = !record.is_active;
+        if (e.response.status == 422) {
+            message.error(e.response.data.errors.is_active[0]);
+        } else {
+            message.error("Server bận. Vui lòng thử lại sau!");
+        }
+        loading.value = false;
+    }
+};
+
+//handle search table
+const handleSearchTable = () => {
+    let params = {};
+    if (search_name.value) {
+        params.search = search_name.value;
+    }
+    run({
+        limit: pagination.value.pageSize,
+        page: 1,
+        ...params,
+    });
+    is_search.value = true;
+};
+const handleClearSearchTable = () => {
+    search_name.value = null;
+    is_search.value = false;
+    run({
+        limit: pagination.value.pageSize,
+        page: 1,
+    });
+};
+
+watch(
+    () => search_name.value,
+    () => {
+        if (
+            (search_name.value === null || search_name.value === "") &&
+            is_search.value
+        ) {
+            handleClearSearchTable();
+        }
+    }
+);
 </script>
 
 <style lang="scss" scoped>
-.main-pyc {
+.product-category {
     @apply space-y-4;
     .search-item {
         @apply flex flex-col gap-1;
@@ -535,7 +431,7 @@ const handleEditProduct = (record) => {
 }
 </style>
 <style lang="scss">
-.main-pyc {
+.product-category {
     .ant-collapse-content-box {
         background-color: white !important;
         border: 1px solid rgb(59 130 246 / var(--tw-bg-opacity));
@@ -590,5 +486,9 @@ const handleEditProduct = (record) => {
     input[type="search"] {
         box-shadow: none !important;
     }
+}
+
+.ant-input-clear-icon {
+    display: flex;
 }
 </style>

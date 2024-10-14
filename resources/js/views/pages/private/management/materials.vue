@@ -183,7 +183,7 @@
                                     "
                                     placeholder="Chọn kho hàng"
                                     @search="handleSearch"
-                                    @change="handleChange"
+                                    @change="handleChangeStorage"
                                     :filter-option="false"
                                     show-search
                                 >

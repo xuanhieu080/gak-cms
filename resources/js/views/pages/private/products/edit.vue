@@ -944,8 +944,12 @@ const routes = ref([
         breadcrumbName: "Trang chủ",
     },
     {
-        name: "product-create",
+        name: "product-index",
         breadcrumbName: "Quản lý Sản phẩm",
+    },
+    {
+        name: "product-edit",
+        breadcrumbName: "Chỉnh sửa sản phẩm",
     },
 ]);
 
