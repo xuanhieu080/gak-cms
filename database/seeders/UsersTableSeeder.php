@@ -28,9 +28,10 @@ class UsersTableSeeder extends Seeder
         $user1 = User::updateOrCreate(
             ['email' => 'gak@gmail.com'],
             [
-                'name' => 'GAK GAK',
+                'name'              => 'GAK GAK',
                 'email_verified_at' => null,
-                'password' => bcrypt('gak@gmail.com')
+                'password'          => bcrypt('gak@gmail.com'),
+                'is_super'          => 1
             ]
         );
 
