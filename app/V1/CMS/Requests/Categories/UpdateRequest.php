@@ -27,9 +27,9 @@ class UpdateRequest extends ValidatorBase
             'is_active'   => 'required|in:1,0,true,false',
         ];
 
-        if (filter_var($this->input('remove_image'), FILTER_VALIDATE_BOOLEAN)) {
-            $rules['image'] = 'required|image|max:3145728|mimes:jpg,jpeg,png,bmp,gif,svg,webp,mp4,ogx,oga,ogv,ogg,webm';
-        }
+//        if (filter_var($this->input('remove_image'), FILTER_VALIDATE_BOOLEAN)) {
+//            $rules['image'] = 'required|image|max:3145728|mimes:jpg,jpeg,png,bmp,gif,svg,webp,mp4,ogx,oga,ogv,ogg,webm';
+//        }
 
         return $rules;
     }

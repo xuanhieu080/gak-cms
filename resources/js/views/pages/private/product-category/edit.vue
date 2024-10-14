@@ -234,7 +234,7 @@ const validateInfos = ref({
     ],
     image: [
         {
-            required: true,
+            required: false,
             message: "Vui lòng nhập hình ảnh",
         },
     ],
@@ -264,7 +264,7 @@ const onSubmit = async () => {
                     );
             }
             if (formState.value.parent_id) {
-                formData.append("parent_id", formState.value.parent_id);
+                formData.append("parent_id", formState.value.parent_id.value);
             }
             formData.append("is_active", formState.value.is_active);
             const response = await axios.post(

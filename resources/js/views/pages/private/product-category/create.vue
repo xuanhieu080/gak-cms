@@ -221,7 +221,7 @@ const { resetFields, validate, validateInfos } = useForm(
         ],
         image: [
             {
-                required: true,
+                required: false,
                 message: "Vui lòng nhập Số điện thoại",
             },
         ],
@@ -250,7 +250,7 @@ const onSubmit = async () => {
             if (formState.value.parent_category_id) {
                 formData.append(
                     "parent_id",
-                    formState.value.parent_category_id
+                    formState.value.parent_category_id.value
                 );
             }
             formData.append("is_active", formState.value.is_active);

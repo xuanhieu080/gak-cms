@@ -17,15 +17,18 @@ class CategoryModel extends AbstractModel
     public function store(array $data)
     {
         $data['is_active'] = filter_var($data['is_active'], FILTER_VALIDATE_BOOLEAN);
+
         $model = $this->create($data);
         if (empty($model)) {
             throw new \Exception('Thêm dữ liệu thất bại');
         }
 
-        $model->addMedia($data['image'])
-            ->usingName($model->name)
-            ->usingFileName($model->name . '-' . time() . '.' . $data['image']->getClientOriginalExtension())
-            ->toMediaCollection();
+        if (!empty($data['image'])) {
+            $model->addMedia($data['image'])
+                ->usingName($model->name)
+                ->usingFileName($model->name . '-' . time() . '.' . $data['image']->getClientOriginalExtension())
+                ->toMediaCollection();
+        }
         $model->refresh();
 
         return $model;
