@@ -14,14 +14,16 @@ class CreateRequest extends ValidatorBase
     public function rules()
     {
         return [
-            'name'      => 'required|unique:products,name|string|max:255',
-            'image'     => 'nullable|image|max:3145728|mimes:jpg,jpeg,png,bmp,gif,svg,webp,mp4,ogx,oga,ogv,ogg,webm',
-            'email'     => 'nullable|max:255|email',
-            'note'      => 'nullable|max:500',
-            'address'   => 'nullable|max:500',
-            'discount'  => 'nullable|numeric|between:0,100',
-            'is_active' => 'required|in:1,0,true,false',
-            'phone'     => ['required', 'regex:/^(?:\+84|0)(3[2-9]|5[2|6|8|9]|7[0|6-9]|8[1-6]|9[0-9])[0-9]{7}$/'],
+            'name'        => 'required|unique:products,name|string|max:255',
+            'image'       => 'nullable|image|max:3145728|mimes:jpg,jpeg,png,bmp,gif,svg,webp,mp4,ogx,oga,ogv,ogg,webm',
+            'price'       => 'required|numeric|between:0,99999999999',
+            'price_sale'  => 'nullable|numeric|between:0,99999999999|lt:price',
+            'qty'         => 'required|numeric|between:0,99999999999',
+            'sku'         => 'required|string|unique:products,sku',
+            'unit_id'     => 'required|exists:units,id',
+            'description' => 'nullable|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'is_active'   => 'required|in:1,0,true,false',
         ];
     }
 }
