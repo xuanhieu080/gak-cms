@@ -27,7 +27,7 @@
                         :pagination="pagination"
                         :loading="loading"
                         :row-key="(record) => record.id"
-                        :data-source="fakeData"
+                        :data-source="dataSource?.data?.data"
                         @change="handleTableChange"
                         bordered
                         :scroll="{ x: 'max-content' }"
@@ -67,16 +67,22 @@
                             >
                                 <span class="text-red-500">{{ text }}</span>
                             </template>
+                            <template v-if="column.dataIndex === 'unit'">
+                                <span class="">{{ text.name }}</span>
+                            </template>
+
+                            <template v-if="column.dataIndex === 'is_active'">
+                                <a-switch
+                                    v-model:checked="record.is_active"
+                                    @click="handleActiveProduct(record)"
+                                ></a-switch>
+                            </template>
                             <template v-if="column.dataIndex === 'action'">
                                 <div class="flex items-center justify-center">
                                     <a-tooltip>
                                         <template #title>Chỉnh sửa</template>
                                         <EditOutlined
-                                            @click="
-                                                handleEditProduct(
-                                                    record
-                                                )
-                                            "
+                                            @click="handleEditProduct(record)"
                                             :style="{ color: '#3b82f6' }"
                                         />
                                     </a-tooltip>
@@ -210,10 +216,14 @@ const columns = [
         sorter: true,
     },
     {
-        title: "Số lượng tồn kho",
-        dataIndex: "amount",
+        title: "Mã Sản phẩm",
+        dataIndex: "sku",
         sorter: true,
-        width: "150px",
+    },
+    {
+        title: "Số lượng tồn kho",
+        dataIndex: "qty",
+        sorter: true,
     },
     {
         title: "Giá",
@@ -226,6 +236,16 @@ const columns = [
         dataIndex: "discount_price",
         sorter: true,
         width: "150px",
+    },
+    {
+        title: "Đơn vị tính",
+        dataIndex: "unit",
+        sorter: true,
+        width: "150px",
+    },
+    {
+        title: "Hoạt động",
+        dataIndex: "is_active",
     },
     {
         title: "Ngày Tạo",
@@ -252,7 +272,7 @@ const columns = [
     {
         title: "Hành động",
         dataIndex: "action",
-        fixed: 'right',
+        fixed: "right",
     },
 ];
 
@@ -420,7 +440,7 @@ const handleDeleteWareHouse = async () => {
         selectedRow.value.forEach(async (id) => {
             try {
                 loading.value = true;
-                const response = await axios.delete(`/api/warehouses/${id}`);
+                const response = await axios.delete(`/api/products/${id}`);
                 message.success(response.data.message);
                 handleReloadData();
             } catch (e) {
@@ -433,7 +453,7 @@ const handleDeleteWareHouse = async () => {
 };
 
 const queryData = (params) => {
-    return axios.get("/api/warehouses", {
+    return axios.get("/api/products", {
         params,
     });
 };
@@ -492,7 +512,23 @@ const rowSelection = {
 
 const handleEditProduct = (record) => {
     router.push({ name: "product-edit", params: { id: record.id } });
-}
+};
+
+const handleActiveProduct = async (record) => {
+    try {
+        loading.value = true;
+        const response = await axios.post(`/api/products/${record.id}`, {
+            is_active: record.is_active,
+        });
+        message.success(response.data.message);
+        handleReloadData();
+    } catch (e) {
+        loading.value = false;
+        message.error("Vui lòng thử lại sau");
+        console.log("err: ", e);
+        handleReloadData();
+    }
+};
 </script>
 
 <style lang="scss" scoped>

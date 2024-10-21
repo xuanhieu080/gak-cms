@@ -18,9 +18,9 @@
             </a-breadcrumb>
             <a-card>
                 <a-form
-                    :form="form"
+                    :model="form"
                     layout="vertical"
-                    @submit.prevent="handleSubmit"
+                    @submit.prevent="handleCreateProduct"
                     class="product-form"
                 >
                     <a-form-item
@@ -39,25 +39,57 @@
                         />
                     </a-form-item>
                     <a-form-item
-                        label="Slug"
-                        name="slug"
+                        label="Sku"
+                        name="sku"
                         :rules="[
                             {
                                 required: true,
-                                message: 'Vui lòng nhập slug sản phẩm!',
+                                message: 'Vui lòng nhập sku sản phẩm!',
                             },
                         ]"
                     >
                         <a-input
-                            v-model:value="form.slug"
-                            placeholder="Nhập slug sản phẩm"
+                            v-model:value="form.sku"
+                            placeholder="Nhập sku sản phẩm"
                         />
                     </a-form-item>
-                    <a-form-item label="Đường dẫn Video" name="video_link">
-                        <a-input
-                            v-model:value="form.video_link"
-                            placeholder="Nhập đường dẫn video"
-                        />
+                    <a-form-item
+                        name="category"
+                        label="Nhóm sản phẩm"
+                        :rules="[
+                            {
+                                required: true,
+                                message: 'Vui lòng chọn nhóm sản phẩm!',
+                            },
+                        ]"
+                    >
+                        <a-select
+                            v-model:value="form.category"
+                            :options="data_manager"
+                            :not-found-content="
+                                category_fetch ? undefinded : null
+                            "
+                            placeholder="Chọn nhóm sản phẩm"
+                            @search="handleSearchCategory"
+                            @change="handleChangeCategory"
+                            @click="handleSearchCategory('')"
+                            :filter-option="false"
+                            show-search
+                        >
+                            <template #notFoundContent>
+                                <a-spin v-if="category_fetch" size="small" />
+                                <span
+                                    v-if="
+                                        data_manager.length == 0 &&
+                                        !category_fetch
+                                    "
+                                    >Không có kết quả nào</span
+                                >
+                            </template>
+                        </a-select>
+                    </a-form-item>
+                    <a-form-item label="Hoạt động" name="active">
+                        <a-switch v-model:checked="form.is_active" />
                     </a-form-item>
                     <a-form-item
                         label="Hình ảnh"
@@ -73,6 +105,7 @@
                         <a-upload-dragger
                             :before-upload="beforeUpload"
                             @preview="handlePreview"
+                            :max-count="1"
                             list-type="picture-card"
                             v-model:file-list="form.image"
                         >
@@ -98,6 +131,7 @@
                     </a-form-item>
 
                     <a-form-item
+                        v-if="false"
                         class="w-full"
                         label="Số lượng tồn kho"
                         name="amount"
@@ -115,6 +149,42 @@
                             :min="1"
                             class="w-full"
                         />
+                    </a-form-item>
+                    <a-form-item
+                        :label="`Đơn vị tính`"
+                        name="unit"
+                        :autoLink="false"
+                        :rules="[
+                            {
+                                required: true,
+                                message: 'Vui lòng chọn đơn vị tính',
+                            },
+                        ]"
+                    >
+                        <a-select
+                            v-model:value="form.unit"
+                            placeholder="Chọn kho"
+                            :loading="loadingUnit"
+                            :not-found-content="
+                                unit_fetching ? undefinded : null
+                            "
+                            :options="unitOptions"
+                            show-search
+                            @search="handleSearchUnit"
+                            @change="handleChangeUnit"
+                            @click="handleSearchUnit('')"
+                        >
+                            <template #notFoundContent>
+                                <a-spin v-if="unit_fetching" size="small" />
+                                <span
+                                    v-if="
+                                        unitOptions.length == 0 &&
+                                        !unit_fetching
+                                    "
+                                    >Không có kết quả nào</span
+                                >
+                            </template>
+                        </a-select>
                     </a-form-item>
 
                     <a-form-item
@@ -177,6 +247,7 @@
                         <CkEditorCustom
                             :key="'description-1'"
                             :content="form.product_description"
+                            @updateData="handleUpdateDescription"
                         />
                     </a-form-item>
                     <hr />
@@ -212,6 +283,9 @@
                                     placeholder="Chọn kho"
                                     :loading="warehouse.loading"
                                     :options="warehouse.options"
+                                    :not-found-content="
+                                        warehouse.loading ? undefinded : null
+                                    "
                                     show-search
                                     @search="
                                         (val) =>
@@ -221,7 +295,22 @@
                                         (val) =>
                                             handleChangeStorage(val, warehouse)
                                     "
-                                />
+                                    @click="handleSearchStorage('', warehouse)"
+                                >
+                                    <template #notFoundContent>
+                                        <a-spin
+                                            v-if="warehouse.loading"
+                                            size="small"
+                                        />
+                                        <span
+                                            v-if="
+                                                warehouse.options.length == 0 &&
+                                                !warehouse.loading
+                                            "
+                                            >Không có kết quả nào</span
+                                        >
+                                    </template>
+                                </a-select>
                             </a-form-item>
                             <a-form-item
                                 :label="`Số lượng`"
@@ -257,7 +346,18 @@
                     </div>
 
                     <hr />
-                    <a-form-item>
+
+                    <a-form-item v-if="errorInfo.length > 0">
+                        <ul class="list-disc pl-6">
+                            <li
+                                class="text-red-500 capitalize"
+                                v-for="error in errorInfo"
+                            >
+                                {{ error[0] }}
+                            </li>
+                        </ul>
+                    </a-form-item>
+                    <a-form-item class="mt-4">
                         <a-button type="primary" html-type="submit"
                             >Tạo mới</a-button
                         >
@@ -287,10 +387,12 @@ import CkEditorCustom from "@/views/components/CkEditorCustom.vue";
 
 const form = ref({
     name: "",
-    slug: "",
-    video_link: "",
+    sku: "",
+    category: null,
+    is_active: false,
     image: [],
-    amount: null,
+    amount: 0,
+    unit: null,
     price: 0,
     discount_percent: 0,
     discount_price: 0,
@@ -301,7 +403,14 @@ const form = ref({
     seo_description: "",
     seo_keyword: "",
     seo_image: [],
-    warehouses: [],
+    warehouses: [
+        {
+            warehouse_id: null,
+            quantity: null,
+            loading: false,
+            options: [],
+        },
+    ],
 });
 
 const routes = ref([
@@ -319,12 +428,18 @@ const routes = ref([
     },
 ]);
 
+const errorInfo = ref([]);
 const warehouseOptions = ref([]);
 const data_warehouse_fetching = ref(false);
 let timeout;
 let currentValue = "";
 
 const router = useRouter();
+
+//Handle Description
+const handleUpdateDescription = (value) => {
+    form.value.product_description = value;
+};
 
 //Price handle
 
@@ -364,21 +479,6 @@ function customRound(value) {
     }
 }
 
-const handleSubmit = async () => {
-    try {
-        // Perform form submission logic here
-        let formData = new FormData();
-        formData.append("name", form.value.name);
-        formData.append("password", form.value.password);
-        formData.append("email", form.value.email);
-        if (form.value.image && form.value.image.length > 0) {
-            formData.append("image", form.value.image[0].originFileObj);
-        }
-        router.push({ name: "product-index" });
-    } catch (error) {
-        message.error("An error occurred. Please try again.");
-    }
-};
 function getBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -432,30 +532,32 @@ const removeWarehouse = (index) => {
 };
 
 //Load Kho options
-function fetchCategoriesDropdown(value, item = null, callback) {
+function fetchStorageDropdown(value, item = null, callback) {
     if (timeout) {
         clearTimeout(timeout);
         timeout = null;
     }
     currentValue = value;
-    timeout = setTimeout(searchCategory(value, item, callback), 300);
+    timeout = setTimeout(searchStorage(value, item, callback), 300);
 }
 
 const handleSearchStorage = async (val, ỉtem = null) => {
     ỉtem.loading = true;
-    fetchCategoriesDropdown(val, ỉtem, (data) => (ỉtem.options = data));
+    fetchStorageDropdown(val, ỉtem, (data) => (ỉtem.options = data));
 };
 const handleChangeStorage = (val, item) => {
     item.warehouse_id = val;
     item.loading = false;
-    fetchCategoriesDropdown("", (data) => (item.options = data));
+    fetchStorageDropdown("", (data) => (item.options = data));
 };
 
-async function searchCategory(value, item, callback) {
+async function searchStorage(value, item, callback) {
     item.loading = true;
     const params = new URLSearchParams({
         name: value,
     });
+
+    // Lấy dữ liệu kho đã được thêm ở trước
     let excludeStorage = [];
     if (form.value.warehouses.length > 0) {
         form.value.warehouses.forEach((item, index) => {
@@ -464,7 +566,7 @@ async function searchCategory(value, item, callback) {
         });
     }
 
-    console.log(excludeStorage);
+    // console.log(excludeStorage);
     // excludeStorage => Loại bỏ những kho đã lựa chọn trước đó
     if (value) {
         await axios.get(`/api/warehouses?${params}`).then((response) => {
@@ -492,6 +594,174 @@ async function searchCategory(value, item, callback) {
         });
     }
 }
+
+//Loading Đơn vị tính
+const unitOptions = ref([]);
+const unit_fetching = ref(false);
+let timeoutUnit;
+let valueUnit = "";
+function fetchUnitDropdown(value, callback) {
+    if (timeoutUnit) {
+        clearTimeout(timeoutUnit);
+        timeoutUnit = null;
+    }
+    valueUnit = value;
+    timeoutUnit = setTimeout(searchUnit(value, callback), 300);
+}
+
+const handleSearchUnit = async (val) => {
+    fetchUnitDropdown(val, (data) => (unitOptions.value = data));
+};
+const handleChangeUnit = (val, item) => {
+    form.value.unit = item;
+    fetchUnitDropdown("", (data) => (unitOptions.value = data));
+};
+
+async function searchUnit(value, callback) {
+    unit_fetching.value = true;
+    const params = new URLSearchParams({
+        name: value,
+    });
+    if (value) {
+        await axios.get(`/api/units?${params}`).then((response) => {
+            if (valueUnit === value) {
+                const result = response.data.data?.map((unit) => ({
+                    label: unit.name,
+                    value: unit.id,
+                    data: unit,
+                }));
+                unit_fetching.value = false;
+                callback(result);
+            }
+        });
+    } else {
+        await axios.get(`/api/units`).then((response) => {
+            if (valueUnit === value) {
+                const result = response.data.data?.map((unit) => ({
+                    label: unit.name,
+                    value: unit.id,
+                    data: unit,
+                }));
+                unit_fetching.value = false;
+                callback(result);
+            }
+        });
+    }
+}
+
+watch(form.value.unit, () => {
+    unitOptions.value = [];
+    unit_fetching.value = false;
+});
+
+//Loading Category sản phẩm
+const category_fetch = ref(false);
+const data_manager = ref([]);
+let timeoutCategory;
+let categoryValue = "";
+function fetchCategoriesDropdown(value, callback) {
+    if (timeoutCategory) {
+        clearTimeout(timeoutCategory);
+        timeoutCategory = null;
+    }
+    categoryValue = value;
+    timeoutCategory = setTimeout(searchCategory(value, callback), 300);
+}
+
+const handleSearchCategory = async (val) => {
+    fetchCategoriesDropdown(val, (data) => (data_manager.value = data));
+};
+const handleChangeCategory = (val, item) => {
+    form.value.category = item;
+    fetchCategoriesDropdown("", (data) => (data_manager.value = data));
+};
+
+async function searchCategory(value, callback) {
+    category_fetch.value = true;
+    const params = new URLSearchParams({
+        name: value,
+    });
+    if (value) {
+        await axios.get(`/api/categories?${params}`).then((response) => {
+            if (categoryValue === value) {
+                const result = response.data.data?.map((storage) => ({
+                    label: storage.name,
+                    value: storage.id,
+                    data: storage,
+                }));
+                category_fetch.value = false;
+                callback(result);
+            }
+        });
+    } else {
+        await axios.get(`/api/categories`).then((response) => {
+            if (categoryValue === value) {
+                const result = response.data.data?.map((storage) => ({
+                    label: storage.name,
+                    value: storage.id,
+                    data: storage,
+                }));
+                category_fetch.value = false;
+                callback(result);
+            }
+        });
+    }
+}
+
+watch(form.value.category, () => {
+    data_manager.value = [];
+    category_fetch.value = false;
+});
+
+//Handle Submit Product
+const handleCreateProduct = async () => {
+    try {
+        // Perform form submission logic here
+        let formData = new FormData();
+        formData.append("name", form.value.name);
+        formData.append("sku", form.value.sku);
+        formData.append("category_id", form.value.category.value);
+        formData.append("is_active", form.value.is_active);
+        if (form.value.image && form.value.image.length > 0) {
+            formData.append("image", form.value.image[0].originFileObj);
+        }
+        formData.append("qty", form.value.amount);
+        formData.append("unit_id", form.value.unit.value);
+        formData.append("price", form.value.price);
+        formData.append(
+            "price_sale",
+            form.value.price - form.value.discount_price
+        );
+        if (form.value.product_description) {
+            formData.append("description", form.value.product_description);
+        }
+        if (form.value.warehouses.length > 0) {
+            form.value.warehouses.forEach((item, index) => {
+                formData.append("category_id", item.warehouse_id);
+                formData.append("qty", item.quantity);
+            });
+        }
+
+        const response = await axios.post("/api/products", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        if (response.data.code == 200) {
+            message.success(response.data.message);
+            router.push({ name: "product-index" });
+        }
+        // router.push({ name: "product-index" });
+    } catch (err) {
+        if (err?.response?.status == 422) {
+            errorInfo.value = Object.values(err.response.data.errors);
+            message.error("Vui lòng kiểm tra lại thông tin");
+        } else {
+            message.error("An error occurred. Please try again.");
+            console.log("error", err);
+        }
+    }
+};
 </script>
 
 <style lang="scss" scoped>
