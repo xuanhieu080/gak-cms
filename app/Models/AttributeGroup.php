@@ -17,4 +17,9 @@ class AttributeGroup extends BaseModel
     {
         return $this->hasMany(Attribute::class, 'group_id', 'id');
     }
+
+    public function productAttributes(): HasMany
+    {
+        return $this->hasMany(ProductAttribute::class, 'attribute_group_id', 'id');
+    }
 }

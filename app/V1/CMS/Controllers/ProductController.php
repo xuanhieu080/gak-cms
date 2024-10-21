@@ -5,7 +5,9 @@ namespace App\V1\CMS\Controllers;
 use App\Supports\GAK_ERROR;
 use App\V1\CMS\Models\ProductModel;
 use App\V1\CMS\Requests\Products\CreateRequest;
+use App\V1\CMS\Requests\Products\SyncAttributeRequest;
 use App\V1\CMS\Requests\Products\UpdateRequest;
+use App\V1\CMS\Resources\AttributeGroupShortResource;
 use App\V1\CMS\Resources\ProductResource;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -132,5 +134,51 @@ class ProductController extends Controller
         }
 
         return $this->responseDeleteFail();
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param UpdateRequest $request
+     * @param $id
+     * @return JsonResponse
+     * @throws Throwable
+     */
+    public function syncAttribute(SyncAttributeRequest $request, $id): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+            $input = $request->validated();
+            $this->model->syncAttribute($id, $input);
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            $response = GAK_ERROR::handle($exception, 'product_variants');
+
+            return $this->responseUpdateFail($response['message']);
+        }
+
+        return $this->response(200, 'Cập nhật thông tin thành công');
+    }
+
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param $id
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function getAttribute($id): JsonResponse
+    {
+        try {
+            $data = $this->model->getAttribute($id);
+        } catch (\Exception $exception) {
+            $response = GAK_ERROR::handle($exception, 'product_variants');
+
+            return $this->responseUpdateFail($response['message']);
+        }
+
+        return $this->response(200, '', ['data' => AttributeGroupShortResource::collection($data)]);
     }
 }
