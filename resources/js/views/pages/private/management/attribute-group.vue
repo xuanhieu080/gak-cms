@@ -155,6 +155,16 @@
                                         </template>
                                         Tạo nhóm thuộc tính
                                     </a-button>
+                                    <a-button
+                                        type="primary"
+                                        class="flex items-center"
+                                        @click="handleCreateAttribute"
+                                    >
+                                        <template #icon>
+                                            <PlusOutlined />
+                                        </template>
+                                        Tạo thuộc tính
+                                    </a-button>
                                     <a-popconfirm
                                         :disabled="selectedRow.length == 0"
                                         title="Bạn chắc chắn xóa chứ?"
@@ -330,7 +340,9 @@ const handleOpenAttributeGroupDetails = (record) => {
 const handleCreateAttributeGroup = () => {
     router.push({ name: "attribute-group-create" });
 };
-
+const handleCreateAttribute = () => {
+    router.push({ name: "management-attribute-create" });
+};
 const handleToggleSearchBox = () => {
     if (openSearchTicket.value.length > 0) {
         openSearchTicket.value = [];

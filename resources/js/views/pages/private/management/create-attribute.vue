@@ -274,7 +274,7 @@ async function searchStorage(value,callback) {
         await axios.get(`/api/attribute-groups?${params}`).then((response) => {
             if (currentValue === value) {
                 const result = response.data.data?.map((attr_group) => ({
-                    label: attr_group.name + '('+ attr_group.id + ')',
+                    label: attr_group.name + ' (id: '+ attr_group.id + ')',
                     value: attr_group.id,
                     data: attr_group,
                 }));
@@ -286,7 +286,7 @@ async function searchStorage(value,callback) {
         await axios.get(`/api/attribute-groups`).then((response) => {
             if (currentValue === value) {
                 const result = response.data.data?.map((attr_group) => ({
-                    label: attr_group.name + '('+ attr_group.id + ')',
+                    label: attr_group.name + ' (id: '+ attr_group.id + ')',
                     value: attr_group.id,
                     data: attr_group,
                 }));
