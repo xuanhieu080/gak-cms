@@ -11,6 +11,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProductModel extends AbstractModel
 {
@@ -123,14 +124,14 @@ class ProductModel extends AbstractModel
     public function syncWarehouse($id, array $input = []): void
     {
         $model = $this->model
-            ->with(['attributes'])
+            ->with(['variants'])
             ->where('id', $id)
             ->first();
         if (empty($model)) {
             throw new Exception('Dữ liệu không tồn tại', 404);
         }
 
-        if (!empty($model->attributes)) {
+        if (count($model->variants) > 0) {
             throw new Exception('Không thể thêm sản phẩm có biến thể vào kho hàng', 400);
         }
 
@@ -138,7 +139,7 @@ class ProductModel extends AbstractModel
 
         $items = array_map(function ($item) use ($id) {
             $item['product_id'] = $id;
-            $item['created_at'] = Support::now();
+            $item['variant_id'] = null;
             $item['updated_at'] = Support::now();
             $item['created_by'] = Auth::id();
             $item['updated_by'] = Auth::id();
@@ -151,12 +152,47 @@ class ProductModel extends AbstractModel
             ->where('product_id', $id)
             ->where(function ($query) use ($warehouseIds) {
                 $query->whereNotIn('warehouse_id', $warehouseIds)
-                    ->whereNotNull('variants');
+                    ->orWhereNotNull('variant_id');
             })
             ->delete();
 
-        ProductWarehouse::query()
-            ->upsert($items, ['variant_id', 'warehouse_id', 'product_id'], ['qty']);
+        // Bước 1: Lấy danh sách các bản ghi đã tồn tại
+        $existingRecords = ProductWarehouse::query()
+            ->where('product_id', $id)
+            ->whereNull('variant_id')
+            ->get(['warehouse_id', 'qty']);
+
+        // Tạo một mảng để theo dõi số lượng cập nhật
+        $updateQuantities = [];
+        $newItems = [];
+
+        // Bước 2: Kiểm tra và phân loại các mục
+        foreach ($items as $item) {
+            $existingRecord = $existingRecords->firstWhere('warehouse_id', $item['warehouse_id']);
+
+            if ($existingRecord) {
+                // Nếu bản ghi đã tồn tại, cộng dồn quantity
+                $updateQuantities[$item['warehouse_id']] = $item['qty'];
+            } else {
+                // Nếu bản ghi chưa tồn tại, thêm mới
+                $newItems[] = $item;
+            }
+        }
+
+        // Bước 3: Thực hiện cập nhật và thêm mới trong một giao dịch
+        DB::transaction(function () use ($updateQuantities, $newItems, $id) {
+            // Cập nhật quantity cho các bản ghi đã tồn tại bằng một truy vấn duy nhất
+            foreach ($updateQuantities as $warehouseId => $qty) {
+                ProductWarehouse::where('product_id', $id)
+                    ->where('warehouse_id', $warehouseId)
+                    ->update(['qty' => $qty, 'updated_at' => now()]);
+            }
+
+            // Thêm mới các mục nếu có
+            if (!empty($newItems)) {
+                ProductWarehouse::query()->insert($newItems);
+            }
+        });
     }
 
     /**
@@ -165,7 +201,7 @@ class ProductModel extends AbstractModel
     public function getWarehouse($id): Collection|array
     {
         $model = $this->model
-            ->where('product_id', $id)
+            ->where('id', $id)
             ->first();
 
         if (empty($model)) {
@@ -173,7 +209,7 @@ class ProductModel extends AbstractModel
         }
 
         return ProductWarehouse::query()
-            ->with(['warehouse'])
+            ->with(['warehouse', 'product'])
             ->where('product_id', $id)
             ->get();
     }

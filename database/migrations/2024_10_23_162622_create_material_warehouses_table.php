@@ -26,6 +26,10 @@ return new class extends Migration
         Schema::table('materials', function (Blueprint $table) {
             $table->dropColumn(['warehouse_id']);
         });
+
+        Schema::table('product_warehouses', function (Blueprint $table) {
+            $table->unique(['product_id','warehouse_id', 'variant_id']);
+        });
     }
 
     /**
@@ -37,6 +41,10 @@ return new class extends Migration
 
         Schema::table('materials', function (Blueprint $table) {
             $table->unsignedBigInteger('warehouse_id')->nullable();
+        });
+
+        Schema::table('product_warehouses', function (Blueprint $table) {
+            $table->dropUnique(['product_id','warehouse_id', 'variant_id']);
         });
     }
 };

@@ -31,6 +31,6 @@ class ProductWarehouse extends BaseModel
 
     public function warehouse(): BelongsTo
     {
-
+        return $this->belongsTo(Warehouse::class);
     }
 }
