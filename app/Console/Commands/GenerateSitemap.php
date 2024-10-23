@@ -6,7 +6,6 @@ use App\Models\Category;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostGroup;
-use App\Models\Product;
 use App\V1\Models\ProductModel;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;

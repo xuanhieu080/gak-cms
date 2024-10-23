@@ -2,9 +2,10 @@
 
 namespace App\V1\CMS\Models;
 
-use App\Models\Product;
+use App\Models\ProductAttribute;
 use App\Models\ProductWarehouse;
 use App\Models\Variant;
+use App\Models\VariantDetail;
 use App\Supports\Support;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
@@ -21,11 +22,61 @@ class VariantModel extends AbstractModel
 
     public function store(array $data)
     {
+        $items = $data['items'];
+        $itemCount = count($items);
+        $productId =  $data['product_id'];
+
+        // Truy vấn để đếm số lượng attribute_group_id khớp với product_id = 1
+        $matchedCount = ProductAttribute::query()
+            ->where('product_id', $productId)
+            ->count();
+
+        // Kiểm tra nếu số lượng khớp không bằng số lượng điều kiện
+        if ($matchedCount != $itemCount) {
+            throw new Exception("Một số nhóm thuộc tính không khớp hoặc bị thiếu.");
+        }
+
+        // Lấy danh sách các variant có chi tiết thỏa mãn
+        $variantIds = VariantDetail::query()
+            ->select('variant_id')
+            ->where(function ($query) use ($items) {
+                foreach ($items as $item) {
+                    $query->orWhere(function ($q) use ($item) {
+                        $q->where('attribute_id', $item['attribute_id'])
+                            ->where('attribute_group_id', $item['attribute_group_id']);
+                    });
+                }
+            })
+            ->whereHas('variant')
+            ->where('product_id', $productId)
+            ->groupBy('variant_id')
+            ->havingRaw("COUNT(DISTINCT id) = ?", [$itemCount]) // Kiểm tra đủ số lượng cặp điều kiện
+            ->pluck('variant_id');
+
+        $exists = $variantIds->isNotEmpty();
+
+        if ($exists) {
+            throw new Exception('Dữ liệu đã tồn tại');
+        }
+
         $model = $this->create($data);
 
         if (empty($model)) {
             throw new Exception('Thêm dữ liệu thất bại');
         }
+
+        $items = array_map(function ($item) use ($productId, $model) {
+            $item['product_id'] = $productId;
+            $item['variant_id'] = $model->id;
+            $item['created_at'] = Support::now();
+            $item['updated_at'] = Support::now();
+            $item['created_by'] = Auth::id();
+            $item['updated_by'] = Auth::id();
+            return $item;
+        }, $items);
+
+        VariantDetail::query()
+            ->insert($items);
 
         if (!empty($data['image'])) {
             $model->addMedia($data['image'])
@@ -49,6 +100,7 @@ class VariantModel extends AbstractModel
             ->where('product_id', $productId)
             ->whereNull('variant_id')
             ->delete();
+
         if (empty($model)) {
             throw new Exception('Dữ liệu không tồn tại', 404);
         }
@@ -75,6 +127,7 @@ class VariantModel extends AbstractModel
             ->where('product_id', $productId)
             ->where('id', $id)
             ->first();
+
         if (empty($model)) {
             throw new Exception('Dữ liệu không tồn tại', 404);
         }
@@ -105,7 +158,7 @@ class VariantModel extends AbstractModel
             ->delete();
 
         ProductWarehouse::query()
-            ->upsert($items, ['variant_id', 'warehouse_id', 'product_id'],['qty']);
+            ->upsert($items, ['variant_id', 'warehouse_id', 'product_id'], ['qty']);
     }
 
     /**

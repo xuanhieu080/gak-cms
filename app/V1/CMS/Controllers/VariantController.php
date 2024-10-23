@@ -3,15 +3,12 @@
 namespace App\V1\CMS\Controllers;
 
 use App\Supports\GAK_ERROR;
-use App\V1\CMS\Models\ProductModel;
-use App\V1\CMS\Requests\Products\CreateRequest;
-use App\V1\CMS\Requests\Products\SyncAttributeRequest;
-use App\V1\CMS\Requests\Products\UpdateRequest;
-use App\V1\CMS\Requests\Products\Warehouses\SyncRequest;
-use App\V1\CMS\Resources\AttributeGroupShortResource;
-use App\V1\CMS\Resources\Products\ProductResource;
-use App\V1\CMS\Resources\Products\ProductShortResource;
-use App\V1\CMS\Resources\Products\ProductWarehouseResource;
+use App\V1\CMS\Models\VariantModel;
+use App\V1\CMS\Requests\Products\Variants\CreateRequest;
+use App\V1\CMS\Requests\Products\Variants\UpdateRequest;
+use App\V1\CMS\Requests\Products\Warehouses\SyncVariantRequest;
+use App\V1\CMS\Resources\Products\Variants\VariantResource;
+use App\V1\CMS\Resources\Products\Variants\VariantWarehouseResource;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
@@ -21,19 +18,19 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
-class ProductController extends Controller
+class VariantController extends Controller
 {
 
     /**
      * The service instance
-     * @var ProductModel
+     * @var VariantModel
      */
-    private ProductModel $model;
+    private VariantModel $model;
 
     /**
      * Constructor
      */
-    public function __construct(ProductModel $model)
+    public function __construct(VariantModel $model)
     {
         $this->model = $model;
     }
@@ -51,10 +48,10 @@ class ProductController extends Controller
 
         $data = $this->model->search($input, [], $limit);
         if (isset($input['short'])) {
-            return $this->responseIndex(ProductShortResource::collection($data));
+            return $this->responseIndex(VariantResource::collection($data));
         }
 
-        return $this->responseIndex(ProductResource::collection($data));
+        return $this->responseIndex(VariantResource::collection($data));
     }
 
     /**
@@ -76,7 +73,7 @@ class ProductController extends Controller
 
             return $this->responseStoreFail($response['message']);
         }
-        return $this->responseStoreSuccess('', ['item' => new ProductResource($data)]);
+        return $this->responseStoreSuccess('', ['item' => new VariantResource($data)]);
     }
 
     /**
@@ -92,7 +89,7 @@ class ProductController extends Controller
 
             return $this->responseFail($response['message']);
         }
-        return $this->responseSuccess('', ['item' => new ProductResource($item)]);
+        return $this->responseSuccess('', ['item' => new VariantResource($item)]);
     }
 
     /**
@@ -118,7 +115,7 @@ class ProductController extends Controller
             return $this->responseUpdateFail($response['message']);
         }
 
-        return $this->responseUpdateSuccess('', ['item' => new ProductResource($data)]);
+        return $this->responseUpdateSuccess('', ['item' => new VariantResource($data)]);
     }
 
     /**
@@ -139,60 +136,14 @@ class ProductController extends Controller
         return $this->responseDeleteFail();
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param SyncAttributeRequest $request
-     * @param $id
-     * @return JsonResponse
-     * @throws Throwable
-     */
-    public function syncAttribute(SyncAttributeRequest $request, $id): JsonResponse
-    {
-        try {
-            DB::beginTransaction();
-            $input = $request->validated();
-            $this->model->syncAttribute($id, $input);
-            DB::commit();
-        } catch (\Exception $exception) {
-            DB::rollBack();
-            $response = GAK_ERROR::handle($exception, 'product_variants');
 
-            return $this->responseUpdateFail($response['message']);
-        }
-
-        return $this->response(200, 'Cập nhật thông tin thành công');
-    }
-
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param $id
-     * @return JsonResponse
-     * @throws Exception
-     */
-    public function getAttribute($id): JsonResponse
-    {
-        try {
-            $data = $this->model->getAttribute($id);
-        } catch (\Exception $exception) {
-            $response = GAK_ERROR::handle($exception, 'product_variants');
-
-            return $this->responseUpdateFail($response['message']);
-        }
-
-        return $this->response(200, '', ['data' => AttributeGroupShortResource::collection($data)]);
-    }
-
-
-    public function syncWarehouse(SyncRequest $request, $id): JsonResponse
+    public function syncWarehouse(SyncVariantRequest $request, $productId, $id): JsonResponse
     {
         try {
             DB::beginTransaction();
             $input = $request->validated();
             $input['id'] = $id;
-            $this->model->syncWarehouse($id, $input);
+            $this->model->syncWarehouse($productId, $id, $input);
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
@@ -208,20 +159,20 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      *
+     * @param $productId
      * @param $id
      * @return JsonResponse
-     * @throws Exception
      */
-    public function getWarehouse($id): JsonResponse
+    public function getWarehouse($productId, $id): JsonResponse
     {
         try {
-            $data = $this->model->getWarehouse($id);
+            $data = $this->model->getWarehouse($productId, $id);
         } catch (\Exception $exception) {
             $response = GAK_ERROR::handle($exception, 'products');
 
             return $this->responseUpdateFail($response['message']);
         }
 
-        return $this->response(200, '', ['data' => ProductWarehouseResource::collection($data)]);
+        return $this->response(200, '', ['data' => VariantWarehouseResource::collection($data)]);
     }
 }
