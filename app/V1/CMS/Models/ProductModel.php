@@ -30,13 +30,14 @@ class ProductModel extends AbstractModel
             throw new Exception('Thêm dữ liệu thất bại');
         }
 
+
         if (!empty($data['image'])) {
             $model->addMedia($data['image'])
                 ->usingName($model->name)
                 ->usingFileName($model->name . '-' . time() . '.' . $data['image']->getClientOriginalExtension())
                 ->toMediaCollection();
         }
-        $model->refresh();
+        $model->refresh(['details', 'details.attribute', 'details.attributeGroup']);
 
         return $model;
     }

@@ -23,7 +23,6 @@ class AttributeShortResource extends JsonResource
         return [
             "id"       => $this->id,
             "name"     => $this->name,
-            "group"    => AttributeGroupResource::collection($this->group),
             "group_id" => $this->group_id,
         ];
     }

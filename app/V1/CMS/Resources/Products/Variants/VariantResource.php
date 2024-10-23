@@ -22,11 +22,10 @@ class VariantResource extends JsonResource
     {
         return [
             "id"                 => $this->id,
-            "name"               => $this->name,
-            "description"        => $this->description,
             "price"              => $this->price,
             "price_sale"         => $this->price_sale,
             "sku"                => $this->sku,
+            "image"              => $this->getFirstMediaUrl(),
             "details"            => VariantDetailResource::collection($this->details),
             "variant_warehouses" => VariantWarehouseResource::collection($this->variantWarehouses),
             'created_by_name'    => object_get($this, 'createBy.name'),

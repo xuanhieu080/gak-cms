@@ -2,6 +2,7 @@
 
 namespace App\V1\CMS\Resources\Products\Variants;
 
+use App\V1\CMS\Resources\AttributeGroupShortResource;
 use App\V1\CMS\Resources\AttributeShortResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -25,7 +26,7 @@ class VariantDetailResource extends JsonResource
             "id"              => $this->id,
             "variant_id"      => $this->variant_id,
             "attribute"       => new AttributeShortResource($this->attribute),
-            "attribute_group" => new AttributeShortResource($this->attributeGroup),
+            "attribute_group" => new AttributeGroupShortResource($this->attributeGroup),
         ];
     }
 }

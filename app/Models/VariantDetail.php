@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class VariantDetail extends BaseModel
 {
@@ -23,13 +24,13 @@ class VariantDetail extends BaseModel
         return $this->belongsTo(Variant::class);
     }
 
-    public function attribute(): BelongsTo
+    public function attribute(): HasOne
     {
-        return $this->belongsTo(Attribute::class);
+        return $this->hasOne(Attribute::class, 'id', 'attribute_id');
     }
 
-    public function attributeGroup(): BelongsTo
+    public function attributeGroup(): HasOne
     {
-        return $this->belongsTo(AttributeGroup::class);
+        return $this->hasOne(AttributeGroup::class, 'id', 'attribute_group_id');
     }
 }
