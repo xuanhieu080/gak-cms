@@ -3,9 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class Unit extends Model
+class Unit extends BaseModel
 {
     use HasFactory;
 
@@ -13,6 +12,9 @@ class Unit extends Model
       'id',
       'name',
       'code',
-      'is_active'
+      'is_active',
+      'created_by',
+      'updated_by',
     ];
+
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Attribute extends BaseModel
@@ -17,5 +18,10 @@ class Attribute extends BaseModel
     public function group(): HasOne
     {
         return $this->hasOne(AttributeGroup::class, 'id', 'group_id');
+    }
+
+    public function variantDetail(): HasMany
+    {
+        return $this->hasMany(VariantDetail::class, 'attribute_id', 'id');
     }
 }

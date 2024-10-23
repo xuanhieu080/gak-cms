@@ -5,9 +5,12 @@ namespace App\V1\CMS\Models;
 use App\Models\AttributeGroup;
 use App\Models\Product;
 use App\Models\ProductAttribute;
+use App\Models\ProductWarehouse;
+use App\Supports\Support;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 
 class ProductModel extends AbstractModel
 {
@@ -71,22 +74,30 @@ class ProductModel extends AbstractModel
 
         $attributeGroups = Arr::get($input, 'groups', []);
 
-        ProductAttribute::query()
-            ->where('product_id', $model->id)
-            ->whereNotIn('attribute_group_id', $attributeGroups)
-            ->delete();
+        if (empty($attributeGroups)) {
+            ProductAttribute::query()
+                ->where('product_id', $model->id)
+                ->delete();
 
-        $param = [];
+            ProductWarehouse::query()
+                ->where('product_id', $id)
+                ->delete();
+        } else {
+            ProductAttribute::query()
+                ->where('product_id', $model->id)
+                ->whereNotIn('attribute_group_id', $attributeGroups)
+                ->delete();
 
-        foreach ($attributeGroups as $detail) {
-            $param[] = [
-                'attribute_group_id' => $detail,
-                'product_id'         => $model->id,
-                'is_active'          => 1
-            ];
-        }
+            $param = [];
 
-        if (!empty($param)) {
+            foreach ($attributeGroups as $detail) {
+                $param[] = [
+                    'attribute_group_id' => $detail,
+                    'product_id'         => $model->id,
+                    'is_active'          => 1
+                ];
+            }
+
             ProductAttribute::query()
                 ->upsert($param, ['attribute_group_id', 'product_id']);
         }
@@ -106,6 +117,64 @@ class ProductModel extends AbstractModel
             ->whereHas('productAttributes', function ($query) use ($model) {
                 $query->where('product_id', $model->id);
             })
+            ->get();
+    }
+
+    public function syncWarehouse($id, array $input = []): void
+    {
+        $model = $this->model
+            ->with(['attributes'])
+            ->where('id', $id)
+            ->first();
+        if (empty($model)) {
+            throw new Exception('Dữ liệu không tồn tại', 404);
+        }
+
+        if (!empty($model->attributes)) {
+            throw new Exception('Không thể thêm sản phẩm có biến thể vào kho hàng', 400);
+        }
+
+        $items = Arr::get($input, 'items', []);
+
+        $items = array_map(function ($item) use ($id) {
+            $item['product_id'] = $id;
+            $item['created_at'] = Support::now();
+            $item['updated_at'] = Support::now();
+            $item['created_by'] = Auth::id();
+            $item['updated_by'] = Auth::id();
+            return $item;
+        }, $items);
+
+        $warehouseIds = array_column($items, 'warehouse_id');
+
+        ProductWarehouse::query()
+            ->where('product_id', $id)
+            ->where(function ($query) use ($warehouseIds) {
+                $query->whereNotIn('warehouse_id', $warehouseIds)
+                    ->whereNotNull('variants');
+            })
+            ->delete();
+
+        ProductWarehouse::query()
+            ->upsert($items, ['variant_id', 'warehouse_id', 'product_id'], ['qty']);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getWarehouse($id): Collection|array
+    {
+        $model = $this->model
+            ->where('product_id', $id)
+            ->first();
+
+        if (empty($model)) {
+            throw new Exception('Dữ liệu không tồn tại', 404);
+        }
+
+        return ProductWarehouse::query()
+            ->with(['warehouse'])
+            ->where('product_id', $id)
             ->get();
     }
 }

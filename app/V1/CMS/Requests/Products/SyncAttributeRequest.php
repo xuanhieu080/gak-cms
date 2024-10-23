@@ -14,7 +14,7 @@ class SyncAttributeRequest extends ValidatorBase
     public function rules()
     {
         return [
-            'groups' => 'array',
+            'groups'   => 'nullable|array',
             'groups.*' => 'nullable|exists:attribute_groups,id'
         ];
     }

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\V1\CMS\Resources;
+namespace App\V1\CMS\Resources\Warehouses;
 
-use App\Models\AttributeGroup;
 use App\Supports\Support;
+use App\V1\CMS\Resources\Materials\MaterialShortResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
