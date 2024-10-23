@@ -46,29 +46,7 @@
                 </div>
                 <div class="p-6 material-form grid grid-cols-2 gap-6">
                     <a-form :model="formState" layout="vertical">
-                        <a-form-item v-bind="validateInfos.storage_code">
-                            <template class="h-full" #label>
-                                <span class="font-medium">Mã kho hàng</span>
-                            </template>
-                            <a-select
-                                v-model:value="formState.storage_code"
-                                :options="data_storages"
-                                :not-found-content="data_storages_fetching ? undefinded : null"
-                                placeholder="Chọn kho hàng"
-                                @search="handleSearch"
-                                @change="handleChange"
-                                :filter-option="false"
-                                show-search
-                            >
-                                <template #notFoundContent>
-                                    <a-spin
-                                        v-if="data_storages_fetching"
-                                        size="small"
-                                    />
-                                    <span v-if="data_storages.length == 0 && !data_storages_fetching">Không có kết quả nào</span>
-                                </template>
-                            </a-select>
-                        </a-form-item>
+                        
                         <a-form-item v-bind="validateInfos.material_name">
                             <template class="h-full" #label>
                                 <span class="font-medium">Tên nguyên liệu</span>
@@ -119,7 +97,6 @@
                                 </a-button>
                             </div>
                         </a-form-item>
-
                     </a-form>
                 </div>
             </div>
@@ -128,7 +105,7 @@
 </template>
 
 <script setup>
-import { CalendarOutlined } from "@ant-design/icons-vue";
+import { MinusOutlined, PlusOutlined } from "@ant-design/icons-vue";
 import { ref, reactive, watch, onMounted } from "vue";
 import axios from "axios";
 import { Form, message } from "ant-design-vue";
@@ -154,7 +131,7 @@ const data_storages = ref([
 ]);
 const data_storages_fetching = ref(false);
 let timeout;
-let currentValue = '';
+let currentValue = "";
 
 const statusOptions = ref([
     {
@@ -196,7 +173,6 @@ const routes = ref([
 ]);
 
 const formState = ref({
-    storage_code: null,
     material_name: null,
     material_code: null,
 });
@@ -204,12 +180,6 @@ const formState = ref({
 const { resetFields, validate, validateInfos } = useForm(
     formState.value,
     reactive({
-        storage_code: [
-            {
-                required: true,
-                message: "Vui lòng chọn mã đại lý",
-            },
-        ],
         material_name: [
             {
                 required: true,
@@ -225,7 +195,6 @@ const onSubmit = async () => {
             const response = await axios.post("/api/materials", {
                 name: formState.value.material_name,
                 code: formState.value.material_code,
-                warehouse_id: formState.value.storage_code,
             });
             if (response.data.code == 200) {
                 message.success(response.data.message);
@@ -262,63 +231,16 @@ const handleCancel = () => {
     openCallingBack.value = false;
 };
 
-function fetchStorageDropdown(value, callback) {
-    if (timeout) {
-        clearTimeout(timeout);
-        timeout = null;
-    }
-    currentValue = value;
-    timeout = setTimeout(searchStorage(value, callback), 300);
-}
 
-const handleSearch = async (val) => {
-    fetchStorageDropdown(val, (data) => (data_storages.value = data));
-};
-const handleChange = (val, item) => {
-    formState.storage_code = item;
-    fetchStorageDropdown('', (data) => (data_storages.value = data));
-};
 
-async function searchStorage(value,callback) {
-    data_storages_fetching.value = true;
-    const params = new URLSearchParams({
-        name: value,
-    });
-    if (value) {
-        await axios.get(`/api/warehouses?${params}`).then((response) => {
-            if (currentValue === value) {
-                const result = response.data.data?.map((storage) => ({
-                    label: storage.name,
-                    value: storage.id,
-                    data: storage,
-                }));
-                data_storages_fetching.value = false;
-                callback(result);
-            }
-        });
-    } else {
-        await axios.get(`/api/warehouses`).then((response) => {
-            if (currentValue === value) {
-                const result = response.data.data?.map((storage) => ({
-                    label: storage.name,
-                    value: storage.id,
-                    data: storage,
-                }));
-                data_storages_fetching.value = false;
-                callback(result);
-            }
-        });
-    }
-}
+// watch(formState.storage_code, () => {
+//     data_storages.value = [];
+//     data_storages_fetching.value = false;
+// });
 
-watch(formState.storage_code, () => {
-    data_storages.value = [];
-    data_storages_fetching.value = false;
-});
-
-onMounted(() => {
-    searchStorage('', (data) => (data_storages.value = data));
-});
+// onMounted(() => {
+//     searchStorage("", (data) => (data_storages.value = data));
+// });
 </script>
 
 <style lang="scss" scoped>

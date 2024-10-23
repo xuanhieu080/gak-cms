@@ -65,9 +65,9 @@
                                 v-if="typeof text == 'object'"
                                 v-for="(value, key) in text"
                             >
-                                <div v-if="key == 'name'">Tên quản lý: {{ value }}</div>
-                                <div v-if="key == 'email'">Email: {{ value }}</div>
-                                <div v-if="key == 'phone'">Sđt: {{ value }}</div>
+                                <div v-if="key == 'name'">Tên quản lý: <b> {{ value }}</b> </div>
+                                <div v-if="key == 'email'">Email: <b> {{ value }}</b> </div>
+                                <div v-if="key == 'phone'">Sđt: <b> {{ value }}</b> </div>
                             </div>
                         </template>
                     </template>
@@ -124,6 +124,15 @@
                             </template>
                             <a-input
                                 v-model:value="formState.storage_code"
+                                placeholder=""
+                            />
+                        </a-form-item>
+                        <a-form-item >
+                            <template class="h-full" #label>
+                                <span class="font-medium">Mã số thuế</span>
+                            </template>
+                            <a-input
+                                v-model:value="formState.tax_code"
                                 placeholder=""
                             />
                         </a-form-item>
@@ -240,6 +249,7 @@ const formState = ref({
     phone: null,
     email: null,
     address: null,
+    tax_code: null
 });
 const errorInfo = ref([]);
 const { resetFields, validate, validateInfos } = useForm(
@@ -296,6 +306,7 @@ const onSubmit = async () => {
                     phone: formState.value.phone,
                     address: formState.value.address,
                     manager_id: formState.value.manager_id,
+                    tax_code: formState.value.tax_code,
                 }
             );
             if (response.data.code == 200) {
@@ -373,6 +384,7 @@ watch(
             code: "Mã kho",
             email: "Email",
             phone: "Số Điện Thoại",
+            tax_code: "Mã số thuế",
             address: "Địa Chỉ",
             manager: "Thông Tin Quản lý",
             materials: "Nguyên Liệu",
@@ -399,6 +411,8 @@ watch(
                 formState.value.phone = value;
             } else if (key == "address") {
                 formState.value.address = value;
+            } else if(key == 'tax_code') {
+                formState.value.tax_code = value
             }
         }
     }

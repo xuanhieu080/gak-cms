@@ -547,95 +547,7 @@
                                                 </a-select>
                                             </a-form-item>
                                         </a-col>
-                                        <a-col :span="7">
-                                            <a-form-item
-                                                :ref="`attribute-${index}`"
-                                                :label="`Thuộc tính`"
-                                                :name="`attributes.${index}.attribute`"
-                                            >
-                                                <a-select
-                                                    v-model:value="
-                                                        attribute.attribute_id
-                                                    "
-                                                    placeholder="Chọn thuộc tính"
-                                                    :loading="attribute.loading"
-                                                    :options="
-                                                        attribute.attribute
-                                                    "
-                                                    @change="
-                                                        (val) =>
-                                                            handleChangeAttribute(
-                                                                val,
-                                                                attribute
-                                                            )
-                                                    "
-                                                >
-                                                    <template #notFoundContent>
-                                                        <a-spin
-                                                            v-if="
-                                                                attribute.loading
-                                                            "
-                                                            size="small"
-                                                        />
-                                                        <span
-                                                            v-if="
-                                                                attribute
-                                                                    .attribute
-                                                                    .length ==
-                                                                    0 &&
-                                                                !attribute.loading
-                                                            "
-                                                            >Không có kết quả
-                                                            nào</span
-                                                        >
-                                                    </template>
-                                                </a-select>
-                                            </a-form-item>
-                                        </a-col>
-                                        <a-col
-                                            :span="4"
-                                            v-if="attribute.attribute_id"
-                                        >
-                                            <a-form-item
-                                                :ref="`highlight-${index}`"
-                                                :label="`Màu nổi bật`"
-                                                :name="`attributes.${index}.highlight`"
-                                            >
-                                                <a-switch
-                                                    v-model:checked="
-                                                        attribute.is_highlight
-                                                    "
-                                                    @click="
-                                                        handleUpdateToggle(
-                                                            attribute,
-                                                            'highlight'
-                                                        )
-                                                    "
-                                                />
-                                            </a-form-item>
-                                        </a-col>
-                                        <a-col
-                                            :span="4"
-                                            v-if="attribute.attribute_id"
-                                        >
-                                            <a-form-item
-                                                :ref="`featured-${index}`"
-                                                :label="`Thuộc tính chính`"
-                                                :name="`attributes.${index}.featured`"
-                                            >
-                                                <a-switch
-                                                    v-model:checked="
-                                                        attribute.is_feature
-                                                    "
-                                                    @click="
-                                                        handleUpdateToggle(
-                                                            attribute,
-                                                            'featured'
-                                                        )
-                                                    "
-                                                />
-                                            </a-form-item>
-                                        </a-col>
+
                                         <a-col :span="2">
                                             <div
                                                 class="flex items-center gap-1 ml-4 mt-2.5"
@@ -666,26 +578,7 @@
                                             <a-col>
                                                 <b>Nhóm thuộc tính:</b>
                                                 {{
-                                                    selectedAttribute.data.group
-                                                        .name
-                                                }}
-                                            </a-col>
-                                            <a-col>
-                                                <b>Tên thuộc tính:</b>
-                                                {{
                                                     selectedAttribute.data.name
-                                                }}
-                                            </a-col>
-                                            <a-col>
-                                                <b>Màu nổi bật:</b>
-                                                {{
-                                                    selectedAttribute.is_highlight
-                                                }}
-                                            </a-col>
-                                            <a-col>
-                                                <b>Thuộc tính chính:</b>
-                                                {{
-                                                    selectedAttribute.is_feature
                                                 }}
                                             </a-col>
                                         </a-row>
@@ -897,9 +790,10 @@ import {
     PhoneTwoTone,
     MinusCircleOutlined,
 } from "@ant-design/icons-vue";
-import { ref } from "vue";
+import { ref, watch, onMounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
+import { usePagination } from "vue-request";
 import { message } from "ant-design-vue";
 import Page from "@/views/layouts/Page";
 import CkEditorCustom from "@/views/components/CkEditorCustom.vue";
@@ -941,12 +835,8 @@ const formAttributes = ref({
     attributes: [
         {
             id: null,
-            attribute_id: null,
-            attribute: [],
             options: [],
             loading: false,
-            is_highlight: false,
-            is_feature: false,
         },
     ],
     selectedAttributes: [],
@@ -1221,29 +1111,12 @@ const handleCancelSEOImg = () => {
 function addAttribute() {
     formAttributes.value.attributes.push({
         id: null,
-        attribute_id: null,
-        attribute: [],
         options: [],
         loading: false,
-        is_highlight: false,
-        is_feature: false,
     });
 }
 function removeAttribute(index) {
     formAttributes.value.attributes.splice(index, 1);
-}
-function addAttributeToProduct(index) {
-    const attribute = formAttributes.value.attributes[index];
-    if (attribute.attributeGroup && attribute.attribute) {
-        formAttributes.value.selectedAttributes.push({
-            attributeGroup: attribute.attributeGroup,
-            attribute: attribute.attribute,
-            highlight: attribute.is_highlight,
-            featured: attribute.is_feature,
-        });
-    }
-}
-function removeSelectedAttribute(index) {
     formAttributes.value.selectedAttributes.splice(index, 1);
 }
 
@@ -1265,15 +1138,27 @@ const handleSearchAttributeGroup = async (val, ỉtem = null) => {
 };
 const handleChangeAttributeGroup = (val, item) => {
     item.id = val;
+    console.log(val);
     item.loading = false;
     let dataSelected = item.options.find((ele) => ele.value == val);
+    console.log(dataSelected);
     if (dataSelected) {
-        // item.attribute = dataSelected.data.attributes;
-        item.attribute = dataSelected.data.attributes.map((attr) => ({
-            label: attr.name,
-            value: attr.id,
-            data: attr,
-        }));
+        if (
+            formAttributes.value.attributes.length >
+            formAttributes.value.selectedAttributes.length
+        ) {
+            formAttributes.value.selectedAttributes.push({
+                id: dataSelected.value,
+                data: dataSelected.data,
+            });
+        } else {
+            formAttributes.value.selectedAttributes[
+                formAttributes.value.selectedAttributes.length - 1
+            ] = {
+                id: dataSelected.value,
+                data: dataSelected.data,
+            };
+        }
     }
     fetchAttributeDropdown("", item, (data) => (item.options = data));
 };
@@ -1293,7 +1178,9 @@ const handleChangeAttribute = (val, item) => {
                 is_feature: item.is_feature,
             });
         } else {
-            formAttributes.value.selectedAttributes[formAttributes.value.selectedAttributes.length - 1] = {
+            formAttributes.value.selectedAttributes[
+                formAttributes.value.selectedAttributes.length - 1
+            ] = {
                 id: dataSelected.data.id,
                 data: dataSelected.data,
                 is_highlight: item.is_highlight,
@@ -1372,7 +1259,6 @@ const handleSubmitAttributes = async () => {
         let groupIds = formAttributes.value.selectedAttributes.map(
             (item) => item.id
         );
-        console.log(groupIds);
         await axios
             .post(
                 `/api/products/${router.currentRoute.value.params.id}/attributes`,
@@ -1467,6 +1353,39 @@ function resetVariantFields() {
         quantity: 0,
     };
 }
+
+// Query Data of Product
+const queryDataAttribute = (params) => {
+    return axios.get(
+        `/api/products/${router.currentRoute.value.params.id}/attributes`
+    );
+};
+
+const { data: dataAttribute, loading: loadingAttribute } =
+    usePagination(queryDataAttribute);
+
+watch(
+    () => dataAttribute.value,
+    (newValue) => {
+        if (newValue.data?.data.length > 0) {
+            formAttributes.value.selectedAttributes = newValue.data.data.map(
+                (item) => ({
+                    id: item.id,
+                    name: item.name,
+                    data: item,
+                })
+            );
+            formAttributes.value.attributes = newValue.data.data.map((item) => ({
+                id: {
+                    value: item.id,
+                    label: item.name,
+                },
+                options: [newValue.data],
+                loading: false,
+            }));
+        }
+    }
+);
 </script>
 
 <style lang="scss" scoped>

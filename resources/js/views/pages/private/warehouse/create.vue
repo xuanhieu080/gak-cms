@@ -99,6 +99,15 @@
                                 placeholder=""
                             />
                         </a-form-item>
+                        <a-form-item >
+                            <template class="h-full" #label>
+                                <span class="font-medium">Mã số thuế</span>
+                            </template>
+                            <a-input
+                                v-model:value="formState.tax_code"
+                                placeholder=""
+                            />
+                        </a-form-item>
                         <a-form-item v-bind="validateInfos.email">
                             <template class="h-full" #label>
                                 <span class="font-medium">Email</span>
@@ -198,6 +207,7 @@ const formState = ref({
     storage_code: null,
     storage_name: null,
     phone: null,
+    tax_code: null,
     email: null,
     address: null,
 });
@@ -254,6 +264,7 @@ const onSubmit = async () => {
                 phone: formState.value.phone,
                 address: formState.value.address,
                 manager_id: formState.value.manager_id,
+                tax_code: formState.value.tax_code
             });
             if (response.data.code == 200) {
                 message.success(response.data.message);

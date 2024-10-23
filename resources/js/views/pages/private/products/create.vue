@@ -131,7 +131,6 @@
                     </a-form-item>
 
                     <a-form-item
-                        v-if="false"
                         class="w-full"
                         label="Số lượng tồn kho"
                         name="amount"
@@ -263,6 +262,7 @@
                     </a-form-item>
 
                     <div
+                        v-if="false"
                         v-for="(warehouse, index) in form.warehouses"
                         :key="index"
                     >
@@ -721,6 +721,7 @@ const handleCreateProduct = async () => {
         formData.append("name", form.value.name);
         formData.append("sku", form.value.sku);
         formData.append("category_id", form.value.category.value);
+        formData.append("qty", form.value.amount);
         formData.append("is_active", form.value.is_active);
         if (form.value.image && form.value.image.length > 0) {
             formData.append("image", form.value.image[0].originFileObj);
@@ -735,13 +736,12 @@ const handleCreateProduct = async () => {
         if (form.value.product_description) {
             formData.append("description", form.value.product_description);
         }
-        if (form.value.warehouses.length > 0) {
-            form.value.warehouses.forEach((item, index) => {
-                formData.append("category_id", item.warehouse_id);
-                formData.append("qty", item.quantity);
-            });
-        }
-
+        // if (form.value.warehouses.length > 0) {
+        //     form.value.warehouses.forEach((item, index) => {
+        //         formData.append("category_id", item.warehouse_id);
+                
+        //     });
+        // }
         const response = await axios.post("/api/products", formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
