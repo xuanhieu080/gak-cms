@@ -316,6 +316,7 @@ abstract class AbstractModel
         if (empty($model)) {
             throw new Exception('Dữ liệu không tồn tại',404);
         }
+
         $model->fill($data);
 
         if ($model->save()) {

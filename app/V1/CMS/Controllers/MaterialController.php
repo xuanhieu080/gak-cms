@@ -5,9 +5,11 @@ namespace App\V1\CMS\Controllers;
 use App\Supports\GAK_ERROR;
 use App\V1\CMS\Models\MaterialModel;
 use App\V1\CMS\Requests\Material\CreateRequest;
+use App\V1\CMS\Requests\Material\SyncWarehouseRequest;
 use App\V1\CMS\Requests\Material\UpdateRequest;
-use App\V1\CMS\Resources\MaterialResource;
-use App\V1\CMS\Resources\MaterialShortResource;
+use App\V1\CMS\Resources\Materials\MaterialResource;
+use App\V1\CMS\Resources\Materials\MaterialShortResource;
+use App\V1\CMS\Resources\Materials\MaterialWarehouseResource;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
@@ -68,7 +70,7 @@ class MaterialController extends Controller
             DB::commit();
         } catch (Exception $exception) {
             DB::rollBack();
-            $response = GAK_ERROR::handle($exception, 'users');
+            $response = GAK_ERROR::handle($exception, 'materials');
 
             return $this->responseStoreFail($response['message']);
         }
@@ -84,7 +86,7 @@ class MaterialController extends Controller
         try {
             $item = $this->model->detail($id);
         } catch (\Exception $exception) {
-            $response = GAK_ERROR::handle($exception, 'users');
+            $response = GAK_ERROR::handle($exception, 'materials');
 
             return $this->responseFail($response['message']);
         }
@@ -105,11 +107,11 @@ class MaterialController extends Controller
             DB::beginTransaction();
             $input = $request->validated();
             $input['id'] = $id;
-            $data = $this->model->update($input);
+            $data = $this->model->update($input, ['materialWarehouses']);
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
-            $response = GAK_ERROR::handle($exception, 'users');
+            $response = GAK_ERROR::handle($exception, 'materials');
 
             return $this->responseUpdateFail($response['message']);
         }
@@ -133,5 +135,44 @@ class MaterialController extends Controller
         }
 
         return $this->responseDeleteFail();
+    }
+
+    public function syncWarehouse(SyncWarehouseRequest $request, $id): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+            $input = $request->validated();
+            $input['id'] = $id;
+            $this->model->syncWarehouse($id, $input);
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            $response = GAK_ERROR::handle($exception, 'materials');
+
+            return $this->responseUpdateFail($response['message']);
+        }
+
+        return $this->responseUpdateSuccess('Cập nhật dữ liệu thành công');
+    }
+
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param $id
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function getWarehouse($id): JsonResponse
+    {
+        try {
+            $data = $this->model->getWarehouse($id);
+        } catch (\Exception $exception) {
+            $response = GAK_ERROR::handle($exception, 'materials');
+
+            return $this->responseUpdateFail($response['message']);
+        }
+
+        return $this->response(200, '', ['data' => MaterialWarehouseResource::collection($data)]);
     }
 }

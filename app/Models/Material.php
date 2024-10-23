@@ -3,8 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Material extends BaseModel
 {
@@ -13,12 +12,11 @@ class Material extends BaseModel
     protected $fillable = [
         'id',
         'code',
-        'name',
-        'warehouse_id',
+        'name'
     ];
 
-    public function warehouse(): HasOne
+    public function materialWarehouses(): HasMany
     {
-        return $this->hasOne(Warehouse::class, 'id', 'warehouse_id');
+        return $this->hasMany(MaterialWarehouse::class, 'material_id', 'id');
     }
 }

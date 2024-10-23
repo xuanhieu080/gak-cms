@@ -1,8 +1,8 @@
 <?php
 
-namespace App\V1\CMS\Resources;
+namespace App\V1\CMS\Resources\Materials;
 
-use App\Models\AttributeGroup;
+use App\V1\CMS\Resources\AttributeGroupShortResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -24,8 +24,6 @@ class MaterialShortResource extends JsonResource
         return [
             "id"       => $this->id,
             "name"     => $this->name,
-            "group"    => new AttributeGroupShortResource($this->group),
-            "group_id" => $this->group_id,
         ];
     }
 }

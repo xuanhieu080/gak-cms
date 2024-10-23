@@ -4,10 +4,10 @@ namespace App\V1\CMS\Controllers;
 
 use App\Supports\GAK_ERROR;
 use App\V1\CMS\Models\WarehouseModel;
-use App\V1\CMS\Requests\Warehouse\UpdateRequest;
 use App\V1\CMS\Requests\Warehouse\CreateRequest;
-use App\V1\CMS\Resources\WarehouseResource;
-use App\V1\CMS\Resources\WarehouseShortResource;
+use App\V1\CMS\Requests\Warehouse\UpdateRequest;
+use App\V1\CMS\Resources\Warehouses\WarehouseResource;
+use App\V1\CMS\Resources\Warehouses\WarehouseShortResource;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;

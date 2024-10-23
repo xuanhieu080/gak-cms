@@ -3,14 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Kalnoy\Nestedset\NodeTrait;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Category extends Model implements HasMedia
+class Category extends BaseModel implements HasMedia
 {
     use HasFactory, NodeTrait, InteractsWithMedia;
 
@@ -41,5 +40,10 @@ class Category extends Model implements HasMedia
     public function getMediaFolderName()
     {
         return 'categories';
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
     }
 }

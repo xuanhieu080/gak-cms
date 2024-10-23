@@ -37,6 +37,8 @@ class User extends Authenticatable implements MustVerifyEmail, HasMedia
       'is_super',
       'password',
       'remember_token',
+      'created_by',
+      'updated_by',
     ];
 
     /**

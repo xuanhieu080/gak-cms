@@ -15,8 +15,7 @@ class CreateRequest extends ValidatorBase
     {
         return [
             'name'         => 'required|string|max:255|unique:materials,name',
-            'code'         => 'required|string|max:20|unique:materials,code',
-            'warehouse_id' => 'required|exists:warehouses,id',
+            'code'         => 'required|string|max:20|unique:materials,code'
         ];
     }
 }

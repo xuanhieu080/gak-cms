@@ -3,13 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Customer extends Model implements HasMedia
+class Customer extends BaseModel implements HasMedia
 {
     use HasFactory, InteractsWithMedia;
 
@@ -21,7 +20,9 @@ class Customer extends Model implements HasMedia
         "address",
         "phone",
         "discount",
-        "is_active"
+        "is_active",
+        "created_by",
+        "updated_by",
     ];
 
     protected $casts = [

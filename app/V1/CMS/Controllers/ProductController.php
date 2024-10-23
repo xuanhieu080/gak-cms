@@ -7,8 +7,11 @@ use App\V1\CMS\Models\ProductModel;
 use App\V1\CMS\Requests\Products\CreateRequest;
 use App\V1\CMS\Requests\Products\SyncAttributeRequest;
 use App\V1\CMS\Requests\Products\UpdateRequest;
+use App\V1\CMS\Requests\Products\Warehouses\SyncRequest;
 use App\V1\CMS\Resources\AttributeGroupShortResource;
-use App\V1\CMS\Resources\ProductResource;
+use App\V1\CMS\Resources\Products\ProductResource;
+use App\V1\CMS\Resources\Products\ProductShortResource;
+use App\V1\CMS\Resources\Products\ProductWarehouseResource;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
@@ -48,7 +51,7 @@ class ProductController extends Controller
 
         $data = $this->model->search($input, [], $limit);
         if (isset($input['short'])) {
-            return $this->responseIndex(ProductResource::collection($data));
+            return $this->responseIndex(ProductShortResource::collection($data));
         }
 
         return $this->responseIndex(ProductResource::collection($data));
@@ -180,5 +183,45 @@ class ProductController extends Controller
         }
 
         return $this->response(200, '', ['data' => AttributeGroupShortResource::collection($data)]);
+    }
+
+
+    public function syncWarehouse(SyncRequest $request, $id): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+            $input = $request->validated();
+            $input['id'] = $id;
+            $this->model->syncWarehouse($id, $input);
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            $response = GAK_ERROR::handle($exception, 'products');
+
+            return $this->responseUpdateFail($response['message']);
+        }
+
+        return $this->responseUpdateSuccess('Cập nhật dữ liệu thành công');
+    }
+
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param $id
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function getWarehouse($id): JsonResponse
+    {
+        try {
+            $data = $this->model->getWarehouse($id);
+        } catch (\Exception $exception) {
+            $response = GAK_ERROR::handle($exception, 'products');
+
+            return $this->responseUpdateFail($response['message']);
+        }
+
+        return $this->response(200, '', ['data' => ProductWarehouseResource::collection($data)]);
     }
 }

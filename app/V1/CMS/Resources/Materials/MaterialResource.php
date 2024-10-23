@@ -1,8 +1,8 @@
 <?php
 
-namespace App\V1\CMS\Resources;
+namespace App\V1\CMS\Resources\Materials;
 
-use App\Models\AttributeGroup;
+use App\V1\CMS\Resources\Warehouses\WarehouseShortResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -22,11 +22,10 @@ class MaterialResource extends JsonResource
     public function toArray($request): array
     {
         return [
-            "id"           => $this->id,
-            "code"         => $this->code,
-            "name"         => $this->name,
-            "warehouse"    => new WarehouseShortResource($this->warehouse),
-            "warehouse_id" => $this->warehouse_id
+            "id"                  => $this->id,
+            "code"                => $this->code,
+            "name"                => $this->name,
+            "material_warehouses" => MaterialWarehouseResource::collection($this->materialWarehouses)
         ];
     }
 }

@@ -27,7 +27,6 @@ class UpdateRequest extends ValidatorBase
                 'max:20',
                 Rule::unique('materials', 'code')->ignore($this->route('id'))
             ],
-            'warehouse_id' => 'required|exists:warehouses,id',
         ];
     }
 
