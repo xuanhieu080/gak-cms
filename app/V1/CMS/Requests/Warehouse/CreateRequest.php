@@ -19,6 +19,7 @@ class CreateRequest extends ValidatorBase
             'address'    => 'nullable|string|max:400',
             'phone'      => 'nullable|string|max:255',
             'email'      => 'nullable|string|email|max:255',
+            'tax_code'   => 'nullable|string|min:5|max:50',
             'manager_id' => 'required|exists:users,id',
         ];
     }

@@ -19,6 +19,7 @@ class Warehouse extends BaseModel
         'phone',
         'email',
         'manager_id',
+        'tax_code',
     ];
 
     public function manager(): HasOne

@@ -32,6 +32,7 @@ class UpdateRequest extends ValidatorBase
             'phone'      => 'nullable|string|max:255',
             'email'      => 'nullable|string|email|max:255',
             'manager_id' => 'required|exists:users,id',
+            'tax_code'   => 'nullable|string|min:5|max:50',
         ];
     }
 

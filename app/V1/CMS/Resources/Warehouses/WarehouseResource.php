@@ -31,6 +31,7 @@ class WarehouseResource extends JsonResource
             "email"           => $this->email,
             "manager_id"      => $this->manager_id,
             "manager"         => $this->manager,
+            "tax_code"        => $this->tax_code,
             "materials"       => MaterialShortResource::collection($this->materials),
             'created_by_name' => object_get($this, 'createBy.name'),
             'updated_by_name' => object_get($this, 'updateBy.name'),

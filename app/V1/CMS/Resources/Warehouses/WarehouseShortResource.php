@@ -27,6 +27,7 @@ class WarehouseShortResource extends JsonResource
             "address"         => $this->address,
             "phone"           => $this->phone,
             "email"           => $this->email,
+            "tax_code"        => $this->tax_code,
             "manager_id"      => $this->manager_id,
         ];
     }
