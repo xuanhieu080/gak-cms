@@ -494,59 +494,60 @@
                                                 :name="`attributes.${index}.attributeGroup`"
                                             >
                                                 <a-select
-                                                    v-model:value="
-                                                        attribute.attributeGroup
-                                                    "
+                                                    v-model:value="attribute.id"
                                                     placeholder="Chọn nhóm thuộc tính"
+                                                    :loading="attribute.loading"
+                                                    :options="attribute.options"
+                                                    :not-found-content="
+                                                        attribute.loading
+                                                            ? undefinded
+                                                            : null
+                                                    "
+                                                    show-search
+                                                    @search="
+                                                        (val) =>
+                                                            handleSearchAttributeGroup(
+                                                                val,
+                                                                attribute
+                                                            )
+                                                    "
+                                                    @change="
+                                                        (val) =>
+                                                            handleChangeAttributeGroup(
+                                                                val,
+                                                                attribute
+                                                            )
+                                                    "
+                                                    @click="
+                                                        handleSearchAttributeGroup(
+                                                            '',
+                                                            attribute
+                                                        )
+                                                    "
                                                 >
-                                                    <!-- Add your attribute group options here -->
+                                                    <template #notFoundContent>
+                                                        <a-spin
+                                                            v-if="
+                                                                attribute.loading
+                                                            "
+                                                            size="small"
+                                                        />
+                                                        <span
+                                                            v-if="
+                                                                attribute
+                                                                    .options
+                                                                    .length ==
+                                                                    0 &&
+                                                                !attribute.loading
+                                                            "
+                                                            >Không có kết quả
+                                                            nào</span
+                                                        >
+                                                    </template>
                                                 </a-select>
                                             </a-form-item>
                                         </a-col>
-                                        <a-col :span="7">
-                                            <a-form-item
-                                                :ref="`attribute-${index}`"
-                                                :label="`Thuộc tính`"
-                                                :name="`attributes.${index}.attribute`"
-                                            >
-                                                <a-select
-                                                    v-model:value="
-                                                        attribute.attribute
-                                                    "
-                                                    placeholder="Chọn thuộc tính"
-                                                >
-                                                    <!-- Add your attribute options here -->
-                                                </a-select>
-                                            </a-form-item>
-                                        </a-col>
-                                        <a-col :span="4">
-                                            <a-form-item
-                                                :ref="`highlight-${index}`"
-                                                :label="`Màu nổi bật`"
-                                                :name="`attributes.${index}.highlight`"
-                                            >
-                                                <a-switch
-                                                    v-model:checked="
-                                                        attribute.highlight
-                                                    "
-                                                />
-                                            </a-form-item>
-                                        </a-col>
-                                        <a-col :span="4">
-                                            <a-form-item
-                                                :ref="`featured-${index}`"
-                                                :label="`Thuộc tính chính ${
-                                                    index + 1
-                                                }`"
-                                                :prop="`attributes.${index}.featured`"
-                                            >
-                                                <a-switch
-                                                    v-model:checked="
-                                                        attribute.featured
-                                                    "
-                                                />
-                                            </a-form-item>
-                                        </a-col>
+
                                         <a-col :span="2">
                                             <div
                                                 class="flex items-center gap-1 ml-4 mt-2.5"
@@ -562,92 +563,42 @@
                                     </a-row>
                                 </div>
                             </div>
-                            <div>
+                            <div class="flex flex-col gap-4 mb-4">
                                 <h3>Thuộc tính đã chọn</h3>
-                                <div
-                                    v-for="(
-                                        selectedAttribute, index
-                                    ) in form.selectedAttributes"
-                                    :key="index"
-                                >
-                                    <a-row :gutter="16">
-                                        <a-col :span="7">
-                                            <a-form-item
-                                                :ref="`attributeGroup-${index}`"
-                                                :label="`Nhóm thuộc tính`"
-                                                :name="`attributes.${index}.attributeGroup`"
-                                            >
-                                                <a-select
-                                                    v-model:value="
-                                                        selectedAttribute.$eventattributeGroup
-                                                    "
-                                                    placeholder="Chọn nhóm thuộc tính"
-                                                >
-                                                    <!-- Add your attribute group options here -->
-                                                </a-select>
-                                            </a-form-item>
-                                        </a-col>
-                                        <a-col :span="7">
-                                            <a-form-item
-                                                :ref="`attribute-${index}`"
-                                                :label="`Thuộc tính`"
-                                                :name="`attributes.${index}.attribute`"
-                                            >
-                                                <a-select
-                                                    v-model:value="
-                                                        selectedAttribute.$eventattribute
-                                                    "
-                                                    placeholder="Chọn thuộc tính"
-                                                >
-                                                    <!-- Add your attribute options here -->
-                                                </a-select>
-                                            </a-form-item>
-                                        </a-col>
-                                        <a-col :span="4">
-                                            <a-form-item
-                                                :ref="`highlight-${index}`"
-                                                :label="`Màu nổi bật`"
-                                                :name="`attributes.${index}.highlight`"
-                                            >
-                                                <a-switch
-                                                    v-model:checked="
-                                                        selectedAttribute.$eventhighlight
-                                                    "
-                                                />
-                                            </a-form-item>
-                                        </a-col>
-                                        <a-col :span="4">
-                                            <a-form-item
-                                                :ref="`featured-${index}`"
-                                                :label="`Thuộc tính chính ${
-                                                    index + 1
-                                                }`"
-                                                :prop="`attributes.${index}.featured`"
-                                            >
-                                                <a-switch
-                                                    v-model:checked="
-                                                        selectedAttribute.$eventfeatured
-                                                    "
-                                                />
-                                            </a-form-item>
-                                        </a-col>
-                                        <a-col :span="2">
-                                            <div
-                                                class="flex items-center gap-1 mt-2.5"
-                                            >
-                                                <MinusCircleOutlined
-                                                    :style="{ color: 'red' }"
-                                                    @click="
-                                                        removeAttribute(index)
-                                                    "
-                                                />
-                                            </div>
-                                        </a-col>
-                                    </a-row>
+                                <div class="flex gap-4 flex-wrap">
+                                    <div
+                                        v-for="(
+                                            selectedAttribute, index
+                                        ) in formAttributes.selectedAttributes"
+                                        :key="index"
+                                    >
+                                        <a-row
+                                            class="border border-dashed p-4 flex flex-col gap-2"
+                                        >
+                                            <a-col>
+                                                <b>Nhóm thuộc tính:</b>
+                                                {{
+                                                    selectedAttribute.data.name
+                                                }}
+                                            </a-col>
+                                        </a-row>
+                                    </div>
                                 </div>
                             </div>
+                            <a-form-item v-if="errorInfo.length > 0">
+                                <ul class="list-disc pl-6">
+                                    <li
+                                        class="text-red-500 capitalize"
+                                        v-for="error in errorInfo"
+                                    >
+                                        {{ error[0] }}
+                                    </li>
+                                </ul>
+                            </a-form-item>
                             <a-form-item>
-                                <a-button type="primary" @click="submitForm"
+                                <a-button
+                                    type="primary"
+                                    @click="handleSubmitAttributes"
                                     >Lưu thuộc tính</a-button
                                 >
                             </a-form-item>
@@ -839,8 +790,10 @@ import {
     PhoneTwoTone,
     MinusCircleOutlined,
 } from "@ant-design/icons-vue";
-import { ref } from "vue";
+import { ref, watch, onMounted } from "vue";
+import axios from "axios";
 import { useRouter } from "vue-router";
+import { usePagination } from "vue-request";
 import { message } from "ant-design-vue";
 import Page from "@/views/layouts/Page";
 import CkEditorCustom from "@/views/components/CkEditorCustom.vue";
@@ -881,15 +834,15 @@ const formVariables = ref({
 const formAttributes = ref({
     attributes: [
         {
-            attributeGroup: undefined,
-            attribute: undefined,
-            highlight: false,
-            featured: false,
+            id: null,
+            options: [],
+            loading: false,
         },
     ],
     selectedAttributes: [],
 });
 
+const errorInfo = ref([]);
 const visible = ref(false);
 const visibleEditReview = ref(false);
 const formReview = ref({
@@ -1157,29 +1110,184 @@ const handleCancelSEOImg = () => {
 // Handle Add Attributee
 function addAttribute() {
     formAttributes.value.attributes.push({
-        attributeGroup: undefined,
-        attribute: undefined,
-        highlight: false,
-        featured: false,
+        id: null,
+        options: [],
+        loading: false,
     });
 }
 function removeAttribute(index) {
     formAttributes.value.attributes.splice(index, 1);
+    formAttributes.value.selectedAttributes.splice(index, 1);
 }
-function addAttributeToProduct(index) {
-    const attribute = formAttributes.value.attributes[index];
-    if (attribute.attributeGroup && attribute.attribute) {
-        formAttributes.value.selectedAttributes.push({
-            attributeGroup: attribute.attributeGroup,
-            attribute: attribute.attribute,
-            highlight: attribute.highlight,
-            featured: attribute.featured,
+
+//Load Kho options
+let timeout;
+let currentValue = "";
+function fetchAttributeDropdown(value, item = null, callback) {
+    if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+    }
+    currentValue = value;
+    timeout = setTimeout(searchAttributeGroup(value, item, callback), 300);
+}
+
+const handleSearchAttributeGroup = async (val, ỉtem = null) => {
+    ỉtem.loading = true;
+    fetchAttributeDropdown(val, ỉtem, (data) => (ỉtem.options = data));
+};
+const handleChangeAttributeGroup = (val, item) => {
+    item.id = val;
+    console.log(val);
+    item.loading = false;
+    let dataSelected = item.options.find((ele) => ele.value == val);
+    console.log(dataSelected);
+    if (dataSelected) {
+        if (
+            formAttributes.value.attributes.length >
+            formAttributes.value.selectedAttributes.length
+        ) {
+            formAttributes.value.selectedAttributes.push({
+                id: dataSelected.value,
+                data: dataSelected.data,
+            });
+        } else {
+            formAttributes.value.selectedAttributes[
+                formAttributes.value.selectedAttributes.length - 1
+            ] = {
+                id: dataSelected.value,
+                data: dataSelected.data,
+            };
+        }
+    }
+    fetchAttributeDropdown("", item, (data) => (item.options = data));
+};
+const handleChangeAttribute = (val, item) => {
+    item.attribute_id = val;
+    item.loading = false;
+    let dataSelected = item.attribute.find((ele) => ele.value == val);
+    if (dataSelected) {
+        if (
+            formAttributes.value.attributes.length >
+            formAttributes.value.selectedAttributes.length
+        ) {
+            formAttributes.value.selectedAttributes.push({
+                id: dataSelected.data.id,
+                data: dataSelected.data,
+                is_highlight: item.is_highlight,
+                is_feature: item.is_feature,
+            });
+        } else {
+            formAttributes.value.selectedAttributes[
+                formAttributes.value.selectedAttributes.length - 1
+            ] = {
+                id: dataSelected.data.id,
+                data: dataSelected.data,
+                is_highlight: item.is_highlight,
+                is_feature: item.is_feature,
+            };
+        }
+    }
+};
+const handleUpdateToggle = (item, name) => {
+    if (name == "highlight") {
+        let res = formAttributes.value.selectedAttributes.findIndex(
+            (ele) => ele.id == item.attribute_id
+        );
+        if (res != -1) {
+            formAttributes.value.selectedAttributes[res].is_highlight =
+                item.is_highlight;
+        }
+    } else {
+        let res = formAttributes.value.selectedAttributes.findIndex(
+            (ele) => ele.id == item.attribute_id
+        );
+        if (res != -1) {
+            formAttributes.value.selectedAttributes[res].is_feature =
+                item.is_feature;
+        }
+    }
+};
+
+async function searchAttributeGroup(value, item, callback) {
+    item.loading = true;
+    const params = new URLSearchParams({
+        name: value,
+    });
+
+    // Lấy dữ liệu kho đã được thêm ở trước
+    // let excludeStorage = [];
+    // if (formAttributes.value.attribute.length > 0) {
+    //     formAttributes.value.attribute.forEach((item, index) => {
+    //         if (index < formAttributes.value.attribute.length - 1)
+    //             excludeStorage.push(item.warehouse_id);
+    //     });
+    // }
+
+    // console.log(excludeStorage);
+    // excludeStorage => Loại bỏ những kho đã lựa chọn trước đó
+    if (value) {
+        await axios.get(`/api/attribute-groups?${params}`).then((response) => {
+            if (currentValue === value) {
+                const result = response.data.data?.map((storage) => ({
+                    label: storage.name,
+                    value: storage.id,
+                    data: storage,
+                }));
+                item.loading = false;
+                callback(result);
+            }
+        });
+    } else {
+        await axios.get(`/api/attribute-groups`).then((response) => {
+            if (currentValue === value) {
+                const result = response.data.data?.map((storage) => ({
+                    label: storage.name,
+                    value: storage.id,
+                    data: storage,
+                }));
+                item.loading = false;
+                callback(result);
+            }
         });
     }
 }
-function removeSelectedAttribute(index) {
-    formAttributes.value.selectedAttributes.splice(index, 1);
-}
+
+//Handle Submit Attributes
+const handleSubmitAttributes = async () => {
+    if (formAttributes.value.selectedAttributes.length > 0) {
+        let groupIds = formAttributes.value.selectedAttributes.map(
+            (item) => item.id
+        );
+        await axios
+            .post(
+                `/api/products/${router.currentRoute.value.params.id}/attributes`,
+                {
+                    groups: groupIds,
+                }
+            )
+            .then((response) => {
+                if (response.data.status) {
+                    message.success(response.data.message);
+                    // formAttributes.value.selectedAttributes = [];
+                    // fetchAttributes();
+                } else {
+                    message.error(response.data.message);
+                }
+            })
+            .catch((e) => {
+                if (e.response.status == 422) {
+                    errorInfo.value = Object.values(e.response.data.errors);
+                    message.error("Vui lòng kiểm tra lại thông tin");
+                } else {
+                    message.error("Máy chủ bận");
+                    console.log("errors: ", e);
+                }
+            });
+    } else {
+        return;
+    }
+};
 
 // Handle Review form
 function showModal() {
@@ -1245,6 +1353,39 @@ function resetVariantFields() {
         quantity: 0,
     };
 }
+
+// Query Data of Product
+const queryDataAttribute = (params) => {
+    return axios.get(
+        `/api/products/${router.currentRoute.value.params.id}/attributes`
+    );
+};
+
+const { data: dataAttribute, loading: loadingAttribute } =
+    usePagination(queryDataAttribute);
+
+watch(
+    () => dataAttribute.value,
+    (newValue) => {
+        if (newValue.data?.data.length > 0) {
+            formAttributes.value.selectedAttributes = newValue.data.data.map(
+                (item) => ({
+                    id: item.id,
+                    name: item.name,
+                    data: item,
+                })
+            );
+            formAttributes.value.attributes = newValue.data.data.map((item) => ({
+                id: {
+                    value: item.id,
+                    label: item.name,
+                },
+                options: [newValue.data],
+                loading: false,
+            }));
+        }
+    }
+);
 </script>
 
 <style lang="scss" scoped>

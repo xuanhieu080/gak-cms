@@ -72,10 +72,27 @@
                         </template>
                         <template #bodyCell="{ column, text, record }">
                             <template
-                                v-if="column.dataIndex === 'warehouse_id'"
+                                v-if="
+                                    column.dataIndex === 'material_warehouses'
+                                "
                             >
-                                <div class="text-blue-500 cursor-pointer">
-                                    {{ text }}
+                                <div class="flex flex-col gap-2">
+                                    <div
+                                        v-for="(warehouse, index) in text"
+                                        class="flex items-center gap-2 flex-wrap"
+                                    >
+                                        --
+                                        <div>
+                                            <b>Mã kho:</b> {{ warehouse.warehouse.id }}
+                                        </div>
+                                        <div>
+                                            <b>Tên kho:</b>
+                                            {{ warehouse.warehouse.name }}
+                                        </div>
+                                        <div>
+                                            <b>Số lượng:</b> {{ warehouse.qty }}
+                                        </div>
+                                    </div>
                                 </div>
                             </template>
                             <template v-if="column.dataIndex === 'action'">
@@ -107,7 +124,7 @@
                                         "-" +
                                         pageSize * current
                                     }}</b>
-                                    trong số <b>{{ totalPage }}</b> mục.
+                                    trong số <b>{{ pagination.total }}</b> mục.
                                 </div>
                                 <div class="flex items-center flex-wrap gap-2">
                                     <a-button
@@ -169,39 +186,127 @@
                             layout="vertical"
                             class="h-full"
                         >
-                            <a-form-item v-bind="validateInfos.storage_code">
-                                <template class="h-full" #label>
-                                    <span class="font-medium">Mã kho hàng</span>
-                                </template>
-                                <a-select
-                                    v-model:value="formState.storage_code"
-                                    :options="data_storages"
-                                    :not-found-content="
-                                        data_storages_fetching
-                                            ? undefinded
-                                            : null
-                                    "
-                                    placeholder="Chọn kho hàng"
-                                    @search="handleSearch"
-                                    @change="handleChangeStorage"
-                                    :filter-option="false"
-                                    show-search
+                            <a-form-item class="my-4">
+                                <a-button
+                                    type="dashed"
+                                    size="lg"
+                                    @click="addWarehouse"
+                                    class="flex items-center gap-1 justify-center"
                                 >
-                                    <template #notFoundContent>
-                                        <a-spin
-                                            v-if="data_storages_fetching"
-                                            size="small"
-                                        />
-                                        <span
-                                            v-if="
-                                                data_storages.length == 0 &&
-                                                !data_storages_fetching
-                                            "
-                                            >Không có kết quả nào</span
-                                        >
-                                    </template>
-                                </a-select>
+                                    <PlusOutlined /> Thêm kho
+                                </a-button>
                             </a-form-item>
+                            <div
+                                v-for="(
+                                    warehouse, index
+                                ) in formState.warehouses"
+                                :key="index"
+                            >
+                                <div class="grid grid-cols-4 gap-4">
+                                    <a-form-item
+                                        :label="`Kho ${index + 1}`"
+                                        :name="[
+                                            'warehouses',
+                                            index,
+                                            'warehouse_id',
+                                        ]"
+                                        :autoLink="false"
+                                        :rules="[
+                                            {
+                                                required: true,
+                                                message: 'Vui lòng chọn kho',
+                                            },
+                                        ]"
+                                    >
+                                        <a-select
+                                            v-model:value="
+                                                warehouse.warehouse_id
+                                            "
+                                            placeholder="Chọn kho"
+                                            :loading="warehouse.loading"
+                                            :options="warehouse.options"
+                                            :not-found-content="
+                                                warehouse.loading
+                                                    ? undefinded
+                                                    : null
+                                            "
+                                            show-search
+                                            @search="
+                                                (val) =>
+                                                    handleSearchStorage(
+                                                        val,
+                                                        warehouse
+                                                    )
+                                            "
+                                            @change="
+                                                (val) =>
+                                                    handleChangeStorage(
+                                                        val,
+                                                        warehouse
+                                                    )
+                                            "
+                                            @click="
+                                                handleSearchStorage(
+                                                    '',
+                                                    warehouse
+                                                )
+                                            "
+                                        >
+                                            <template #notFoundContent>
+                                                <a-spin
+                                                    v-if="warehouse.loading"
+                                                    size="small"
+                                                />
+                                                <span
+                                                    v-if="
+                                                        warehouse.options
+                                                            .length == 0 &&
+                                                        !warehouse.loading
+                                                    "
+                                                    >Không có kết quả nào</span
+                                                >
+                                            </template>
+                                        </a-select>
+                                    </a-form-item>
+                                    <a-form-item
+                                        :label="`Số lượng`"
+                                        :name="[
+                                            'warehouses',
+                                            index,
+                                            'quantity',
+                                        ]"
+                                        :autoLink="false"
+                                        :rules="[
+                                            {
+                                                required: true,
+                                                message:
+                                                    'Vui lòng nhập số lượng',
+                                            },
+                                        ]"
+                                    >
+                                        <a-input-number
+                                            v-model:value="warehouse.quantity"
+                                            class="w-full"
+                                            placeholder="Số lượng"
+                                            :min="1"
+                                        />
+                                    </a-form-item>
+
+                                    <div class="w-fit flex items-center">
+                                        <a-button
+                                            type="primary"
+                                            danger
+                                            @click="removeWarehouse(index)"
+                                            v-if="
+                                                formState.warehouses.length > 1
+                                            "
+                                            class="flex items-center gap-2"
+                                        >
+                                            <MinusOutlined /> Xóa
+                                        </a-button>
+                                    </div>
+                                </div>
+                            </div>
                             <a-form-item v-bind="validateInfos.material_name">
                                 <template class="h-full" #label>
                                     <span class="font-medium"
@@ -269,6 +374,7 @@ import {
     DeleteOutlined,
     SyncOutlined,
     EditOutlined,
+    MinusOutlined,
 } from "@ant-design/icons-vue";
 import { ref, computed, reactive, watch, onMounted } from "vue";
 import { usePagination } from "vue-request";
@@ -296,8 +402,8 @@ const routes = ref([
 
 const columns = [
     {
-        title: "Mã kho",
-        dataIndex: "warehouse_id",
+        title: "ID",
+        dataIndex: "id",
         sorter: true,
     },
     {
@@ -309,6 +415,10 @@ const columns = [
         title: "Mã nguyên liệu",
         dataIndex: "code",
         sorter: true,
+    },
+    {
+        title: "Danh sách kho",
+        dataIndex: "material_warehouses",
     },
     {
         title: "Hành động",
@@ -334,6 +444,21 @@ const handleOpenMaterialDetails = (record) => {
         material_name: record.name,
         material_code: record.code,
     };
+    if (record.material_warehouses.length > 0) {
+        formState.value.warehouses = record.material_warehouses.map((item) => {
+            return {
+                warehouse_id: {
+                    value: item.warehouse.id,
+                    label: item.warehouse.name,
+                },
+                quantity: item.qty,
+                loading: false,
+                options: [],
+            };
+        });
+    } else {
+        formState.value.warehouses = [];
+    }
     openMaterialDetails.value = true;
 };
 const handleCreateMaterial = () => {
@@ -355,6 +480,97 @@ const filterOption = (input, option) => {
 const handleChange = (value) => {
     console.log(`selected ${value}`);
 };
+
+//Add Kho
+const addWarehouse = () => {
+    formState.value.warehouses.push({
+        warehouse_id: null,
+        quantity: null,
+        loading: true,
+        options: [],
+    });
+    handleSearchStorage(
+        "",
+        formState.value.warehouses[formState.value.warehouses.length - 1],
+        (data) =>
+            (formState.value.warehouses[
+                formState.value.warehouses.length - 1
+            ].options = data)
+    );
+};
+
+const removeWarehouse = (index) => {
+    formState.value.warehouses.splice(index, 1);
+};
+
+//Load Kho options
+function fetchStorageDropdown(value, item = null, callback) {
+    if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+    }
+    currentValue = value;
+    timeout = setTimeout(searchStorage(value, item, callback), 300);
+}
+
+const handleSearchStorage = async (val, ỉtem = null) => {
+    ỉtem.loading = true;
+    fetchStorageDropdown(val, ỉtem, (data) => (ỉtem.options = data));
+};
+const handleChangeStorage = (val, item) => {
+    item.warehouse_id = {
+        value: val,
+        label: item.options.find((item) => item.value === val).label,
+    };
+    item.loading = false;
+    fetchStorageDropdown("", item, (data) => (item.options = data));
+};
+
+async function searchStorage(value, item, callback) {
+    item.loading = true;
+    const params = new URLSearchParams({
+        name: value,
+    });
+
+    // Lấy dữ liệu kho đã được thêm ở trước
+    let excludeStorage = [];
+    if (formState.value.warehouses.length > 0) {
+        formState.value.warehouses.forEach((item, index) => {
+            if (index < formState.value.warehouses.length - 1)
+                excludeStorage.push(item.warehouse_id);
+        });
+    }
+
+    // console.log(excludeStorage);
+    // excludeStorage => Loại bỏ những kho đã lựa chọn trước đó
+    if (value) {
+        await axios.get(`/api/warehouses?${params}`).then((response) => {
+            if (currentValue === value) {
+                const result = response.data.data?.map((storage) => ({
+                    label: storage.name,
+                    value: storage.id,
+                    data: storage,
+                }));
+                item.loading = false;
+                callback(result);
+            }
+        });
+    } else {
+        await axios.get(`/api/warehouses`).then((response) => {
+            if (currentValue === value) {
+                const result = response.data.data?.map((storage) => ({
+                    label: storage.name,
+                    value: storage.id,
+                    data: storage,
+                }));
+                item.loading = false;
+                callback(result);
+            }
+        });
+    }
+}
+
+//Handle Form
 const useForm = Form.useForm;
 
 const { resetFields, validate, validateInfos } = useForm(
@@ -378,14 +594,36 @@ const { resetFields, validate, validateInfos } = useForm(
 const onSubmit = async () => {
     validate()
         .then(async (res) => {
+            let params = {
+                items: [],
+            };
+
+            if (formState.value.warehouses.length > 0) {
+                formState.value.warehouses.forEach((item, index) => {
+                    params.items.push({
+                        warehouse_id: item.warehouse_id.value,
+                        qty: item.quantity,
+                    });
+                    // params[`items[${index}][warehouse_id]`] =
+                    //     item.warehouse_id.value;
+                    // params[`items[${index}][qty]`] = item.quantity;
+                });
+                const responseUpdateWareHouse = await axios.post(
+                    `/api/materials/${materialDetails.value.id}/warehouses`,
+                    params
+                );
+                if (responseUpdateWareHouse.data.code == 200) {
+                    message.success("Cập nhập dữ liệu kho thành công");
+                }
+            }
             const response = await axios.post(
                 `/api/materials/${materialDetails.value.id}`,
                 {
                     name: formState.value.material_name,
                     code: formState.value.material_code,
-                    warehouse_id: formState.value.storage_code,
                 }
             );
+
             if (response.data.code == 200) {
                 message.success(response.data.message);
                 handleCancelEditMaterials();
@@ -417,7 +655,6 @@ const {
     run,
     loading,
     current,
-    totalPage,
     pageSize,
 } = usePagination(queryData, {
     defaultParams: [
@@ -433,7 +670,7 @@ const {
 });
 
 const pagination = computed(() => ({
-    total: totalPage.value,
+    total: dataSource.value?.data?.meta.total,
     current: current.value,
     pageSize: pageSize.value,
 }));
@@ -482,63 +719,63 @@ const handleDeleteMaterials = async () => {
     }
 };
 
-function fetchStorageDropdown(value, callback) {
-    if (timeout) {
-        clearTimeout(timeout);
-        timeout = null;
-    }
-    currentValue = value;
-    timeout = setTimeout(searchStorage(value, callback), 300);
-}
+// function fetchStorageDropdown(value, callback) {
+//     if (timeout) {
+//         clearTimeout(timeout);
+//         timeout = null;
+//     }
+//     currentValue = value;
+//     timeout = setTimeout(searchStorage(value, callback), 300);
+// }
 
-const handleSearch = async (val) => {
-    fetchStorageDropdown(val, (data) => (data_storages.value = data));
-};
-const handleChangeStorage = (val, item) => {
-    formState.value.storage_code = item;
-    fetchStorageDropdown("", (data) => (data_storages.value = data));
-};
+// const handleSearch = async (val) => {
+//     fetchStorageDropdown(val, (data) => (data_storages.value = data));
+// };
+// const handleChangeStorage = (val, item) => {
+//     formState.value.storage_code = item;
+//     fetchStorageDropdown("", (data) => (data_storages.value = data));
+// };
 
-async function searchStorage(value, callback) {
-    data_storages_fetching.value = true;
-    const params = new URLSearchParams({
-        name: value,
-    });
-    if (value) {
-        await axios.get(`/api/warehouses?${params}`).then((response) => {
-            if (currentValue === value) {
-                const result = response.data.data?.map((storage) => ({
-                    label: storage.name + " (" + storage.id + ")",
-                    value: storage.id,
-                    data: storage,
-                }));
-                data_storages_fetching.value = false;
-                callback(result);
-            }
-        });
-    } else {
-        await axios.get(`/api/warehouses`).then((response) => {
-            if (currentValue === value) {
-                const result = response.data.data?.map((storage) => ({
-                    label: storage.name + " (" + storage.id + ")",
-                    value: storage.id,
-                    data: storage,
-                }));
-                data_storages_fetching.value = false;
-                callback(result);
-            }
-        });
-    }
-}
+// async function searchStorage(value, callback) {
+//     data_storages_fetching.value = true;
+//     const params = new URLSearchParams({
+//         name: value,
+//     });
+//     if (value) {
+//         await axios.get(`/api/warehouses?${params}`).then((response) => {
+//             if (currentValue === value) {
+//                 const result = response.data.data?.map((storage) => ({
+//                     label: storage.name + " (" + storage.id + ")",
+//                     value: storage.id,
+//                     data: storage,
+//                 }));
+//                 data_storages_fetching.value = false;
+//                 callback(result);
+//             }
+//         });
+//     } else {
+//         await axios.get(`/api/warehouses`).then((response) => {
+//             if (currentValue === value) {
+//                 const result = response.data.data?.map((storage) => ({
+//                     label: storage.name + " (" + storage.id + ")",
+//                     value: storage.id,
+//                     data: storage,
+//                 }));
+//                 data_storages_fetching.value = false;
+//                 callback(result);
+//             }
+//         });
+//     }
+// }
 
-watch(formState.value?.storage_code, () => {
-    data_storages.value = [];
-    data_storages_fetching.value = false;
-});
+// watch(formState.value?.storage_code, () => {
+//     data_storages.value = [];
+//     data_storages_fetching.value = false;
+// });
 
-onMounted(() => {
-    searchStorage("", (data) => (data_storages.value = data));
-});
+// onMounted(() => {
+//     searchStorage("", (data) => (data_storages.value = data));
+// });
 </script>
 
 <style lang="scss" scoped>

@@ -254,6 +254,11 @@ const columns = [
         sorter: true,
     },
     {
+        title: "Mã số thuế",
+        dataIndex: "tax_code",
+        sorter: true,
+    },
+    {
         title: "Địa chỉ",
         dataIndex: "address",
         sorter: true,
