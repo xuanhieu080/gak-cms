@@ -249,103 +249,7 @@
                             @updateData="handleUpdateDescription"
                         />
                     </a-form-item>
-                    <hr />
-                    <a-form-item class="my-4">
-                        <a-button
-                            type="dashed"
-                            size="lg"
-                            @click="addWarehouse"
-                            class="flex items-center gap-1 justify-center"
-                        >
-                            <PlusOutlined /> Thêm kho
-                        </a-button>
-                    </a-form-item>
-
-                    <div
-                        v-if="false"
-                        v-for="(warehouse, index) in form.warehouses"
-                        :key="index"
-                    >
-                        <div class="grid grid-cols-4 gap-4">
-                            <a-form-item
-                                :label="`Kho ${index + 1}`"
-                                :name="['warehouses', index, 'warehouse_id']"
-                                :autoLink="false"
-                                :rules="[
-                                    {
-                                        required: true,
-                                        message: 'Vui lòng chọn kho',
-                                    },
-                                ]"
-                            >
-                                <a-select
-                                    v-model:value="warehouse.warehouse_id"
-                                    placeholder="Chọn kho"
-                                    :loading="warehouse.loading"
-                                    :options="warehouse.options"
-                                    :not-found-content="
-                                        warehouse.loading ? undefinded : null
-                                    "
-                                    show-search
-                                    @search="
-                                        (val) =>
-                                            handleSearchStorage(val, warehouse)
-                                    "
-                                    @change="
-                                        (val) =>
-                                            handleChangeStorage(val, warehouse)
-                                    "
-                                    @click="handleSearchStorage('', warehouse)"
-                                >
-                                    <template #notFoundContent>
-                                        <a-spin
-                                            v-if="warehouse.loading"
-                                            size="small"
-                                        />
-                                        <span
-                                            v-if="
-                                                warehouse.options.length == 0 &&
-                                                !warehouse.loading
-                                            "
-                                            >Không có kết quả nào</span
-                                        >
-                                    </template>
-                                </a-select>
-                            </a-form-item>
-                            <a-form-item
-                                :label="`Số lượng`"
-                                :name="['warehouses', index, 'quantity']"
-                                :autoLink="false"
-                                :rules="[
-                                    {
-                                        required: true,
-                                        message: 'Vui lòng nhập số lượng',
-                                    },
-                                ]"
-                            >
-                                <a-input-number
-                                    v-model:value="warehouse.quantity"
-                                    class="w-full"
-                                    placeholder="Số lượng"
-                                    :min="1"
-                                />
-                            </a-form-item>
-
-                            <div class="w-fit flex items-center">
-                                <a-button
-                                    type="primary"
-                                    danger
-                                    @click="removeWarehouse(index)"
-                                    v-if="form.warehouses.length > 1"
-                                    class="flex items-center gap-2"
-                                >
-                                    <MinusOutlined /> Xóa
-                                </a-button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr />
+                   
 
                     <a-form-item v-if="errorInfo.length > 0">
                         <ul class="list-disc pl-6">
@@ -397,12 +301,6 @@ const form = ref({
     discount_percent: 0,
     discount_price: 0,
     product_description: "",
-    feature_description: "",
-    feature_img: [],
-    seo_title: "",
-    seo_description: "",
-    seo_keyword: "",
-    seo_image: [],
     warehouses: [
         {
             warehouse_id: null,

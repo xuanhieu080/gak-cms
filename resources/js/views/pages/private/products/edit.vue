@@ -16,7 +16,7 @@
                     >
                 </template>
             </a-breadcrumb>
-            <a-card>
+            <a-card :loading="loadingProduct">
                 <a-tabs default-active-key="1">
                     <a-tab-pane key="1" tab="Thông tin chung">
                         <a-form
@@ -41,28 +41,61 @@
                                 />
                             </a-form-item>
                             <a-form-item
-                                label="Slug"
-                                name="slug"
+                                label="Sku"
+                                name="sku"
+                                :autoLink="false"
                                 :rules="[
                                     {
                                         required: true,
-                                        message: 'Vui lòng nhập slug sản phẩm!',
+                                        message: 'Vui lòng nhập sku sản phẩm!',
                                     },
                                 ]"
                             >
                                 <a-input
-                                    v-model:value="form.slug"
-                                    placeholder="Nhập slug sản phẩm"
+                                    v-model:value="form.sku"
+                                    placeholder="Nhập sku sản phẩm"
                                 />
                             </a-form-item>
                             <a-form-item
-                                label="Đường dẫn Video"
-                                name="video_link"
+                                name="category"
+                                label="Nhóm sản phẩm"
+                                :rules="[
+                                    {
+                                        required: true,
+                                        message: 'Vui lòng chọn nhóm sản phẩm!',
+                                    },
+                                ]"
                             >
-                                <a-input
-                                    v-model:value="form.video_link"
-                                    placeholder="Nhập đường dẫn video"
-                                />
+                                <a-select
+                                    v-model:value="form.category"
+                                    :options="data_manager"
+                                    :not-found-content="
+                                        category_fetch ? undefinded : null
+                                    "
+                                    placeholder="Chọn nhóm sản phẩm"
+                                    @search="handleSearchCategory"
+                                    @change="handleChangeCategory"
+                                    @click="handleSearchCategory('')"
+                                    :filter-option="false"
+                                    show-search
+                                >
+                                    <template #notFoundContent>
+                                        <a-spin
+                                            v-if="category_fetch"
+                                            size="small"
+                                        />
+                                        <span
+                                            v-if="
+                                                data_manager.length == 0 &&
+                                                !category_fetch
+                                            "
+                                            >Không có kết quả nào</span
+                                        >
+                                    </template>
+                                </a-select>
+                            </a-form-item>
+                            <a-form-item label="Hoạt động" name="active">
+                                <a-switch v-model:checked="form.is_active" />
                             </a-form-item>
                             <a-form-item
                                 label="Hình ảnh"
@@ -79,6 +112,7 @@
                                     :before-upload="beforeUpload"
                                     @preview="handlePreview"
                                     list-type="picture-card"
+                                    :max-count="1"
                                     v-model:file-list="form.image"
                                 >
                                     <div>
@@ -121,6 +155,45 @@
                                     :min="1"
                                     class="w-full"
                                 />
+                            </a-form-item>
+                            <a-form-item
+                                :label="`Đơn vị tính`"
+                                name="unit"
+                                :autoLink="false"
+                                :rules="[
+                                    {
+                                        required: true,
+                                        message: 'Vui lòng chọn đơn vị tính',
+                                    },
+                                ]"
+                            >
+                                <a-select
+                                    v-model:value="form.unit"
+                                    placeholder="Chọn kho"
+                                    :loading="loadingUnit"
+                                    :not-found-content="
+                                        unit_fetching ? undefinded : null
+                                    "
+                                    :options="unitOptions"
+                                    show-search
+                                    @search="handleSearchUnit"
+                                    @change="handleChangeUnit"
+                                    @click="handleSearchUnit('')"
+                                >
+                                    <template #notFoundContent>
+                                        <a-spin
+                                            v-if="unit_fetching"
+                                            size="small"
+                                        />
+                                        <span
+                                            v-if="
+                                                unitOptions.length == 0 &&
+                                                !unit_fetching
+                                            "
+                                            >Không có kết quả nào</span
+                                        >
+                                    </template>
+                                </a-select>
                             </a-form-item>
 
                             <a-form-item
@@ -184,144 +257,227 @@
                             <a-form-item
                                 label="Mô tả sản phẩm"
                                 name="product_description"
+                                :rules="[
+                                    {
+                                        required: true,
+                                        message: 'Vui lòng nhập mô tả',
+                                    },
+                                ]"
                             >
                                 <CkEditorCustom
                                     :key="'description-1'"
                                     :content="form.product_description"
+                                    @updateData="handleUpdateDescription"
                                 />
                             </a-form-item>
 
-                            <a-form-item
-                                label="Thông tin nổi bật"
-                                name="feature_description"
-                            >
-                                <CkEditorCustom
-                                    :key="'description-2'"
-                                    :content="form.feature_description"
-                                />
-                            </a-form-item>
-                            <a-form-item
-                                label="Hình ảnh thông tin nổi bật"
-                                name="image_description_feature"
-                            >
-                                <a-upload-dragger
-                                    :before-upload="beforeUploadFImg"
-                                    :max-count="1"
-                                    @preview="handlePreviewFImg"
-                                    list-type="picture-card"
-                                    v-model:file-list="form.feature_img"
-                                    class="w-full"
+                            <hr />
+                            <a-form-item class="my-4">
+                                <a-button
+                                    type="dashed"
+                                    size="lg"
+                                    @click="addWarehouse"
+                                    class="flex items-center gap-1 justify-center"
                                 >
-                                    <div class="w-full">
-                                        <PlusOutlined />
-                                        <div class="mt-2">
-                                            Kéo thả hoặc chọn thêm hình ảnh
-                                        </div>
-                                    </div>
-                                </a-upload-dragger>
-                                <a-modal
-                                    :open="previewVisibleFImg"
-                                    :title="previewFImgTitle"
-                                    :footer="null"
-                                    @cancel="handleCancelFImg"
-                                >
-                                    <img
-                                        alt="feature-image"
-                                        style="width: 100%"
-                                        :src="previewFImg"
-                                    />
-                                </a-modal>
-                            </a-form-item>
-                            <a-form-item
-                                label="SEO tiêu đề"
-                                name="seo_title"
-                                :rules="[
-                                    {
-                                        required: true,
-                                        message:
-                                            'Vui lòng nhập số lượng tồn kho!',
-                                    },
-                                ]"
-                            >
-                                <a-input
-                                    v-model:value="form.seo_title"
-                                    placeholder="Nhập SEO tiêu đề"
-                                />
-                            </a-form-item>
-                            <a-form-item
-                                label="SEO nội dung"
-                                name="seo_description"
-                                :rules="[
-                                    {
-                                        required: true,
-                                        message:
-                                            'Vui lòng nhập số lượng tồn kho!',
-                                    },
-                                ]"
-                            >
-                                <a-input
-                                    v-model:value="form.seo_description"
-                                    placeholder="Nhập SEO nội dung"
-                                />
-                            </a-form-item>
-                            <a-form-item
-                                label="SEO từ khóa"
-                                name="seo_keyword"
-                                :rules="[
-                                    {
-                                        required: true,
-                                        message:
-                                            'Vui lòng nhập số lượng tồn kho!',
-                                    },
-                                ]"
-                            >
-                                <a-input
-                                    v-model:value="form.seo_keyword"
-                                    placeholder="Nhập SEO từ khóa"
-                                />
+                                    <PlusOutlined /> Thêm kho
+                                </a-button>
                             </a-form-item>
 
-                            <a-form-item label="Hình ảnh SEO" name="seo_image">
-                                <a-upload-dragger
-                                    :before-upload="beforeUploadSEOImg"
-                                    @preview="handlePreviewSEOImg"
-                                    list-type="picture-card"
-                                    v-model:file-list="form.seo_image"
-                                    class="w-full"
-                                >
-                                    <div class="w-full">
-                                        <PlusOutlined />
-                                        <div class="mt-2">
-                                            Kéo thả hoặc chọn thêm hình ảnh
-                                        </div>
+                            <div
+                                v-for="(warehouse, index) in form.warehouses"
+                                :key="index"
+                            >
+                                <div class="grid grid-cols-4 gap-4">
+                                    <a-form-item
+                                        :label="`Kho ${index + 1}`"
+                                        :name="[
+                                            'warehouses',
+                                            index,
+                                            'warehouse_id',
+                                        ]"
+                                        :autoLink="false"
+                                        :rules="[
+                                            {
+                                                required: true,
+                                                message: 'Vui lòng chọn kho',
+                                            },
+                                        ]"
+                                    >
+                                        <a-select
+                                            v-model:value="
+                                                warehouse.warehouse_id
+                                            "
+                                            placeholder="Chọn kho"
+                                            :loading="warehouse.loading"
+                                            :options="warehouse.options"
+                                            :not-found-content="
+                                                warehouse.loading
+                                                    ? undefinded
+                                                    : null
+                                            "
+                                            show-search
+                                            @search="
+                                                (val) =>
+                                                    handleSearchStorage(
+                                                        val,
+                                                        warehouse
+                                                    )
+                                            "
+                                            @change="
+                                                (val) =>
+                                                    handleChangeStorage(
+                                                        val,
+                                                        warehouse
+                                                    )
+                                            "
+                                            @click="
+                                                handleSearchStorage(
+                                                    '',
+                                                    warehouse
+                                                )
+                                            "
+                                        >
+                                            <template #notFoundContent>
+                                                <a-spin
+                                                    v-if="warehouse.loading"
+                                                    size="small"
+                                                />
+                                                <span
+                                                    v-if="
+                                                        warehouse.options
+                                                            .length == 0 &&
+                                                        !warehouse.loading
+                                                    "
+                                                    >Không có kết quả nào</span
+                                                >
+                                            </template>
+                                        </a-select>
+                                    </a-form-item>
+                                    <a-form-item
+                                        :label="`Số lượng`"
+                                        :name="[
+                                            'warehouses',
+                                            index,
+                                            'quantity',
+                                        ]"
+                                        :autoLink="false"
+                                        :rules="[
+                                            {
+                                                required: true,
+                                                message:
+                                                    'Vui lòng nhập số lượng',
+                                            },
+                                        ]"
+                                    >
+                                        <a-input-number
+                                            v-model:value="warehouse.quantity"
+                                            class="w-full"
+                                            placeholder="Số lượng"
+                                            :min="1"
+                                        />
+                                    </a-form-item>
+
+                                    <div class="w-fit flex items-center">
+                                        <a-button
+                                            type="primary"
+                                            danger
+                                            @click="removeWarehouse(index)"
+                                            class="flex items-center gap-2"
+                                        >
+                                            <MinusOutlined /> Xóa
+                                        </a-button>
                                     </div>
-                                </a-upload-dragger>
-                                <a-modal
-                                    :open="previewVisibleSEOImg"
-                                    :title="previewSEOImgTitle"
-                                    :footer="null"
-                                    @cancel="handleCancelSEOImg"
-                                >
-                                    <img
-                                        alt="feature-image"
-                                        style="width: 100%"
-                                        :src="previewSEOImg"
-                                    />
-                                </a-modal>
+                                </div>
+                            </div>
+
+                            <hr />
+                            <a-form-item v-if="errorInfo.length > 0">
+                                <ul class="list-disc pl-6">
+                                    <li
+                                        class="text-red-500 capitalize"
+                                        v-for="error in errorInfo"
+                                    >
+                                        {{ error[0] }}
+                                    </li>
+                                </ul>
                             </a-form-item>
-                            <a-form-item>
-                                <a-button type="primary" html-type="submit"
-                                    >Tạo mới</a-button
-                                >
+                            <a-form-item class="mt-4">
+                                <div class="flex items-center gap-4">
+                                    <a-button type="primary" html-type="submit">
+                                        Cập nhật thông tin
+                                    </a-button>
+                                    <a-button
+                                        type="primary"
+                                        @click="handleUpdateStorageProduct"
+                                    >
+                                        Cập nhật kho
+                                    </a-button>
+                                    <a-button
+                                        type="primary"
+                                        danger
+                                        @click="handleBackProductIndex"
+                                        >Hủy bỏ</a-button
+                                    >
+                                </div>
                             </a-form-item>
                         </a-form>
                     </a-tab-pane>
                     <a-tab-pane key="2" tab="Biến thể mới">
+                        <div class="flex items-center gap-4">
+                            <a-button @click="handleEditSelectedAttribute"
+                                >Chỉnh sửa thuộc tính biến thể</a-button
+                            >
+                            <a-button @click="handleAutoAddVariant"
+                                >Thêm hàng loạt biến thể</a-button
+                            >
+                            <a-button @click="handleOpenAddVariant"
+                                >Thêm biến thể mới</a-button
+                            >
+                        </div>
+                        <a-modal
+                            v-model:open="openAutoAddVariant"
+                            title="Thêm Biến Thể Hàng Loạt"
+                            @ok="autoAddVariantFunc"
+                        >
+                            <p>Some contents...</p>
+                            <p>Some contents...</p>
+                            <p>Some contents...</p>
+                        </a-modal>
+
+                        <a-modal
+                            v-model:open="openEditSelectedAttribute"
+                            title="Danh sách thuộc tính biến thể"
+                            @ok="editSelectedAttributeFunc"
+                            ok-text="Save"
+                        >
+                        <div class="my-4 space-y-4 w-full">
+                            <div>
+                                <a-checkbox
+                                    v-model:checked="state.checkAll"
+                                    :indeterminate="state.indeterminate"
+                                    @change="onCheckAllChange"
+                                >
+                                    Check all
+                                </a-checkbox>
+                            </div>
+                            <a-divider />
+                            <a-checkbox-group
+                                v-model:value="state.checkedList"
+                                :options="plainOptions"
+                            />
+                        </div>
+                            
+                        </a-modal>
                         <a-form
+                            v-if="openCreateVariantForm"
                             ref="ruleForm"
                             :model="formVariables"
                             layout="vertical"
+                            class="mt-4"
                         >
+                            <div class="font-bold text-xl mb-4">
+                                Thêm biến thể mới
+                            </div>
                             <a-form-item
                                 label="Tên biến thể"
                                 name="name"
@@ -334,58 +490,15 @@
                             >
                                 <a-input v-model:value="formVariables.name" />
                             </a-form-item>
-                            <a-form-item
-                                label="Màu sắc"
-                                name="color"
-                                :rules="[
-                                    {
-                                        required: true,
-                                        message: 'Vui lòng chọn màu sắc!',
-                                    },
-                                ]"
-                            >
-                                <a-select
-                                    v-model:value="formVariables.color"
-                                    placeholder="Chọn màu sắc"
-                                >
-                                    <!-- Add your color options here -->
-                                </a-select>
+                            <a-form-item label="SKU biến thể" name="sku">
+                                <a-input v-model:value="formVariables.sku" />
                             </a-form-item>
-                            <a-form-item
-                                label="Kích thước"
-                                name="size"
-                                :rules="[
-                                    {
-                                        required: true,
-                                        message: 'Vui lòng chọn kích thước!',
-                                    },
-                                ]"
-                            >
-                                <a-select
-                                    v-model:value="formVariables.size"
-                                    placeholder="Chọn kích thước"
+                            <a-form-item label="Số lượng" name="qty">
+                                <a-input-number
+                                    min="0"
                                     class="w-full"
-                                >
-                                    <!-- Add your size options here -->
-                                </a-select>
-                            </a-form-item>
-                            <a-form-item
-                                label="Chất liệu"
-                                name="material"
-                                :rules="[
-                                    {
-                                        required: true,
-                                        message: 'Vui lòng chọn chất liệu!',
-                                    },
-                                ]"
-                            >
-                                <a-select
-                                    v-model:value="formVariables.material"
-                                    placeholder="Chọn chất liệu"
-                                    class="w-full"
-                                >
-                                    <!-- Add your material options here -->
-                                </a-select>
+                                    v-model:value="formVariables.qty"
+                                />
                             </a-form-item>
                             <a-form-item
                                 label="Giá tiền"
@@ -443,17 +556,6 @@
                                     "
                                     v-model:value="formVariables.discount_price"
                                     @change="calculateDiscountPercentVariable"
-                                />
-                            </a-form-item>
-                            <a-form-item
-                                ref="quantity"
-                                label="Số lượng"
-                                name="quantity"
-                            >
-                                <a-input-number
-                                    min="0"
-                                    class="w-full"
-                                    v-model:value="formVariables.quantity"
                                 />
                             </a-form-item>
                             <a-form-item>
@@ -780,7 +882,7 @@
 
 <script setup>
 import {
-    SearchOutlined,
+    MinusOutlined,
     PlusOutlined,
     DeleteOutlined,
     EditOutlined,
@@ -790,7 +892,7 @@ import {
     PhoneTwoTone,
     MinusCircleOutlined,
 } from "@ant-design/icons-vue";
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, reactive } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { usePagination } from "vue-request";
@@ -800,37 +902,36 @@ import CkEditorCustom from "@/views/components/CkEditorCustom.vue";
 import dayjs from "dayjs";
 const form = ref({
     name: "",
-    slug: "",
-    video_link: "",
+    sku: "",
+    category: null,
+    is_active: false,
     image: [],
-    amount: null,
+    amount: 0,
+    unit: null,
     price: 0,
     discount_percent: 0,
     discount_price: 0,
     product_description: "",
-    feature_description: "",
-    feature_img: [],
-    seo_title: "",
-    seo_description: "",
-    seo_keyword: "",
-    seo_image: [],
+    warehouses: [
+        {
+            warehouse_id: null,
+            quantity: null,
+            loading: false,
+            options: [],
+        },
+    ],
 });
 const formVariables = ref({
     name: "",
-    video_link: "",
-    image: [],
-    amount: null,
+    sku: "",
     price: 0,
     discount_percent: 0,
     discount_price: 0,
-    product_description: "",
-    feature_description: "",
-    feature_img: [],
-    seo_title: "",
-    seo_description: "",
-    seo_keyword: "",
-    seo_image: [],
+    qty: 0,
 });
+const openCreateVariantForm = ref(false);
+const openAutoAddVariant = ref(false);
+const openEditSelectedAttribute = ref(false);
 const formAttributes = ref({
     attributes: [
         {
@@ -907,6 +1008,10 @@ const routes = ref([
 ]);
 
 const router = useRouter();
+
+const handleBackProductIndex = () => {
+    router.push({ name: "product-index" });
+};
 
 //Price handle
 
@@ -1018,21 +1123,99 @@ function customRound(value) {
     }
 }
 
+//Handle Description
+const handleUpdateDescription = (value) => {
+    form.value.product_description = value;
+};
+
+//Handle Submit Form Update Product Tab-1
+
 const handleSubmit = async () => {
     try {
         // Perform form submission logic here
+
+        errorInfo.value = [];
         let formData = new FormData();
         formData.append("name", form.value.name);
-        formData.append("password", form.value.password);
-        formData.append("email", form.value.email);
-        if (form.value.image && form.value.image.length > 0) {
+        formData.append("sku", form.value.sku);
+        formData.append("category_id", form.value.category.value);
+        formData.append("qty", form.value.amount);
+        formData.append("is_active", form.value.is_active);
+        if (
+            form.value.image &&
+            form.value.image.length > 0 &&
+            form.value.image[0].originFileObj
+        ) {
             formData.append("image", form.value.image[0].originFileObj);
         }
-        router.push({ name: "product-index" });
-    } catch (error) {
-        message.error("An error occurred. Please try again.");
+        formData.append("qty", form.value.amount);
+        formData.append("unit_id", form.value.unit.value);
+        formData.append("price", form.value.price);
+        formData.append(
+            "price_sale",
+            form.value.price - form.value.discount_price
+        );
+        if (form.value.product_description) {
+            formData.append("description", form.value.product_description);
+        }
+        const response = await axios.post(
+            `/api/products/${router.currentRoute.value.params.id}`,
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            }
+        );
+        if (response.data.code == 200) {
+            message.success(response.data.message);
+            router.push({ name: "product-index" });
+        }
+    } catch (e) {
+        if (e.response.status == 422) {
+            errorInfo.value = Object.values(e.response.data.errors);
+            message.error("Vui lòng kiểm tra lại thông tin");
+        } else {
+            message.error("Máy chủ bận");
+            console.log("errors: ", e);
+        }
     }
 };
+
+// Xử lý thông tin kho
+
+const handleUpdateStorageProduct = async () => {
+    try {
+        let items = [];
+        if (form.value.warehouses.length > 0) {
+            items = form.value.warehouses.map((item) => {
+                return {
+                    warehouse_id: item.warehouse_id.value,
+                    qty: item.quantity,
+                };
+            });
+            const response = await axios.post(
+                `/api/products/${router.currentRoute.value.params.id}/warehouses`,
+                {
+                    items: items,
+                }
+            );
+            if (response.data.code == 200) {
+                message.success(response.data.message);
+            }
+        }
+    } catch (e) {
+        if (e.response.status == 422) {
+            errorInfo.value = Object.values(e.response.data.errors);
+            message.error("Vui lòng kiểm tra lại thông tin");
+        } else {
+            message.error("Máy chủ bận");
+            console.log("errors: ", e);
+        }
+    }
+};
+
+// Xử lý hình ảnh
 function getBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -1107,6 +1290,101 @@ const handleCancelSEOImg = () => {
     previewSEOImgTitle.value = "";
 };
 
+//Add Kho
+const addWarehouse = () => {
+    form.value.warehouses.push({
+        warehouse_id: null,
+        quantity: null,
+        loading: true,
+        options: [],
+    });
+    handleSearchStorage(
+        "",
+        form.value.warehouses[form.value.warehouses.length - 1],
+        (data) =>
+            (form.value.warehouses[form.value.warehouses.length - 1].options =
+                data)
+    );
+};
+
+const removeWarehouse = (index) => {
+    form.value.warehouses.splice(index, 1);
+};
+
+//Load Kho options
+let valueStorage = null;
+
+let timeoutStorage = null;
+function fetchStorageDropdown(value, item = null, callback) {
+    if (timeoutStorage) {
+        clearTimeout(timeoutStorage);
+        timeoutStorage = null;
+    }
+    valueStorage = value;
+    timeoutStorage = setTimeout(searchStorage(value, item, callback), 300);
+}
+
+const handleSearchStorage = async (val, ỉtem = null) => {
+    ỉtem.loading = true;
+    fetchStorageDropdown(val, ỉtem, (data) => (ỉtem.options = data));
+};
+const handleChangeStorage = (val, item) => {
+    item.loading = false;
+    let dataSelected = item.options.find((ele) => ele.value == val);
+    if (dataSelected) {
+        item.warehouse_id = {
+            value: val,
+            label: dataSelected.name,
+            data: dataSelected,
+        };
+    }
+    fetchStorageDropdown("", (data) => (item.options = data));
+};
+
+async function searchStorage(value, item, callback) {
+    item.loading = true;
+    const params = new URLSearchParams({
+        name: value,
+    });
+
+    // Lấy dữ liệu kho đã được thêm ở trước
+    let excludeStorage = [];
+    if (form.value.warehouses.length > 0) {
+        form.value.warehouses.forEach((item, index) => {
+            if (index < form.value.warehouses.length - 1)
+                excludeStorage.push(item.warehouse_id);
+        });
+    }
+
+    // console.log(excludeStorage);
+    // excludeStorage => Loại bỏ những kho đã lựa chọn trước đó
+    if (value) {
+        await axios.get(`/api/warehouses?${params}`).then((response) => {
+            if (valueStorage === value) {
+                const result = response.data.data?.map((storage) => ({
+                    label: storage.name,
+                    value: storage.id,
+                    data: storage,
+                }));
+                item.loading = false;
+                callback(result);
+            }
+        });
+    } else {
+        await axios.get(`/api/warehouses`).then((response) => {
+            if (valueStorage === value) {
+                const result = response.data.data?.map((storage) => ({
+                    label: storage.name,
+                    value: storage.id,
+                    data: storage,
+                }));
+                item.loading = false;
+                callback(result);
+            }
+        });
+    }
+}
+
 // Handle Add Attributee
 function addAttribute() {
     formAttributes.value.attributes.push({
@@ -1120,7 +1398,7 @@ function removeAttribute(index) {
     formAttributes.value.selectedAttributes.splice(index, 1);
 }
 
-//Load Kho options
+//Load Attribute options
 let timeout;
 let currentValue = "";
 function fetchAttributeDropdown(value, item = null, callback) {
@@ -1138,10 +1416,8 @@ const handleSearchAttributeGroup = async (val, ỉtem = null) => {
 };
 const handleChangeAttributeGroup = (val, item) => {
     item.id = val;
-    console.log(val);
     item.loading = false;
     let dataSelected = item.options.find((ele) => ele.value == val);
-    console.log(dataSelected);
     if (dataSelected) {
         if (
             formAttributes.value.attributes.length >
@@ -1354,16 +1630,174 @@ function resetVariantFields() {
     };
 }
 
+//Loading Category sản phẩm
+const category_fetch = ref(false);
+const data_manager = ref([]);
+let timeoutCategory;
+let categoryValue = "";
+function fetchCategoriesDropdown(value, callback) {
+    if (timeoutCategory) {
+        clearTimeout(timeoutCategory);
+        timeoutCategory = null;
+    }
+    categoryValue = value;
+    timeoutCategory = setTimeout(searchCategory(value, callback), 300);
+}
+
+const handleSearchCategory = async (val) => {
+    fetchCategoriesDropdown(val, (data) => (data_manager.value = data));
+};
+const handleChangeCategory = (val, item) => {
+    form.value.category = item;
+    fetchCategoriesDropdown("", (data) => (data_manager.value = data));
+};
+
+async function searchCategory(value, callback) {
+    category_fetch.value = true;
+    const params = new URLSearchParams({
+        name: value,
+    });
+    if (value) {
+        await axios.get(`/api/categories?${params}`).then((response) => {
+            if (categoryValue === value) {
+                const result = response.data.data?.map((storage) => ({
+                    label: storage.name,
+                    value: storage.id,
+                    data: storage,
+                }));
+                category_fetch.value = false;
+                callback(result);
+            }
+        });
+    } else {
+        await axios.get(`/api/categories`).then((response) => {
+            if (categoryValue === value) {
+                const result = response.data.data?.map((storage) => ({
+                    label: storage.name,
+                    value: storage.id,
+                    data: storage,
+                }));
+                category_fetch.value = false;
+                callback(result);
+            }
+        });
+    }
+}
+
+watch(form.value.category, () => {
+    data_manager.value = [];
+    category_fetch.value = false;
+});
+
+//Loading Đơn vị tính
+const unitOptions = ref([]);
+const unit_fetching = ref(false);
+let timeoutUnit;
+let valueUnit = "";
+function fetchUnitDropdown(value, callback) {
+    if (timeoutUnit) {
+        clearTimeout(timeoutUnit);
+        timeoutUnit = null;
+    }
+    valueUnit = value;
+    timeoutUnit = setTimeout(searchUnit(value, callback), 300);
+}
+
+const handleSearchUnit = async (val) => {
+    fetchUnitDropdown(val, (data) => (unitOptions.value = data));
+};
+const handleChangeUnit = (val, item) => {
+    form.value.unit = item;
+    fetchUnitDropdown("", (data) => (unitOptions.value = data));
+};
+
+async function searchUnit(value, callback) {
+    unit_fetching.value = true;
+    const params = new URLSearchParams({
+        name: value,
+    });
+    if (value) {
+        await axios.get(`/api/units?${params}`).then((response) => {
+            if (valueUnit === value) {
+                const result = response.data.data?.map((unit) => ({
+                    label: unit.name,
+                    value: unit.id,
+                    data: unit,
+                }));
+                unit_fetching.value = false;
+                callback(result);
+            }
+        });
+    } else {
+        await axios.get(`/api/units`).then((response) => {
+            if (valueUnit === value) {
+                const result = response.data.data?.map((unit) => ({
+                    label: unit.name,
+                    value: unit.id,
+                    data: unit,
+                }));
+                unit_fetching.value = false;
+                callback(result);
+            }
+        });
+    }
+}
+
+watch(form.value.unit, () => {
+    unitOptions.value = [];
+    unit_fetching.value = false;
+});
+
+// Xử lý mở form thêm biến thể
+const handleOpenAddVariant = () => {
+    // Do something
+
+    openCreateVariantForm.value = !openCreateVariantForm.value;
+};
+
+const handleAutoAddVariant = () => {
+    openAutoAddVariant.value = true;
+};
+
+const autoAddVariantFunc = async () => {};
+
+const handleEditSelectedAttribute = () => {
+    openEditSelectedAttribute.value = true;
+};
+
+let plainOptions = reactive([]);
+let state = reactive({
+  indeterminate: true,
+  checkAll: false,
+  checkedList: [],
+});
+const onCheckAllChange = e => {
+  Object.assign(state, {
+    checkedList: e.target.checked ? plainOptions : [],
+    indeterminate: false,
+  });
+};
+watch(
+  () => state.checkedList,
+  val => {
+    state.indeterminate = !!val.length && val.length < plainOptions.length;
+    state.checkAll = val.length === plainOptions.length;
+  },
+);
+
 // Query Data of Product
 const queryDataAttribute = (params) => {
     return axios.get(
         `/api/products/${router.currentRoute.value.params.id}/attributes`
     );
 };
-
+const queryDataProduct = (params) => {
+    return axios.get(`/api/products/${router.currentRoute.value.params.id}`);
+};
 const { data: dataAttribute, loading: loadingAttribute } =
     usePagination(queryDataAttribute);
-
+const { data: dataProduct, loading: loadingProduct } =
+    usePagination(queryDataProduct);
 watch(
     () => dataAttribute.value,
     (newValue) => {
@@ -1375,14 +1809,82 @@ watch(
                     data: item,
                 })
             );
-            formAttributes.value.attributes = newValue.data.data.map((item) => ({
-                id: {
+            formAttributes.value.attributes = newValue.data.data.map(
+                (item) => ({
+                    id: {
+                        value: item.id,
+                        label: item.name,
+                    },
+                    options: [newValue.data],
+                    loading: false,
+                })
+            );
+            plainOptions = newValue.data.data.map(
+                (item) => ({
                     value: item.id,
                     label: item.name,
-                },
-                options: [newValue.data],
-                loading: false,
-            }));
+                    data: item,
+                })
+            );
+        }
+    }
+);
+watch(
+    () => dataProduct.value,
+    (newValue) => {
+        if (newValue.data?.item) {
+            let data = newValue.data.item;
+            form.value = {
+                name: data.name ?? null,
+                image: data.image
+                    ? [
+                          {
+                              name: "image.png",
+                              url: data.image,
+                          },
+                      ]
+                    : [],
+                category: data.category
+                    ? {
+                          value: data.category.id,
+                          data: data.category,
+                          label: data.category.name,
+                      }
+                    : null,
+                sku: data.sku ?? null,
+                unit: data.unit
+                    ? {
+                          value: data.unit.id,
+                          data: data.unit,
+                          label: data.unit.name,
+                      }
+                    : null,
+                is_active: data.is_active,
+                amount: data.qty ?? 0,
+                price: data.price ?? 0,
+                discount_percent: Math.round(
+                    (data.price_sale * 100) / data.price
+                ),
+                discount_price: data.price - data.price_sale,
+                product_description: data.description ?? "",
+            };
+            if (data.product_warehouses.length > 0) {
+                let warehousesArr = data.product_warehouses.map((item) => ({
+                    warehouse_id: {
+                        value: item.warehouse.id,
+                        label: item.warehouse.name,
+                        data: item.warehouse,
+                    },
+                    quantity: item.qty,
+                    loading: false,
+                    options: [],
+                }));
+                form.value.warehouses = warehousesArr;
+            } else {
+                form.value.warehouses = [];
+            }
+        } else {
+            router.push({ name: "product-index" });
         }
     }
 );
