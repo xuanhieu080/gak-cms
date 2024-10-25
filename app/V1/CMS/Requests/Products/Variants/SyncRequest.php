@@ -3,11 +3,10 @@
 namespace App\V1\CMS\Requests\Products\Variants;
 
 use App\Models\Attribute;
-use App\Models\ProductAttribute;
 use App\V1\CMS\Requests\ValidatorBase;
 use Illuminate\Validation\Rule;
 
-class UpdateRequest extends ValidatorBase
+class SyncRequest extends ValidatorBase
 {
     /**
      * Get the validation rules that apply to the request.
@@ -17,29 +16,13 @@ class UpdateRequest extends ValidatorBase
     public function rules()
     {
         return [
-            'image'                      => 'nullable|image|max:3145728|mimes:jpg,jpeg,png,bmp,gif,svg,webp,mp4,ogx,oga,ogv,ogg,webm',
-            'price'                      => 'required|numeric|between:0,99999999999',
-            'price_sale'                 => 'nullable|numeric|between:0,99999999999|lt:price',
             'product_id'                 => 'required|exists:products,id',
-            'sku'                        => [
-                'required',
-                'string',
-                Rule::unique('variants', 'sku')->ignore($this->route('id'))
-            ],
             'items'                      => 'required|array',
             'items.*'                    => 'required|array',
             'items.*.attribute_group_id' => [
                 'required',
                 'exists:attribute_groups,id',
-                function ($attribute, $value, $fail) {
-                    $item = ProductAttribute::query()
-                        ->where('attribute_group_id', $value)
-                        ->first();
-
-                    if (empty($item)) {
-                        return $fail('Nhóm thuộc tính không đúng');
-                    }
-                }
+                Rule::exists('product_attributes', 'attribute_group_id')->where('product_id', $this->input('product_id')),
             ],
             'items.*.attribute_id'       => [
                 'required',

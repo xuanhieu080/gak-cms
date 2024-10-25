@@ -5,6 +5,7 @@ namespace App\V1\CMS\Controllers;
 use App\Supports\GAK_ERROR;
 use App\V1\CMS\Models\VariantModel;
 use App\V1\CMS\Requests\Products\Variants\CreateRequest;
+use App\V1\CMS\Requests\Products\Variants\SyncRequest;
 use App\V1\CMS\Requests\Products\Variants\UpdateRequest;
 use App\V1\CMS\Requests\Products\Warehouses\SyncVariantRequest;
 use App\V1\CMS\Resources\Products\Variants\VariantResource;
@@ -69,7 +70,7 @@ class VariantController extends Controller
             DB::commit();
         } catch (Exception $exception) {
             DB::rollBack();
-            $response = GAK_ERROR::handle($exception, 'customers');
+            $response = GAK_ERROR::handle($exception, 'variants');
 
             return $this->responseStoreFail($response['message']);
         }
@@ -85,7 +86,7 @@ class VariantController extends Controller
         try {
             $item = $this->model->detail($id);
         } catch (\Exception $exception) {
-            $response = GAK_ERROR::handle($exception, 'customers');
+            $response = GAK_ERROR::handle($exception, 'variants');
 
             return $this->responseFail($response['message']);
         }
@@ -110,7 +111,7 @@ class VariantController extends Controller
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
-            $response = GAK_ERROR::handle($exception, 'customers');
+            $response = GAK_ERROR::handle($exception, 'variants');
 
             return $this->responseUpdateFail($response['message']);
         }
@@ -135,7 +136,6 @@ class VariantController extends Controller
 
         return $this->responseDeleteFail();
     }
-
 
     public function syncWarehouse(SyncVariantRequest $request, $productId, $id): JsonResponse
     {
@@ -174,5 +174,24 @@ class VariantController extends Controller
         }
 
         return $this->response(200, '', ['data' => VariantWarehouseResource::collection($data)]);
+    }
+
+
+
+    public function syncVariant(SyncRequest $request, $productId): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+            $input = $request->validated();
+            $this->model->syncVariant($productId, $input);
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            $response = GAK_ERROR::handle($exception, 'variants');
+
+            return $this->responseUpdateFail($response['message']);
+        }
+
+        return $this->responseUpdateSuccess('Cập nhật dữ liệu thành công');
     }
 }

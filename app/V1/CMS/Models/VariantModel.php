@@ -2,6 +2,7 @@
 
 namespace App\V1\CMS\Models;
 
+use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\ProductWarehouse;
 use App\Models\Variant;
@@ -24,7 +25,7 @@ class VariantModel extends AbstractModel
     {
         $items = $data['items'];
         $itemCount = count($items);
-        $productId =  $data['product_id'];
+        $productId = $data['product_id'];
 
         // Truy vấn để đếm số lượng attribute_group_id khớp với product_id = 1
         $matchedCount = ProductAttribute::query()
@@ -91,30 +92,121 @@ class VariantModel extends AbstractModel
 
     public function update(array $data, array $with = []): mixed
     {
-        $productId = $data[$this->model->getKeyName()];
+        $currentVariantId = $data[$this->model->getKeyName()];
+
         $model = $this->model
             ->with($with)
-            ->find($productId);
-
-        ProductWarehouse::query()
-            ->where('product_id', $productId)
-            ->whereNull('variant_id')
-            ->delete();
+            ->find($currentVariantId);
 
         if (empty($model)) {
             throw new Exception('Dữ liệu không tồn tại', 404);
         }
 
+        $items = $data['items'];
+        $itemCount = count($items);
+        $productId = $data['product_id'];
+
+        // Truy vấn để đếm số lượng attribute_group_id khớp với product_id = 1
+        $matchedCount = ProductAttribute::query()
+            ->where('product_id', $productId)
+            ->count();
+
+        // Kiểm tra nếu số lượng khớp không bằng số lượng điều kiện
+        if ($matchedCount != $itemCount) {
+            throw new Exception("Một số nhóm thuộc tính không khớp hoặc bị thiếu.");
+        }
+        // Lấy danh sách các variant có chi tiết thỏa mãn
+        $variantIds = VariantDetail::query()
+            ->select('variant_id')
+            ->where(function ($query) use ($items) {
+                foreach ($items as $item) {
+                    $query->orWhere(function ($q) use ($item) {
+                        $q->where('attribute_id', $item['attribute_id'])
+                            ->where('attribute_group_id', $item['attribute_group_id']);
+                    });
+                }
+            })
+            ->whereHas('variant')
+            ->where('variant_id', '!=', $currentVariantId)
+            ->where('product_id', $productId)
+            ->groupBy('variant_id')
+            ->havingRaw("COUNT(DISTINCT id) = ?", [$itemCount]) // Kiểm tra đủ số lượng cặp điều kiện
+            ->pluck('variant_id');
+
+        $exists = $variantIds->isNotEmpty();
+
+        if ($exists) {
+            throw new Exception('Dữ liệu đã tồn tại');
+        }
+
         $model->fill($data);
 
         if ($model->save()) {
+            // Lấy tất cả các chi tiết hiện có của variant hiện tại
+            $existingDetails = VariantDetail::query()
+                ->where('variant_id', $model->id)
+                ->get(['id', 'attribute_id', 'attribute_group_id']);
+
+// Chuyển các chi tiết hiện có thành mảng để so sánh nhanh chóng
+            $existingDetailsMap = $existingDetails->map(function ($detail) {
+                return $detail->attribute_id . '-' . $detail->attribute_group_id;
+            })->toArray();
+
+            $existingIds = $existingDetails->pluck('id')->toArray(); // Lưu các ID hiện có
+
+            // Tạo mảng mới và tách biệt các mục cần giữ lại
+            $newItems = [];
+            $keepIds = [];
+
+            $items = array_map(function ($item) use ($productId, $model) {
+                return [
+                    'product_id'         => $productId,
+                    'variant_id'         => $model->id,
+                    'attribute_id'       => $item['attribute_id'],
+                    'attribute_group_id' => $item['attribute_group_id'],
+                    'created_at'         => Support::now(),
+                    'updated_at'         => Support::now(),
+                    'created_by'         => Auth::id(),
+                    'updated_by'         => Auth::id(),
+                ];
+            }, $items);
+
+            foreach ($items as $item) {
+                $itemKey = $item['attribute_id'] . '-' . $item['attribute_group_id'];
+
+                if (in_array($itemKey, $existingDetailsMap)) {
+                    // Nếu đã tồn tại, tìm ID của nó và lưu lại
+                    $existing = $existingDetails->first(function ($detail) use ($item) {
+                        return $detail->attribute_id == $item['attribute_id'] &&
+                            $detail->attribute_group_id == $item['attribute_group_id'];
+                    });
+                    $keepIds[] = $existing->id;
+                } else {
+                    // Nếu chưa tồn tại, thêm vào danh sách để thêm mới
+                    $newItems[] = $item;
+                }
+            }
+
+            // Bước 2: Xóa các chi tiết không có trong danh sách cần giữ lại
+            $idsToDelete = array_diff($existingIds, $keepIds);
+            if (!empty($idsToDelete)) {
+                VariantDetail::query()
+                    ->whereIn('id', $idsToDelete) // Xóa các chi tiết thừa
+                    ->delete();
+            }
+
+            // Bước 3: Thêm các chi tiết mới chưa tồn tại
+            if (!empty($newItems)) {
+                VariantDetail::query()->insert($newItems);
+            }
+
             if (!empty($data['image'])) {
-                $model->clearMediaCollection();
                 $model->addMedia($data['image'])
-                    ->usingName($model)
+                    ->usingName($model->sku)
                     ->usingFileName($model->sku . '-' . time() . '.' . $data['image']->getClientOriginalExtension())
                     ->toMediaCollection();
             }
+            $model->refresh();
             return $model;
         }
 
@@ -181,4 +273,203 @@ class VariantModel extends AbstractModel
             ->where('variant_id', $id)
             ->get();
     }
+
+
+    /**
+     * @param $productId
+     * @param $input
+     * @return void
+     */
+    public function syncVariant($productId, $input = [])
+    {
+        $product = Product::query()->find($productId);
+        $items = $input['items'];
+        // Sắp xếp lại các phần tử
+        $items = array_map(function($item) {
+            return [
+                "attribute_id" => $item["attribute_id"],
+                "attribute_group_id" => $item["attribute_group_id"],
+            ];
+        }, $items);
+        // Gộp thuộc tính theo nhóm và tính số biến thể
+        $variantNew = $this->showVariants($items);
+
+        $variantCurrents = VariantDetail::query()
+            ->where('product_id', $productId)
+            ->whereHas('variant') // Đảm bảo variant tồn tại
+            ->where(function ($query) use ($items) {
+                foreach ($items as $item) {
+                    $query->orWhere(function ($q) use ($item) {
+                        $q->where('attribute_id', $item['attribute_id'])
+                            ->where('attribute_group_id', $item['attribute_group_id']);
+                    });
+                }
+            })
+            ->selectRaw('attribute_id, attribute_group_id')
+            ->get()->toArray();
+
+        $variantCurrents = $this->showVariants($variantCurrents);
+
+        $this->normalizeAndSortArray($variantCurrents);
+        $this->normalizeAndSortArray($variantNew);
+
+        $result = $this->excludeDuplicateItems($variantNew, $variantCurrents);
+
+        dd($variantNew, $variantCurrents, $result);
+
+        // Tính toán số lượng biến thể cần tạo
+        $variantToCreateCount = $variantCount - $variantCurrentCount;
+
+        if ($variantToCreateCount > 0) {
+            // Tạo biến thể mới
+            $variantsToCreate = [];
+            $variantCodes = [];
+
+            for ($i = 0; $i < $variantToCreateCount; $i++) {
+                $code = Support::genCode('variants', 'sku');
+                $variantCodes[] = $code;
+                $variantsToCreate[] = [
+                    'product_id' => $productId,
+                    'price'      => $product->price,
+                    'price_sale' => $product->price_sale,
+                    'sku'        => $code,
+                    'created_at' => Support::now(),
+                    'updated_at' => Support::now(),
+                    'created_by' => Auth::id(),
+                    'updated_by' => Auth::id(),
+                ];
+            }
+
+            // Sử dụng bulk insert để tiết kiệm thời gian và giảm số lượng truy vấn
+            Variant::query()->insert($variantsToCreate);
+
+            $variants = Variant::query()
+                ->whereIn('code', $variantCodes)
+                ->with('details:id,variant_id,attribute_id,attribute_group_id')
+                ->get();
+
+            foreach ($variants as $variant) {
+                foreach ($items as $item) {
+                    // Thêm chi tiết cho mỗi biến thể
+                    $newVariantDetails[] = [
+                        'product_id'         => $productId,
+//                        'variant_id'         => $variantId,
+                        'attribute_id'       => $item['attribute_id'],
+                        'attribute_group_id' => $item['attribute_group_id'],
+                        'created_at'         => Support::now(),
+                        'updated_at'         => Support::now(),
+                        'created_by'         => Auth::id(),
+                        'updated_by'         => Auth::id(),
+                    ];
+                }
+            }
+        }
+    }
+
+    public function showVariants(array $data = []): array
+    {
+        // Gộp thuộc tính theo nhóm
+        $groupedAttributes = [];
+        foreach ($data as $attribute) {
+            $groupedAttributes[$attribute['attribute_group_id']][] = $attribute;
+        }
+
+        // Tạo biến thể từ tất cả các nhóm
+        return $this->combineAttributes($groupedAttributes);
+    }
+
+    // Hàm để kết hợp các thuộc tính
+    private function combineAttributes($groupedAttributes): array
+    {
+        $variants = [[]]; // Bắt đầu với một mảng rỗng
+
+        foreach ($groupedAttributes as $group) {
+            $tempVariants = [];
+            foreach ($variants as $variant) {
+                foreach ($group as $attribute) {
+                    // Kết hợp thuộc tính vào từng biến thể hiện tại
+                    $tempVariants[] = array_merge($variant, [$attribute]);
+                }
+            }
+            $variants = $tempVariants; // Cập nhật biến thể với các thuộc tính đã kết hợp
+        }
+
+        return $variants;
+    }
+
+    function excludeDuplicateItems($array1, $array2)
+    {
+
+
+// Hàm để kiểm tra sự tồn tại của một phần tử trong array2
+        function isArrayInArray($element, $array) {
+            foreach ($array as $subArray) {
+                if ($element === $subArray) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+// Tìm các chỉ số của array1 không có trong array2
+        $resultIndexes = [];
+        foreach ($array1 as $index => $subArray) {
+            if (!isArrayInArray($subArray, $array2)) {
+                $resultIndexes[] = $index;
+            }
+        }
+
+        $resultItems = [];
+        foreach ($resultIndexes as $index) {
+            $resultItems[] = $array1[$index];
+        }
+
+        return $resultItems;
+    }
+
+    // Hàm chuẩn hóa và sắp xếp mảng
+    function normalizeAndSortArray(&$array): void
+    {
+        foreach ($array as &$subArray) {
+            // Chuẩn hóa dữ liệu và sắp xếp các phần tử bên trong mỗi mảng con
+            array_walk($subArray, function(&$item) {
+                $item['attribute_id'] = (int)$item['attribute_id'];
+                $item['attribute_group_id'] = (int)$item['attribute_group_id'];
+            });
+
+            usort($subArray, function($a, $b) {
+                if ($a['attribute_id'] === $b['attribute_id']) {
+                    return $a['attribute_group_id'] <=> $b['attribute_group_id'];
+                }
+                return $a['attribute_id'] <=> $b['attribute_id'];
+            });
+        }
+
+        // Sắp xếp các mảng con
+        usort($array, function($a, $b) {
+            foreach ($a as $index => $item) {
+                if ($item['attribute_id'] === $b[$index]['attribute_id']) {
+                    return $item['attribute_group_id'] <=> $b[$index]['attribute_group_id'];
+                }
+                return $item['attribute_id'] <=> $b[$index]['attribute_id'];
+            }
+            return 0;
+        });
+    }
+
+    function itemExists($item, $array): bool
+    {
+        foreach ($array as $subArray) {
+            foreach ($subArray as $compareItem) {
+                // So sánh từng thuộc tính
+                if ($item['attribute_id'] == $compareItem['attribute_id'] &&
+                    $item['attribute_group_id'] == $compareItem['attribute_group_id']) {
+                    return true; // Nếu tìm thấy, trả về true
+                }
+            }
+        }
+        return false; // Nếu không tìm thấy, trả về false
+    }
+
+
 }

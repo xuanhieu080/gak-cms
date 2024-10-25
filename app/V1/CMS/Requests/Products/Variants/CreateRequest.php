@@ -3,7 +3,6 @@
 namespace App\V1\CMS\Requests\Products\Variants;
 
 use App\Models\Attribute;
-use App\Models\ProductAttribute;
 use App\V1\CMS\Requests\ValidatorBase;
 use Illuminate\Validation\Rule;
 
