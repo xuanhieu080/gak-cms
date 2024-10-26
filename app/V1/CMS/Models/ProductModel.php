@@ -6,6 +6,7 @@ use App\Models\AttributeGroup;
 use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\ProductWarehouse;
+use App\Models\Variant;
 use App\Supports\Support;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;

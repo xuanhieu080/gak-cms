@@ -13,6 +13,8 @@ use App\V1\CMS\Resources\Products\AttributeGroupResource;
 use App\V1\CMS\Resources\Products\ProductResource;
 use App\V1\CMS\Resources\Products\ProductShortResource;
 use App\V1\CMS\Resources\Products\ProductWarehouseResource;
+use App\V1\CMS\Resources\Products\Variants\VariantDetailResource;
+use App\V1\CMS\Resources\Products\Variants\VariantResource;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
@@ -224,5 +226,26 @@ class ProductController extends Controller
         }
 
         return $this->response(200, '', ['data' => ProductWarehouseResource::collection($data)]);
+    }
+
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param $id
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function getVariant($id): JsonResponse
+    {
+        try {
+            $data = $this->model->getVariant($id);
+        } catch (\Exception $exception) {
+            $response = GAK_ERROR::handle($exception, 'products');
+
+            return $this->responseUpdateFail($response['message']);
+        }
+
+        return $this->response(200, '', ['data' => VariantResource::collection($data)]);
     }
 }

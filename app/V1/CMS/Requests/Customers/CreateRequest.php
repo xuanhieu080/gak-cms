@@ -20,6 +20,7 @@ class CreateRequest extends ValidatorBase
             'note'      => 'nullable|max:500',
             'address'   => 'nullable|max:500',
             'discount'  => 'nullable|numeric|between:0,100',
+            'tax_cod'   => 'nullable|string|max:255',
             'is_active' => 'required|in:1,0,true,false',
             'phone'     => ['required', 'regex:/^(?:\+84|0)(3[2-9]|5[2|6|8|9]|7[0|6-9]|8[1-6]|9[0-9])[0-9]{7}$/'],
         ];
