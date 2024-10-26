@@ -8,6 +8,7 @@ use App\V1\CMS\Requests\Products\CreateRequest;
 use App\V1\CMS\Requests\Products\SyncAttributeRequest;
 use App\V1\CMS\Requests\Products\UpdateRequest;
 use App\V1\CMS\Requests\Products\Warehouses\SyncRequest;
+use App\V1\CMS\Resources\AttributeGroupResource;
 use App\V1\CMS\Resources\AttributeGroupShortResource;
 use App\V1\CMS\Resources\Products\ProductResource;
 use App\V1\CMS\Resources\Products\ProductShortResource;
@@ -182,7 +183,7 @@ class ProductController extends Controller
             return $this->responseUpdateFail($response['message']);
         }
 
-        return $this->response(200, '', ['data' => AttributeGroupShortResource::collection($data)]);
+        return $this->response(200, '', ['data' => AttributeGroupResource::collection($data)]);
     }
 
 
