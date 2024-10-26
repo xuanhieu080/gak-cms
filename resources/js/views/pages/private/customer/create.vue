@@ -82,7 +82,7 @@
                         </a-form-item>
                         <a-form-item v-bind="validateInfos.phone">
                             <template class="h-full" #label>
-                                <span class="font-medium">Phone</span>
+                                <span class="font-medium">Số điện thoại</span>
                             </template>
                             <a-input
                                 id="phoneInput"
@@ -92,6 +92,15 @@
                                 maxlength="10"
                                 :autocomplete="false"
                                 required
+                            ></a-input>
+                        </a-form-item>
+                        <a-form-item v-bind="validateInfos.tax_code">
+                            <template class="h-full" #label>
+                                <span class="font-medium">Mã số thuế</span>
+                            </template>
+                            <a-input
+                                v-model:value="formState.tax_code"
+                                placeholder=""
                             ></a-input>
                         </a-form-item>
                         <a-form-item v-bind="validateInfos.address">
@@ -209,6 +218,7 @@ const formState = ref({
     note: null,
     customer_name: null,
     phone: null,
+    tax_code: null,
     address: null,
     discount: null,
     image: null,
@@ -241,6 +251,11 @@ const { resetFields, validate, validateInfos } = useForm(
                 message: "Vui lòng nhập số điện thoại",
             },
         ],
+        tax_code: [
+            {
+                required: false,
+            }
+        ],
         image: [
             {
                 required: false,
@@ -269,6 +284,10 @@ const onSubmit = async () => {
                 formData.append("email", formState.value.email);
             }
             formData.append("phone", formState.value.phone);
+            
+            if (formState.value.tax_code) {
+                formData.append("tax_code", formState.value.tax_code);
+            }
             if (formState.value.address) {
                 formData.append("address", formState.value.address);
             }

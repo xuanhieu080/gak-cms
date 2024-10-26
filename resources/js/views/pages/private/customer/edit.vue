@@ -94,6 +94,15 @@
                                 required
                             ></a-input>
                         </a-form-item>
+                        <a-form-item name="tax_code" :autoLink="false">
+                            <template class="h-full" #label>
+                                <span class="font-medium">Mã số thuế</span>
+                            </template>
+                            <a-input
+                                v-model:value="formState.tax_code"
+                                placeholder=""
+                            ></a-input>
+                        </a-form-item>
                         <a-form-item name="address" :autoLink="false">
                             <template class="h-full" #label>
                                 <span class="font-medium">Địa chỉ</span>
@@ -209,6 +218,7 @@ const formState = ref({
     note: null,
     name: null,
     phone: null,
+    tax_code: null,
     address: null,
     discount: null,
     image: null,
@@ -270,6 +280,9 @@ const onSubmit = async () => {
                 formData.append("email", formState.value.email);
             }
             formData.append("phone", formState.value.phone);
+            if (formState.value.tax_code) {
+                formData.append("tax_code", formState.value.tax_code);
+            }
             if (formState.value.address) {
                 formData.append("address", formState.value.address);
             }
@@ -406,6 +419,7 @@ const resetFormState = (data) => {
         image: data.image || [],
         is_active: data.is_active || false,
         phone: data.phone || null,
+        tax_code: data.tax_code || null,
         address: data.address || null,
         discount: data.discount || null,
     };

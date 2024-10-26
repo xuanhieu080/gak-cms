@@ -192,9 +192,8 @@ const columns = [
         sorter: true,
     },
     {
-        title: "image",
+        title: "Hình ảnh",
         dataIndex: "image",
-        sorter: true,
     },
     {
         title: "Tên khách hàng",
@@ -207,9 +206,13 @@ const columns = [
         sorter: true,
     },
     {
-        title: "Phone",
+        title: "Số điện thoại",
         dataIndex: "phone",
         sorter: true,
+    },
+    {
+        title: "Tax",
+        dataIndex: "tax_code",
     },
     {
         title: "Địa chỉ",
@@ -224,7 +227,6 @@ const columns = [
     {
         title: "Ghi chú",
         dataIndex: "note",
-        sorter: true,
         width: "150px",
     },
     {
