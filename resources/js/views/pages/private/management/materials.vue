@@ -83,7 +83,8 @@
                                     >
                                         --
                                         <div>
-                                            <b>Mã kho:</b> {{ warehouse.warehouse.id }}
+                                            <b>Mã kho:</b>
+                                            {{ warehouse.warehouse.id }}
                                         </div>
                                         <div>
                                             <b>Tên kho:</b>
@@ -202,7 +203,7 @@
                                 ) in formState.warehouses"
                                 :key="index"
                             >
-                                <div class="grid grid-cols-4 gap-4">
+                                <div class="grid grid-cols-3 gap-4">
                                     <a-form-item
                                         :label="`Kho ${index + 1}`"
                                         :name="[
@@ -595,35 +596,25 @@ const onSubmit = async () => {
     validate()
         .then(async (res) => {
             let params = {
-                items: [],
+                name: formState.value.material_name,
             };
 
             if (formState.value.warehouses.length > 0) {
+                params.items = [];
                 formState.value.warehouses.forEach((item, index) => {
                     params.items.push({
                         warehouse_id: item.warehouse_id.value,
                         qty: item.quantity,
                     });
-                    // params[`items[${index}][warehouse_id]`] =
-                    //     item.warehouse_id.value;
-                    // params[`items[${index}][qty]`] = item.quantity;
                 });
-                const responseUpdateWareHouse = await axios.post(
-                    `/api/materials/${materialDetails.value.id}/warehouses`,
-                    params
-                );
-                if (responseUpdateWareHouse.data.code == 200) {
-                    message.success("Cập nhập dữ liệu kho thành công");
-                }
+            }
+            if (formState.value.material_code) {
+                params.code = formState.value.material_code;
             }
             const response = await axios.post(
                 `/api/materials/${materialDetails.value.id}`,
-                {
-                    name: formState.value.material_name,
-                    code: formState.value.material_code,
-                }
+                params
             );
-
             if (response.data.code == 200) {
                 message.success(response.data.message);
                 handleCancelEditMaterials();
