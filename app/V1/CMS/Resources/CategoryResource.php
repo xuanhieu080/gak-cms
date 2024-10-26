@@ -26,6 +26,7 @@ class CategoryResource extends JsonResource
             "name"        => $this->name,
             "image"       => $this->getFirstMediaUrl(),
             "parent_id"   => $this->parent_id,
+            "tax_cod"     => $this->tax_cod,
             "is_active"   => $this->is_active,
             "description" => $this->description,
             "parent"      => new CategoryShortResource($this->parent),
