@@ -21,6 +21,7 @@ class UpdateRequest extends ValidatorBase
                 'max:255',
                 Rule::unique('attribute_groups', 'name')->ignore($this->route('id'))
             ],
+            'priority' => 'nullable|integer|between:1,99999999',
         ];
     }
 

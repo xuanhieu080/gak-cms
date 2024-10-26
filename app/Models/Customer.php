@@ -20,7 +20,7 @@ class Customer extends BaseModel implements HasMedia
         "address",
         "phone",
         "discount",
-        "tax_cod",
+        "tax_code",
         "is_active",
         "created_by",
         "updated_by",

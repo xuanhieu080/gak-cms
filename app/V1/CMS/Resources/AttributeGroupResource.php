@@ -23,7 +23,6 @@ class AttributeGroupResource extends JsonResource
         return [
             "id"              => $this->id,
             "name"            => $this->name,
-            "attributes"      => AttributeResource::collection($this->attributes),
             'created_by_name' => object_get($this, 'createBy.name'),
             'updated_by_name' => object_get($this, 'updateBy.name'),
         ];

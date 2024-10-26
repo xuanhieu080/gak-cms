@@ -31,6 +31,7 @@ class CustomerResource extends JsonResource
             "address"   => $this->address,
             "phone"     => $this->phone,
             "discount"  => $this->discount,
+            "tax_code"  => $this->tax_code,
         ];
     }
 }

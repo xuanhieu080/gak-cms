@@ -15,18 +15,21 @@ class UpdateRequest extends ValidatorBase
     public function rules()
     {
         return [
-            'name'       => [
+            'name'                 => [
                 'required',
                 'string',
                 'max:255',
                 Rule::unique('materials', 'name')->ignore($this->route('id'))
             ],
-            'code'       => [
-                'required',
+            'code'                 => [
+                'nullable',
                 'string',
                 'max:20',
                 Rule::unique('materials', 'code')->ignore($this->route('id'))
             ],
+            'items.*'              => 'required|array',
+            'items.*.warehouse_id' => 'required|exists:warehouses,id',
+            'items.*.qty'          => 'nullable|numeric|between:0,99999999999',
         ];
     }
 

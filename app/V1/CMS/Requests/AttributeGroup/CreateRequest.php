@@ -16,6 +16,7 @@ class CreateRequest extends ValidatorBase
     {
         return [
             'name'     => 'required|string|max:255|unique:attribute_groups,name',
+            'priority' => 'nullable|integer|between:1,99999999',
         ];
     }
 }

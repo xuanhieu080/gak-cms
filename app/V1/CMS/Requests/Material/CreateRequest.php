@@ -14,8 +14,12 @@ class CreateRequest extends ValidatorBase
     public function rules()
     {
         return [
-            'name'         => 'required|string|max:255|unique:materials,name',
-            'code'         => 'required|string|max:20|unique:materials,code'
+            'name'                 => 'required|string|max:255|unique:materials,name',
+            'code'                 => 'nullable|string|max:20|unique:materials,code',
+            'items'                => 'required|array',
+            'items.*'              => 'required|array',
+            'items.*.warehouse_id' => 'required|exists:warehouses,id',
+            'items.*.qty'          => 'nullable|numeric|between:0,99999999999',
         ];
     }
 }

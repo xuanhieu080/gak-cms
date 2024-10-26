@@ -11,6 +11,9 @@ class AttributeGroup extends BaseModel
 
     protected $fillable = [
         'name',
+        'priority',
+        'created_by',
+        'updated_by',
     ];
 
     public function attributes(): HasMany
