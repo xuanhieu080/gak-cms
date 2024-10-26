@@ -56,6 +56,26 @@ class VariantController extends Controller
     }
 
     /**
+     * Display a listing of the resource.
+     * @param Request $request
+     * @return ResourceCollection
+     */
+    public function variantToProduct(Request $request, $id): ResourceCollection
+    {
+        $input = $request->all();
+        $limit = Arr::get($input, 'limit', 999);
+        $input['sort'] = ['name' => 'asc'];
+        $input['product_id'] = $id;
+
+        $data = $this->model->search($input, [], $limit);
+        if (isset($input['short'])) {
+            return $this->responseIndex(VariantResource::collection($data));
+        }
+
+        return $this->responseIndex(VariantResource::collection($data));
+    }
+
+    /**
      * Show the form for creating a new resource.
      * @param CreateRequest $request
      * @return JsonResponse

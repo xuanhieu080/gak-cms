@@ -3,7 +3,7 @@
 use App\V1\CMS\Controllers\VariantController;
 
 Route::group(['prefix' => 'variants'], function () {
-    Route::get('/', [VariantController::class, 'index'])->middleware('permission:view_product');
+    Route::get('/products/{id}', [VariantController::class, 'variantToProduct'])->middleware('permission:view_product');
 
     Route::get('{productId}/detail/{id}/warehouses', [VariantController::class, 'getWarehouse'])->middleware('permission:view_product');
     Route::post('{productId}/detail/{id}/warehouses', [VariantController::class, 'syncWarehouse'])->middleware('permission:update_product');

@@ -5,6 +5,7 @@ use App\V1\CMS\Controllers\ProductController;
 Route::group(['prefix' => 'products'], function () {
     Route::get('/', [ProductController::class, 'index'])->middleware('permission:view_product');
 
+    Route::get('{id}/variants', [ProductController::class, 'getVariant'])->middleware('permission:view_product');
     Route::get('{id}/warehouses', [ProductController::class, 'getWarehouse'])->middleware('permission:view_product');
     Route::post('{id}/warehouses', [ProductController::class, 'syncWarehouse'])->middleware('permission:update_product');
 
