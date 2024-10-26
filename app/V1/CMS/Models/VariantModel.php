@@ -285,9 +285,9 @@ class VariantModel extends AbstractModel
         $product = Product::query()->find($productId);
         $items = $input['items'];
         // Sắp xếp lại các phần tử
-        $items = array_map(function($item) {
+        $items = array_map(function ($item) {
             return [
-                "attribute_id" => $item["attribute_id"],
+                "attribute_id"       => $item["attribute_id"],
                 "attribute_group_id" => $item["attribute_group_id"],
             ];
         }, $items);
@@ -315,17 +315,12 @@ class VariantModel extends AbstractModel
 
         $result = $this->excludeDuplicateItems($variantNew, $variantCurrents);
 
-        dd($variantNew, $variantCurrents, $result);
 
-        // Tính toán số lượng biến thể cần tạo
-        $variantToCreateCount = $variantCount - $variantCurrentCount;
-
-        if ($variantToCreateCount > 0) {
-            // Tạo biến thể mới
+        if (count($result) > 0) {
             $variantsToCreate = [];
             $variantCodes = [];
 
-            for ($i = 0; $i < $variantToCreateCount; $i++) {
+            foreach ($result as $item) {
                 $code = Support::genCode('variants', 'sku');
                 $variantCodes[] = $code;
                 $variantsToCreate[] = [
@@ -344,18 +339,18 @@ class VariantModel extends AbstractModel
             Variant::query()->insert($variantsToCreate);
 
             $variants = Variant::query()
-                ->whereIn('code', $variantCodes)
-                ->with('details:id,variant_id,attribute_id,attribute_group_id')
+                ->whereIn('sku', $variantCodes)
                 ->get();
 
-            foreach ($variants as $variant) {
-                foreach ($items as $item) {
-                    // Thêm chi tiết cho mỗi biến thể
+            $newVariantDetails = [];
+            foreach ($variants as $index => $variant) {
+                foreach ($result[$index] as $variantParam) {
+
                     $newVariantDetails[] = [
                         'product_id'         => $productId,
-//                        'variant_id'         => $variantId,
-                        'attribute_id'       => $item['attribute_id'],
-                        'attribute_group_id' => $item['attribute_group_id'],
+                        'variant_id'         => $variant->id,
+                        'attribute_id'       => $variantParam['attribute_id'],
+                        'attribute_group_id' => $variantParam['attribute_group_id'],
                         'created_at'         => Support::now(),
                         'updated_at'         => Support::now(),
                         'created_by'         => Auth::id(),
@@ -363,6 +358,8 @@ class VariantModel extends AbstractModel
                     ];
                 }
             }
+
+            VariantDetail::query()->insert($newVariantDetails);
         }
     }
 
@@ -402,7 +399,8 @@ class VariantModel extends AbstractModel
 
 
 // Hàm để kiểm tra sự tồn tại của một phần tử trong array2
-        function isArrayInArray($element, $array) {
+        function isArrayInArray($element, $array)
+        {
             foreach ($array as $subArray) {
                 if ($element === $subArray) {
                     return true;
@@ -432,12 +430,12 @@ class VariantModel extends AbstractModel
     {
         foreach ($array as &$subArray) {
             // Chuẩn hóa dữ liệu và sắp xếp các phần tử bên trong mỗi mảng con
-            array_walk($subArray, function(&$item) {
+            array_walk($subArray, function (&$item) {
                 $item['attribute_id'] = (int)$item['attribute_id'];
                 $item['attribute_group_id'] = (int)$item['attribute_group_id'];
             });
 
-            usort($subArray, function($a, $b) {
+            usort($subArray, function ($a, $b) {
                 if ($a['attribute_id'] === $b['attribute_id']) {
                     return $a['attribute_group_id'] <=> $b['attribute_group_id'];
                 }
@@ -446,7 +444,7 @@ class VariantModel extends AbstractModel
         }
 
         // Sắp xếp các mảng con
-        usort($array, function($a, $b) {
+        usort($array, function ($a, $b) {
             foreach ($a as $index => $item) {
                 if ($item['attribute_id'] === $b[$index]['attribute_id']) {
                     return $item['attribute_group_id'] <=> $b[$index]['attribute_group_id'];
@@ -456,20 +454,4 @@ class VariantModel extends AbstractModel
             return 0;
         });
     }
-
-    function itemExists($item, $array): bool
-    {
-        foreach ($array as $subArray) {
-            foreach ($subArray as $compareItem) {
-                // So sánh từng thuộc tính
-                if ($item['attribute_id'] == $compareItem['attribute_id'] &&
-                    $item['attribute_group_id'] == $compareItem['attribute_group_id']) {
-                    return true; // Nếu tìm thấy, trả về true
-                }
-            }
-        }
-        return false; // Nếu không tìm thấy, trả về false
-    }
-
-
 }
