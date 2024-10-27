@@ -38,31 +38,13 @@
                             placeholder="Nhập tên sản phẩm"
                         />
                     </a-form-item>
-                    <a-form-item
-                        label="Sku"
-                        name="sku"
-                        :rules="[
-                            {
-                                required: true,
-                                message: 'Vui lòng nhập sku sản phẩm!',
-                            },
-                        ]"
-                    >
+                    <a-form-item label="Sku" name="sku">
                         <a-input
                             v-model:value="form.sku"
                             placeholder="Nhập sku sản phẩm"
                         />
                     </a-form-item>
-                    <a-form-item
-                        name="category"
-                        label="Nhóm sản phẩm"
-                        :rules="[
-                            {
-                                required: true,
-                                message: 'Vui lòng chọn nhóm sản phẩm!',
-                            },
-                        ]"
-                    >
+                    <a-form-item name="category" label="Nhóm sản phẩm">
                         <a-select
                             v-model:value="form.category"
                             :options="data_manager"
@@ -91,17 +73,7 @@
                     <a-form-item label="Hoạt động" name="active">
                         <a-switch v-model:checked="form.is_active" />
                     </a-form-item>
-                    <a-form-item
-                        label="Hình ảnh"
-                        name="image"
-                        :autoLink="false"
-                        :rules="[
-                            {
-                                required: true,
-                                message: 'Vui lòng nhập URL hình ảnh!',
-                            },
-                        ]"
-                    >
+                    <a-form-item label="Hình ảnh (Tối đa 1 tấm)" name="image">
                         <a-upload-dragger
                             :before-upload="beforeUpload"
                             @preview="handlePreview"
@@ -130,25 +102,6 @@
                         </a-modal>
                     </a-form-item>
 
-                    <a-form-item
-                        class="w-full"
-                        label="Số lượng tồn kho"
-                        name="amount"
-                        :autoLink="false"
-                        :rules="[
-                            {
-                                required: true,
-                                message: 'Vui lòng nhập số lượng tồn kho!',
-                            },
-                        ]"
-                    >
-                        <a-input-number
-                            v-model:value="form.amount"
-                            placeholder="Nhập số lượng tồn kho"
-                            :min="1"
-                            class="w-full"
-                        />
-                    </a-form-item>
                     <a-form-item
                         :label="`Đơn vị tính`"
                         name="unit"
@@ -186,11 +139,7 @@
                         </a-select>
                     </a-form-item>
 
-                    <a-form-item
-                        class="w-full"
-                        label="Giá tiền gốc"
-                        name="price"
-                    >
+                    <a-form-item class="w-full" label="Giá mua" name="price">
                         <a-input-number
                             v-model:value="form.price"
                             :formatter="
@@ -204,21 +153,10 @@
                                 (value) => value.replace(/\$\s?|(,*)/g, '')
                             "
                             class="w-full"
-                            @change="calculateDiscountedPrice"
-                        />
-                    </a-form-item>
-                    <a-form-item label="% giảm giá" name="discount_percent">
-                        <a-input-number
-                            :min="0"
-                            :max="100"
-                            :formatter="(value) => `${value}`"
-                            class="w-full"
-                            v-model:value="form.discount_percent"
-                            @change="calculateDiscountedPrice"
                         />
                     </a-form-item>
                     <a-form-item
-                        label="Giá sau giảm"
+                        label="Giá bán"
                         name="discount_price"
                         class="w-full"
                     >
@@ -235,7 +173,6 @@
                                 (value) => value.replace(/\$\s?|(,*)/g, '')
                             "
                             class="w-full"
-                            @change="calculateDiscountPercent"
                         />
                     </a-form-item>
 
@@ -243,13 +180,136 @@
                         label="Mô tả sản phẩm"
                         name="product_description"
                     >
-                        <CkEditorCustom
-                            :key="'description-1'"
-                            :content="form.product_description"
-                            @updateData="handleUpdateDescription"
-                        />
+                        <a-textarea
+                            v-model:value="form.product_description"
+                            rows="5"
+                        ></a-textarea>
                     </a-form-item>
-                   
+                    <hr />
+                    <div class="flex flex-col gap-4 w-full my-4">
+                        <div class="text-3xl font-bold">
+                            Thông Tin Thuộc Tính
+                        </div>
+                        <div
+                            v-for="(attribute, index) in attributes"
+                            :key="index"
+                            class="attribute-dropdown-tag"
+                        >
+                            <div class="w-full">
+                                <a-form-item
+                                    :label="`${attribute.name}`"
+                                    :name="['attributes', index, 'id']"
+                                >
+                                    <a-select
+                                        v-model:value="attribute.options"
+                                        :placeholder="'Nhập ' + attribute.name"
+                                        :loading="attribute.loading"
+                                        mode="tags"
+                                        :options="[]"
+                                    >
+                                    </a-select>
+                                </a-form-item>
+                            </div>
+                        </div>
+                        <div class="note text-sm text-gray-500 italic">
+                            <b class="text-red-500">*</b>
+                            <b
+                                >Vui lòng nhập đầy đủ thông tin sản phẩm ở trên
+                                trước khi tạo biến thể!.</b
+                            >
+                            <div>
+                                <b class="text-red-500">*</b> Sau khi thêm thông
+                                tin thuộc tính, bấm nút để tạo danh sách biến
+                                thể theo thuộc tính đã nhập.
+                            </div>
+                        </div>
+                        <a-button
+                            type="primary"
+                            ghost
+                            class="w-fit"
+                            @click="handleGenerateVariants"
+                            >Tạo biến thể đồng loạt</a-button
+                        >
+                    </div>
+                    <hr />
+
+                    <a-table
+                        v-if="hasVariant"
+                        :row-selection="rowSelection"
+                        :columns="columns"
+                        :loading="loadingVariant"
+                        :row-key="(record) => record.id"
+                        :data-source="variantsData"
+                        @change="handleTableChange"
+                        bordered
+                        :scroll="{ x: 'max-content' }"
+                    >
+                        <template #bodyCell="{ column, text, index, record }">
+                            <template v-if="column.dataIndex === 'image'">
+                                <a-upload-dragger
+                                    :before-upload="(e) => beforeUploadVariantImg(e,record)"
+                                    @preview="(e) => handlePreviewVariantImg(e,record)"
+                                    :max-count="1"
+                                    list-type="picture-card"
+                                    v-model:file-list="record.image"
+                                >
+                                    <div>
+                                        <PlusOutlined />
+                                        <div style="margin-top: 8px">
+                                            Kéo thả hoặc chọn thêm hình ảnh
+                                        </div>
+                                    </div>
+                                </a-upload-dragger>
+                                <a-modal
+                                    :open="previewVisible"
+                                    :title="previewTitle"
+                                    :footer="null"
+                                    @cancel="handleCancel"
+                                >
+                                    <img
+                                        alt="example"
+                                        style="width: 100%"
+                                        :src="previewImage"
+                                    />
+                                </a-modal>
+                            </template>
+                            <template v-if="column.dataIndex === 'name'">
+                                <div class="flex flex-col gap-1">
+                                    <span class="text-blue-700">{{
+                                        record.name
+                                    }}</span>
+                                </div>
+                            </template>
+                            <template v-if="column.dataIndex === 'unit'">
+                                <div class="flex flex-col gap-1">
+                                    <span class="text-blue-700">{{
+                                        record.unit
+                                    }}</span>
+                                </div>
+                            </template>
+                            <template v-if="column.dataIndex === 'price'">
+                                <a-input v-model:value="record.price"></a-input>
+                            </template>
+                            <template
+                                v-if="column.dataIndex === 'discount_price'"
+                            >
+                                <a-input
+                                    v-model:value="record.discount_price"
+                                ></a-input>
+                            </template>
+                            <template v-if="column.dataIndex === 'action'">
+                                <div class="flex items-center justify-center">
+                                    <a-tooltip>
+                                        <template #title>Xóa</template>
+                                        <DeleteOutlined
+                                            @click="handleDeleteVariant(index)"
+                                            :style="{ color: 'red' }"
+                                        />
+                                    </a-tooltip>
+                                </div>
+                            </template>
+                        </template>
+                    </a-table>
 
                     <a-form-item v-if="errorInfo.length > 0">
                         <ul class="list-disc pl-6">
@@ -283,11 +343,46 @@ import {
     MinusOutlined,
 } from "@ant-design/icons-vue";
 import { ref, reactive, onMounted, watch } from "vue";
+import { usePagination } from "vue-request";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { message } from "ant-design-vue";
 import Page from "@/views/layouts/Page";
-import CkEditorCustom from "@/views/components/CkEditorCustom.vue";
+
+const columns = [
+    {
+        title: "image",
+        dataIndex: "image",
+    },
+    {
+        title: "Tên Sản phẩm",
+        dataIndex: "name",
+    },
+    {
+        title: "Mã Sản phẩm",
+        dataIndex: "sku",
+    },
+    {
+        title: "Đơn vị tính",
+        dataIndex: "unit",
+        sorter: true,
+    },
+    {
+        title: "Giá nhập",
+        dataIndex: "price",
+        sorter: true,
+    },
+    {
+        title: "Giá bán",
+        dataIndex: "discount_price",
+        sorter: true,
+    },
+    {
+        title: "Hành động",
+        dataIndex: "action",
+        fixed: "right",
+    },
+];
 
 const form = ref({
     name: "",
@@ -295,7 +390,6 @@ const form = ref({
     category: null,
     is_active: false,
     image: [],
-    amount: 0,
     unit: null,
     price: 0,
     discount_percent: 0,
@@ -310,6 +404,8 @@ const form = ref({
         },
     ],
 });
+
+const attributes = ref([]);
 
 const routes = ref([
     {
@@ -387,14 +483,29 @@ function getBase64(file) {
 }
 
 // Load hình ảnh sản phẩm chung
+const previewVisible = ref(false);
+const previewImage = ref("");
+const previewTitle = ref("");
 const beforeUpload = (file) => {
     form.value.image = [...(form.value.image || []), file];
     return false;
 };
-const previewVisible = ref(false);
-const previewImage = ref("");
-const previewTitle = ref("");
+
 const handlePreview = async (file) => {
+    if (!file.url && !file.preview) {
+        file.preview = await getBase64(file.originFileObj);
+    }
+    previewImage.value = file.url || file.preview;
+    previewVisible.value = true;
+    previewTitle.value =
+        file.name || file.url.substring(file.url.lastIndexOf("/") + 1);
+};
+const beforeUploadVariantImg = (file, record) => {
+    record.image = [...(record.image || []), file];
+    return false;
+};
+
+const handlePreviewVariantImg = async (file, record) => {
     if (!file.url && !file.preview) {
         file.preview = await getBase64(file.originFileObj);
     }
@@ -611,33 +722,137 @@ watch(form.value.category, () => {
     category_fetch.value = false;
 });
 
+// Loading Danh sách nhóm thuộc tính
+const queryDataAttribute = (params) => {
+    return axios.get(`/api/attribute-groups`);
+};
+const { data: dataAttribute, loading: loadingAttribute } =
+    usePagination(queryDataAttribute);
+
+watch(
+    () => dataAttribute.value,
+    (newValue) => {
+        if (newValue.data?.data.length > 0) {
+            attributes.value = newValue.data.data.map((item) => ({
+                id: item.id,
+                name: item.name,
+                options: [],
+                loading: false,
+            }));
+        }
+    }
+);
+
+//Handle generate variant based on inputed attribute which is save in options variable.
+const variantsData = ref([]);
+const hasVariant = ref(false);
+const loadingVariant = ref(false);
+const handleGenerateVariants = () => {
+    loadingVariant.value = true;
+    const selectedOptions = attributes.value
+        .filter((attribute) => attribute.options.length > 0)
+        .map((attribute) => attribute.options);
+    if (selectedOptions.length === 0) {
+        return;
+    }
+    variantsData.value = [];
+    hasVariant.value = false;
+    const variants = cartesianProduct(...selectedOptions);
+    variants.forEach((variant) => {
+        const variantName = form.value.name + "( " + variant.join(" / ") + " )";
+        const variantPrice = form.value.price;
+        const price_export = form.value.discount_price;
+        // VariantSku I want it have the format I want it to be like this: sku-option1-option2-option3. If option1 have the blank string, then join it without blank
+        const variantSku = form.value.sku + "-" + removeAccents(variant.join("-"));
+        const variantImage = [];
+        const variantAttributes = attributes.value.map((attribute, index) => ({
+            name: attribute.name,
+            value: variant[index],
+        }));
+        const variantObject = {
+            name: variantName,
+            price: variantPrice,
+            discount_price: price_export,
+            sku: variantSku,
+            unit: form.value.unit ? form.value.unit.label : null,
+            image: variantImage,
+            attributes: variantAttributes,
+        };
+        variantsData.value.push(variantObject);
+    });
+    hasVariant.value = true;
+    loadingVariant.value = false;
+
+    // Update the form data with the generated variants
+};
+//cartesianProduct
+function cartesianProduct(...arrays) {
+    const result = [];
+    const helper = (arr, i) => {
+        for (let j = 0; j < arrays[i].length; j++) {
+            const copy = [...arr];
+            copy.push(arrays[i][j]);
+            if (i < arrays.length - 1) {
+                helper(copy, i + 1);
+            } else {
+                result.push(copy);
+            }
+        }
+    };
+    helper([], 0);
+    return result;
+}
+
+// Remove accents
+function removeAccents(str) {
+  const accentsMap = {
+    'á': 'a', 'à': 'a', 'ả': 'a', 'ã': 'a', 'ạ': 'a',
+    'ă': 'a', 'ắ': 'a', 'ằ': 'a', 'ẳ': 'a', 'ẵ': 'a', 'ặ': 'a',
+    'â': 'a', 'ấ': 'a', 'ầ': 'a', 'ẩ': 'a', 'ẫ': 'a', 'ậ': 'a',
+    'é': 'e', 'è': 'e', 'ẻ': 'e', 'ẽ': 'e', 'ẹ': 'e',
+    'ê': 'e', 'ế': 'e', 'ề': 'e', 'ể': 'e', 'ễ': 'e', 'ệ': 'e',
+    'í': 'i', 'ì': 'i', 'ỉ': 'i', 'ĩ': 'i', 'ị': 'i',
+    'ó': 'o', 'ò': 'o', 'ỏ': 'o', 'õ': 'o', 'ọ': 'o',
+    'ô': 'o', 'ố': 'o', 'ồ': 'o', 'ổ': 'o', 'ỗ': 'o', 'ộ': 'o',
+    'ơ': 'o', 'ớ': 'o', 'ờ': 'o', 'ở': 'o', 'ỡ': 'o', 'ợ': 'o',
+    'ú': 'u', 'ù': 'u', 'ủ': 'u', 'ũ': 'u', 'ụ': 'u',
+    'ư': 'u', 'ứ': 'u', 'ừ': 'u', 'ử': 'u', 'ữ': 'u', 'ự': 'u',
+    'ý': 'y', 'ỳ': 'y', 'ỷ': 'y', 'ỹ': 'y', 'ỵ': 'y',
+    'đ': 'd'
+  };
+
+  return str.toLowerCase().replace(/[áàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđ]/gu, char => accentsMap[char]);
+}
+
+const handleDeleteVariant = (index) => {
+    variantsData.value.splice(index, 1);
+}
 //Handle Submit Product
 const handleCreateProduct = async () => {
     try {
         // Perform form submission logic here
         let formData = new FormData();
         formData.append("name", form.value.name);
-        formData.append("sku", form.value.sku);
-        formData.append("category_id", form.value.category.value);
-        formData.append("qty", form.value.amount);
-        formData.append("is_active", form.value.is_active);
+        if (form.value.sku) {
+            formData.append("sku", form.value.sku);
+        }
+        if (form.value.category) {
+            formData.append("category_id", form.value.category.value);
+        }
         if (form.value.image && form.value.image.length > 0) {
             formData.append("image", form.value.image[0].originFileObj);
         }
-        formData.append("qty", form.value.amount);
+        formData.append("is_active", form.value.is_active);
         formData.append("unit_id", form.value.unit.value);
         formData.append("price", form.value.price);
-        formData.append(
-            "price_sale",
-            form.value.price - form.value.discount_price
-        );
+        formData.append("price_import", form.value.discount_price);
         if (form.value.product_description) {
             formData.append("description", form.value.product_description);
         }
         // if (form.value.warehouses.length > 0) {
         //     form.value.warehouses.forEach((item, index) => {
         //         formData.append("category_id", item.warehouse_id);
-                
+
         //     });
         // }
         const response = await axios.post("/api/products", formData, {
@@ -711,60 +926,10 @@ const handleCreateProduct = async () => {
 }
 </style>
 <style lang="scss">
-.main-pyc {
-    .ant-collapse-content-box {
-        background-color: white !important;
-        border: 1px solid rgb(59 130 246 / var(--tw-bg-opacity));
-        border-radius: 8;
-    }
-    .ant-table-fixed {
-        table-layout: fixed;
-    }
-    .ant-table-cell {
-        .status-box {
-            width: fit-content;
-            padding: 4px 8px;
-            border-radius: 4px;
-            color: white;
-            &.pending {
-                @apply bg-blue-500;
-            }
-            &.progress {
-                background-color: #f0ad4e;
-            }
-            &.finish {
-                background-color: #5cb85c;
-            }
-            &.following {
-                background-color: #777777;
-            }
-        }
-    }
+.ant-select-selection-item-remove {
+    display: flex !important;
 }
-.ant-input {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 4px 11px;
-    color: rgba(0, 0, 0, 0.88);
-    font-size: 14px;
-    line-height: 1.5;
-    list-style: none;
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    min-width: 0;
-    background-color: #ffffff;
-    background-image: none;
-    border-width: 1px;
-    border-style: solid;
-    border-color: #d9d9d9;
-    border-radius: 6px;
-    transition: all 0.2s;
-}
-
-.ant-select-selection-search {
-    input[type="search"] {
-        box-shadow: none !important;
-    }
+.attribute-dropdown-tag .ant-select-selector {
+    min-height: 70px;
 }
 </style>

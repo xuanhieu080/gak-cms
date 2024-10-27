@@ -424,9 +424,6 @@
                     </a-tab-pane>
                     <a-tab-pane key="2" tab="Biến thể mới">
                         <div class="flex items-center gap-4">
-                            <a-button @click="handleEditSelectedAttribute"
-                                >Chỉnh sửa thuộc tính biến thể</a-button
-                            >
                             <a-button @click="handleAutoAddVariant"
                                 >Thêm hàng loạt biến thể</a-button
                             >
@@ -439,40 +436,14 @@
                             title="Thêm Biến Thể Hàng Loạt"
                             @ok="autoAddVariantFunc"
                         >
-                            <p>Some contents...</p>
-                            <p>Some contents...</p>
-                            <p>Some contents...</p>
-                        </a-modal>
-
-                        <a-modal
-                            v-model:open="openEditSelectedAttribute"
-                            title="Danh sách thuộc tính biến thể"
-                            @ok="editSelectedAttributeFunc"
-                            ok-text="Save"
-                        >
-                        <div class="my-4 space-y-4 w-full">
-                            <div>
-                                <a-checkbox
-                                    v-model:checked="state.checkAll"
-                                    :indeterminate="state.indeterminate"
-                                    @change="onCheckAllChange"
-                                >
-                                    Check all
-                                </a-checkbox>
-                            </div>
-                            <a-divider />
-                            <a-checkbox-group
-                                v-model:value="state.checkedList"
-                                :options="plainOptions"
-                            />
-                        </div>
-                            
+                            <p>Coming Soon...</p>
                         </a-modal>
                         <a-form
-                            v-if="openCreateVariantForm"
+                            v-if="openCreateVariantForm && !loadingAttribute"
                             ref="ruleForm"
                             :model="formVariables"
                             layout="vertical"
+                            @submit.prevent="handleCreateNewVariant"
                             class="mt-4"
                         >
                             <div class="font-bold text-xl mb-4">
@@ -488,18 +459,111 @@
                                     },
                                 ]"
                             >
-                                <a-input v-model:value="formVariables.name" />
+                                <a-input
+                                    v-model:value="formVariables.name"
+                                    disabled
+                                />
                             </a-form-item>
                             <a-form-item label="SKU biến thể" name="sku">
                                 <a-input v-model:value="formVariables.sku" />
                             </a-form-item>
-                            <a-form-item label="Số lượng" name="qty">
-                                <a-input-number
-                                    min="0"
-                                    class="w-full"
-                                    v-model:value="formVariables.qty"
-                                />
+                            <a-form-item
+                                label="Hình ảnh"
+                                name="image"
+                                :autoLink="false"
+                                :rules="[
+                                    {
+                                        required: true,
+                                        message: 'Vui lòng nhập URL hình ảnh!',
+                                    },
+                                ]"
+                            >
+                                <a-upload-dragger
+                                    :before-upload="beforeUploadVariantImg"
+                                    @preview="handlePreviewVariantImg"
+                                    list-type="picture-card"
+                                    :max-count="1"
+                                    v-model:file-list="formVariables.image"
+                                >
+                                    <div>
+                                        <PlusOutlined />
+                                        <div style="margin-top: 8px">
+                                            Kéo thả hoặc chọn thêm hình ảnh
+                                        </div>
+                                    </div>
+                                </a-upload-dragger>
+                                <a-modal
+                                    :open="previewVariantImg"
+                                    :title="previewVariantTitle"
+                                    :footer="null"
+                                    @cancel="handleCancelVariantImg"
+                                >
+                                    <img
+                                        alt="example"
+                                        style="width: 100%"
+                                        :src="previewVariant"
+                                    />
+                                </a-modal>
                             </a-form-item>
+                            <div
+                                v-for="(
+                                    attribute, index
+                                ) in formVariables.attributes"
+                                :key="index"
+                            >
+                                <div class="w-full">
+                                    <a-form-item
+                                        :label="`${attribute.name}`"
+                                        :name="['attributes', index, 'id']"
+                                        :autoLink="false"
+                                        :rules="[
+                                            {
+                                                required: true,
+                                                message: `Vui lòng chọn ${attribute.name}`,
+                                            },
+                                        ]"
+                                    >
+                                        <a-select
+                                            v-model:value="
+                                                attribute.attributes_id
+                                            "
+                                            :placeholder="
+                                                'Chọn ' + attribute.name
+                                            "
+                                            :loading="attribute.loading"
+                                            :options="attribute.options"
+                                            :not-found-content="
+                                                attribute.loading
+                                                    ? undefinded
+                                                    : null
+                                            "
+                                            @change="
+                                                (val) =>
+                                                    handleSetAttributeVariant(
+                                                        val,
+                                                        attribute
+                                                    )
+                                            "
+                                            show-search
+                                        >
+                                            <template #notFoundContent>
+                                                <a-spin
+                                                    v-if="attribute.loading"
+                                                    size="small"
+                                                />
+                                                <span
+                                                    v-if="
+                                                        attribute.options
+                                                            .length == 0 &&
+                                                        !attribute.loading
+                                                    "
+                                                    >Không có kết quả nào</span
+                                                >
+                                            </template>
+                                        </a-select>
+                                    </a-form-item>
+                                </div>
+                            </div>
                             <a-form-item
                                 label="Giá tiền"
                                 name="price"
@@ -558,10 +622,40 @@
                                     @change="calculateDiscountPercentVariable"
                                 />
                             </a-form-item>
+                            <a-form-item
+                                label="Mô tả sản phẩm"
+                                name="product_description"
+                                :rules="[
+                                    {
+                                        required: true,
+                                        message: 'Vui lòng nhập mô tả',
+                                    },
+                                ]"
+                            >
+                                <CkEditorCustom
+                                    :key="'description-variant'"
+                                    :content="formVariables.product_description"
+                                    @updateData="
+                                        (value) =>
+                                            (formVariables.product_description =
+                                                value)
+                                    "
+                                />
+                            </a-form-item>
+                            <a-form-item v-if="errorInfo.length > 0">
+                                <ul class="list-disc pl-6">
+                                    <li
+                                        class="text-red-500 capitalize"
+                                        v-for="error in errorInfo"
+                                    >
+                                        {{ error[0] }}
+                                    </li>
+                                </ul>
+                            </a-form-item>
                             <a-form-item>
-                                <a-button type="primary" @click="submitForm"
-                                    >Tạo biến thể</a-button
-                                >
+                                <a-button type="primary" html-type="submit">
+                                    Tạo biến thể
+                                </a-button>
                             </a-form-item>
                         </a-form>
                     </a-tab-pane>
@@ -922,12 +1016,14 @@ const form = ref({
     ],
 });
 const formVariables = ref({
-    name: "",
-    sku: "",
+    name: null,
+    sku: null,
+    attributes: [],
+    image: [],
     price: 0,
     discount_percent: 0,
     discount_price: 0,
-    qty: 0,
+    product_description: "",
 });
 const openCreateVariantForm = ref(false);
 const openAutoAddVariant = ref(false);
@@ -1248,25 +1344,25 @@ const handleCancel = () => {
 };
 
 // Load Hình ảnh thông tin nổi bật
-const beforeUploadFImg = (file) => {
-    form.value.feature_img = [...(form.value.feature_img || []), file];
+const beforeUploadVariantImg = (file) => {
+    formVariables.value.image = [...(formVariables.value.image || []), file];
     return false;
 };
-const previewVisibleFImg = ref(false);
-const previewFImg = ref("");
-const previewFImgTitle = ref("");
-const handlePreviewFImg = async (file) => {
+const previewVariantImg = ref(false);
+const previewVariant = ref("");
+const previewVariantTitle = ref("");
+const handlePreviewVariantImg = async (file) => {
     if (!file.url && !file.preview) {
         file.preview = await getBase64(file.originFileObj);
     }
-    previewFImg.value = file.url || file.preview;
-    previewVisibleFImg.value = true;
-    previewFImgTitle.value =
+    previewVariant.value = file.url || file.preview;
+    previewVariantImg.value = true;
+    previewVariantTitle.value =
         file.name || file.url.substring(file.url.lastIndexOf("/") + 1);
 };
-const handleCancelFImg = () => {
-    previewVisibleFImg.value = false;
-    previewFImgTitle.value = "";
+const handleCancelVariantImg = () => {
+    previewVariantImg.value = false;
+    previewVariantTitle.value = "";
 };
 // Load Hình ảnh SEO
 const beforeUploadSEOImg = (file) => {
@@ -1765,39 +1861,111 @@ const handleEditSelectedAttribute = () => {
     openEditSelectedAttribute.value = true;
 };
 
+const handleSetAttributeVariant = (val, item) => {
+    let selectedData = item.options.find((o) => o.value == val);
+    if (formVariables.value.name) {
+        formVariables.value.name += ` ---- ${item.name}: ${selectedData.data.name}`;
+    } else {
+        formVariables.value.name = `${form.value.name} ---- ${item.name}: ${selectedData.data.name}`;
+    }
+};
+
+const handleCreateNewVariant = async () => {
+    try {
+        // Perform form submission logic here
+        errorInfo.value = [];
+        let formData = new FormData();
+        formData.append("sku", formVariables.value.sku);
+        formData.append("product_id", router.currentRoute.value.params.id);
+        if (
+            formVariables.value.image &&
+            formVariables.value.image.length > 0 &&
+            formVariables.value.image[0].originFileObj
+        ) {
+            formData.append(
+                "image",
+                formVariables.value.image[0].originFileObj
+            );
+        }
+        formData.append("price", formVariables.value.price);
+        formData.append(
+            "price_sale",
+            formVariables.value.price - formVariables.value.discount_price
+        );
+        if (formVariables.value.product_description) {
+            formData.append(
+                "description",
+                formVariables.value.product_description
+            );
+        }
+        let selectedAttribute = formVariables.value.attributes.filter(
+            (item) => item.attributes_id != null
+        );
+        if (selectedAttribute.length > 0) {
+            let items = selectedAttribute.map((item) => ({
+                attribute_group_id: item.id,
+                attribute_id: item.attributes_id,
+            }));
+
+            console.log(items);
+            formData.append("items[]", items);
+        }
+        const response = await axios.post(`/api/variants`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        if (response.data.code == 200) {
+            message.success(response.data.message);
+            router.push({ name: "product-index" });
+        }
+    } catch (e) {
+        if (e.response.status == 422) {
+            errorInfo.value = Object.values(e.response.data.errors);
+            message.error("Vui lòng kiểm tra lại thông tin");
+        } else {
+            message.error("Máy chủ bận");
+            console.log("errors: ", e);
+        }
+    }
+};
+
 let plainOptions = reactive([]);
 let state = reactive({
-  indeterminate: true,
-  checkAll: false,
-  checkedList: [],
+    indeterminate: true,
+    checkAll: false,
+    checkedList: [],
 });
-const onCheckAllChange = e => {
-  Object.assign(state, {
-    checkedList: e.target.checked ? plainOptions : [],
-    indeterminate: false,
-  });
+const onCheckAllChange = (e) => {
+    Object.assign(state, {
+        checkedList: e.target.checked ? plainOptions : [],
+        indeterminate: false,
+    });
 };
 watch(
-  () => state.checkedList,
-  val => {
-    state.indeterminate = !!val.length && val.length < plainOptions.length;
-    state.checkAll = val.length === plainOptions.length;
-  },
+    () => state.checkedList,
+    (val) => {
+        state.indeterminate = !!val.length && val.length < plainOptions.length;
+        state.checkAll = val.length === plainOptions.length;
+    }
 );
 
 // Query Data of Product
+
+const queryDataProduct = (params) => {
+    return axios.get(`/api/products/${router.currentRoute.value.params.id}`);
+};
+const { data: dataProduct, loading: loadingProduct } =
+    usePagination(queryDataProduct);
+
 const queryDataAttribute = (params) => {
     return axios.get(
         `/api/products/${router.currentRoute.value.params.id}/attributes`
     );
 };
-const queryDataProduct = (params) => {
-    return axios.get(`/api/products/${router.currentRoute.value.params.id}`);
-};
 const { data: dataAttribute, loading: loadingAttribute } =
     usePagination(queryDataAttribute);
-const { data: dataProduct, loading: loadingProduct } =
-    usePagination(queryDataProduct);
+
 watch(
     () => dataAttribute.value,
     (newValue) => {
@@ -1819,16 +1987,21 @@ watch(
                     loading: false,
                 })
             );
-            plainOptions = newValue.data.data.map(
-                (item) => ({
-                    value: item.id,
-                    label: item.name,
-                    data: item,
-                })
-            );
+            formVariables.value.attributes = newValue.data.data.map((item) => ({
+                id: item.id,
+                name: item.name,
+                attributes_id: null,
+                options: item.attributes.map((attr) => ({
+                    value: attr.id,
+                    label: attr.name,
+                    data: attr,
+                })),
+                loading: false,
+            }));
         }
     }
 );
+
 watch(
     () => dataProduct.value,
     (newValue) => {
