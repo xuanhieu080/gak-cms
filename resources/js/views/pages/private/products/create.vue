@@ -849,12 +849,9 @@ const handleCreateProduct = async () => {
         if (form.value.product_description) {
             formData.append("description", form.value.product_description);
         }
-        // if (form.value.warehouses.length > 0) {
-        //     form.value.warehouses.forEach((item, index) => {
-        //         formData.append("category_id", item.warehouse_id);
-
-        //     });
-        // }
+        if(variantsData.value.length > 0) {
+            formData.append("variants", JSON.stringify(variantsData.value));
+        }
         const response = await axios.post("/api/products", formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
