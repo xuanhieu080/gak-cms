@@ -12,9 +12,14 @@ class ProductAttribute extends BaseModel
     protected $fillable = [
         'product_id',
         'attribute_group_id',
+        'attribute',
         'is_active',
         'created_by',
         'updated_by',
+    ];
+
+    protected $casts = [
+        'attribute' => 'json'
     ];
 
     public function product(): BelongsTo

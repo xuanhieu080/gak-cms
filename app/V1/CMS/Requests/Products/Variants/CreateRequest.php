@@ -16,10 +16,10 @@ class CreateRequest extends ValidatorBase
     public function rules()
     {
         return [
-            'image'                      => 'required|image|max:3145728|mimes:jpg,jpeg,png,bmp,gif,svg,webp,mp4,ogx,oga,ogv,ogg,webm',
-            'price'                      => 'required|numeric|between:0,99999999999',
-            'price_sale'                 => 'nullable|numeric|between:0,99999999999|lt:price',
-            'sku'                        => 'required|string|unique:variants,sku',
+            'image'                      => 'nullable|image|max:3145728|mimes:jpg,jpeg,png,bmp,gif,svg,webp,mp4,ogx,oga,ogv,ogg,webm',
+            'price'                      => 'nullable|numeric|between:0,99999999999',
+            'price_sale'                 => 'nullable|numeric|between:0,99999999999|lte:price',
+            'sku'                        => 'nullable|string|unique:variants,sku',
             'product_id'                 => 'required|exists:products,id',
             'items'                      => 'required|array',
             'items.*'                    => 'required|array',
@@ -28,7 +28,7 @@ class CreateRequest extends ValidatorBase
                 'exists:attribute_groups,id',
                 Rule::exists('product_attributes', 'attribute_group_id')->where('product_id', $this->input('product_id')),
             ],
-            'items.*.attribute_id'       => [
+            'items.*.attribute_name'       => [
                 'required',
                 'exists:attributes,id',
                 function ($attribute, $value, $fail) {

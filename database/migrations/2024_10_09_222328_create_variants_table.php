@@ -16,7 +16,6 @@ return new class extends Migration
             $table->unsignedBigInteger('product_id')->nullable();
             $table->unsignedBigInteger('attribute_group_id')->nullable();
             $table->unsignedBigInteger('attribute_id')->nullable();
-            $table->unique(['attribute_id', 'attribute_group_id', 'product_id'], 'product_attribute_index')->nullable();
             $table->boolean('is_active')->nullable()->default(1);
             $table->timestamps();
         });

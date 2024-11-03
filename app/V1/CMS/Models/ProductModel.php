@@ -16,9 +16,12 @@ use Illuminate\Support\Facades\DB;
 
 class ProductModel extends AbstractModel
 {
+    public $variantModel;
+
     public function __construct()
     {
         $model = new Product();
+        $this->variantModel = new VariantModel();
         parent::__construct($model);
     }
 
@@ -31,6 +34,17 @@ class ProductModel extends AbstractModel
             throw new Exception('Thêm dữ liệu thất bại');
         }
 
+        if ($attributes = Arr::get($data, 'attributes', [])) {
+            $this->syncAttribute($model, $attributes);
+        }
+
+        if ($attributes = Arr::get($data, 'items', [])) {
+            foreach ($attributes as $attribute) {
+                $attribute['product_id'] = $model->id;
+                $this->variantModel->store($attribute);
+            }
+
+        }
 
         if (!empty($data['image'])) {
             $model->addMedia($data['image'])
@@ -38,6 +52,7 @@ class ProductModel extends AbstractModel
                 ->usingFileName($model->name . '-' . time() . '.' . $data['image']->getClientOriginalExtension())
                 ->toMediaCollection();
         }
+
         $model->refresh(['details', 'details.attribute', 'details.attributeGroup']);
 
         return $model;
@@ -68,14 +83,9 @@ class ProductModel extends AbstractModel
         return false;
     }
 
-    public function syncAttribute($id, array $input = []): void
+    public function syncAttribute(Product $model, array $input = []): void
     {
-        $model = $this->model->find($id);
-        if (empty($model)) {
-            throw new Exception('Dữ liệu không tồn tại', 404);
-        }
-
-        $attributeGroups = Arr::get($input, 'groups', []);
+        $attributeGroups = array_column($input, 'attribute_group_id');;
 
         if (empty($attributeGroups)) {
             ProductAttribute::query()
@@ -83,7 +93,11 @@ class ProductModel extends AbstractModel
                 ->delete();
 
             ProductWarehouse::query()
-                ->where('product_id', $id)
+                ->where('product_id', $model->id)
+                ->delete();
+
+            ProductWarehouse::query()
+                ->where('product_id', $model->id)
                 ->delete();
         } else {
             ProductAttribute::query()
@@ -92,17 +106,19 @@ class ProductModel extends AbstractModel
                 ->delete();
 
             $param = [];
-
-            foreach ($attributeGroups as $detail) {
+            foreach ($input as $detail) {
                 $param[] = [
-                    'attribute_group_id' => $detail,
+                    'attribute_group_id' => $detail['attribute_group_id'],
+                    'attribute'          => json_encode($detail['attribute_names']),
                     'product_id'         => $model->id,
-                    'is_active'          => 1
+                    'is_active'          => 1,
+                    "created_by" => auth()->id(),
+                    "updated_by" => auth()->id(),
                 ];
             }
 
             ProductAttribute::query()
-                ->upsert($param, ['attribute_group_id', 'product_id']);
+                ->upsert($param, ['attribute_group_id', 'product_id'], ['attribute', 'is_active']);
         }
     }
 

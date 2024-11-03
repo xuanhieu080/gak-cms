@@ -71,6 +71,7 @@ class ProductController extends Controller
         try {
             DB::beginTransaction();
             $input = $request->validated();
+
             $data = $this->model->store($input);
             DB::commit();
         } catch (Exception $exception) {

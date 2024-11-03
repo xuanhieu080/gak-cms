@@ -13,7 +13,7 @@ class VariantDetail extends BaseModel
     protected $fillable = [
         'id',
         'variant_id',
-        'attribute_id',
+        'attribute_name',
         'attribute_group_id',
         'created_by',
         'updated_by'
@@ -22,11 +22,6 @@ class VariantDetail extends BaseModel
     public function variant(): BelongsTo
     {
         return $this->belongsTo(Variant::class);
-    }
-
-    public function attribute(): HasOne
-    {
-        return $this->hasOne(Attribute::class, 'id', 'attribute_id');
     }
 
     public function attributeGroup(): HasOne
